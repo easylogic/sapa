@@ -1,0 +1,30 @@
+{
+    "env": {
+        "test": {
+            "presets" : [ ["env"]  ],
+            "plugins": [
+                "transform-es2015-modules-commonjs",
+                "transform-object-rest-spread"
+            ]
+        },
+        "development" : {
+            "presets" : [
+                [ "env", {"modules" : false } ]
+            ],
+            "plugins": [    
+                "external-helpers",
+                "transform-object-rest-spread"
+            ]
+        },
+        "production" : {
+            "presets" : [
+                [ "env", {"modules" : false } ]
+            ],
+            "plugins": [    
+                "external-helpers",
+                "transform-object-rest-spread"
+            ]
+        }
+    }
+
+}

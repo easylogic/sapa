@@ -1,2 +1,2 @@
-# easylogic
-Simple JS Application Library
+# Simple JS Application Library
+
