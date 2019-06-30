@@ -5,7 +5,7 @@ sa-pa a simple library to make JS Application.
 # Install 
 
 `
-npm install sa-pa 
+npm install @easylogic/sapa
 `
 
 # How to use in es6 

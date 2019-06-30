@@ -2,7 +2,7 @@
   "name": "sa-pa",
   "version": "0.0.1",
   "description": "Simple JS Application Library",
-  "main": "dist/main.js",
+  "main": "dist/sapa.js",
   "directories": {
     "test": "test"
   },
