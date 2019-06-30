@@ -1,5 +1,3 @@
-import Util from "./util/index";
+import  sapa from "./util/index";
 
-export default {
-  ...Util
-};
+export default sapa

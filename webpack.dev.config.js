@@ -4,12 +4,13 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 module.exports = {
   // Entry files for our popup and background pages
   entry: {
-    main: "./src/index.js"
+    sapa: "./src/index.js"
   },
   output: {
     library: "sapa",
+    libraryExport: "default",    
     libraryTarget: "umd",
-    path: __dirname + "/docs"
+    path: __dirname + "/dist"
   },
   module: {
     rules: [
@@ -93,9 +94,9 @@ module.exports = {
   },
   plugins: [
     new HtmlWebPackPlugin({
-      inject: true,
-      chunks: ["main"],
-      template: "./src/index.html",
+      inject: false,
+      chunks: ["sapa"],
+      template: "./index.html",
       filename: "./index.html"
     }),
     new MiniCssExtractPlugin({

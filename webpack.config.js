@@ -3,10 +3,11 @@ const CompressionPlugin = require('compression-webpack-plugin');
 module.exports = {
   // Entry files for our popup and background pages
   entry: {
-    main: "./src/index.js"
+    sapa: "./src/index.js"
   },
   output: {
     library: "sapa",
+    libraryExport: "default",
     libraryTarget: "umd",
     path: __dirname + "/dist"
   },

@@ -11,7 +11,7 @@ export default {
   BaseStore,
   Dom,  
   UIElement,  
-  ...App,
+  App,
   ...Event,
   ...func
 };
