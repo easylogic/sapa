@@ -19,7 +19,13 @@
 <body>
 
 <script type="text/javascript">
+    
 
+    App.start({
+      components: { CSSEditor },
+      template: `<CSSEditor ${opts.embed ? 'embed="true"' : ""} />`,
+      ...opts
+    });
 </script>
 
 </body>

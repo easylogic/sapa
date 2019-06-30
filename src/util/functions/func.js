@@ -1,60 +1,34 @@
+
 export function debounce (callback, delay) {
 
     var t = undefined;
 
-    return function (...args) {
+    return function ($1, $2, $3, $4, $5) {
         if (t) {
             clearTimeout(t);
         }
 
         t = setTimeout(function () {
-            callback(...args);
+            callback($1, $2, $3, $4, $5);
         }, delay || 300);
     }
 }
+  
 
-export function filterProps (instance, pattern = '/') {
-    return Object.getOwnPropertyNames(instance.__proto__).filter(key => {
-        return key.startsWith(pattern);
-    });
-}
+export function throttle (callback, delay) {
 
-export function collectProps (instance) {
+    var t = undefined;
 
-    if (!instance.collectedProps) {
-      var p = instance.__proto__ 
-      var results = [] 
-      do {
-        results.push(...Object.getOwnPropertyNames(p))
-        p  = p.__proto__;
-      } while( p );
+    return function ($1, $2, $3, $4, $5) {
+        if (!t) {
+            t = setTimeout(function () {
+                callback($1, $2, $3, $4, $5);
+                t = null; 
+            }, delay || 300);
+        }
 
-      instance.collectedProps = results
     }
-
-    return instance.collectedProps; 
 }
-
-export function uuid(){
-    var dt = new Date().getTime();
-    var uuid = 'xxx12-xx-34xx'.replace(/[xy]/g, function(c) {
-        var r = (dt + Math.random()*16)%16 | 0;
-        dt = Math.floor(dt/16);
-        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-}
-
-export function uuidShort(){
-    var dt = new Date().getTime();
-    var uuid = 'xxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (dt + Math.random()*16)%16 | 0;
-        dt = Math.floor(dt/16);
-        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-}
-
 
 export function keyEach (obj, callback) {
     Object.keys(obj).forEach( (key, index) => {
@@ -68,12 +42,9 @@ export function keyMap (obj, callback) {
     })
 }
 
-export function defaultValue (value, defaultValue) {
-    return typeof value == 'undefined' ? defaultValue : value;
-}
 
 export function isUndefined (value) {
-    return typeof value == 'undefined' || value == null;
+    return typeof value == 'undefined' || value === null;
 }
 
 export function isNotUndefined (value) {
@@ -97,7 +68,7 @@ export function isNotString (value) {
 }
 
 export function isObject (value) {
-    return typeof value == 'object' && !isArray(value) && value !== null; 
+    return typeof value == 'object' && !isArray(value) && !isNumber(value) && !isString(value)  && value !== null; 
 }
 
 export function isFunction (value) {
@@ -112,12 +83,13 @@ export function clone (obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-
 const short_tag_regexp = /\<(\w*)([^\>]*)\/\>/gim;
 
 const HTML_TAG = {
     'image': true,
-    'input': true
+    'input': true,
+    'br': true,
+    'path': true 
 }
 
 
@@ -136,7 +108,7 @@ export const html = (strings, ...args) => {
         }
 
         results = results.map(r => {
-            if (isObject(r)) {
+            if (isObject(r) && !isArray(r)) {
                 return Object.keys(r).map(key => {
                     return `${key}="${r[key]}"`
                 }).join(' ')
@@ -157,4 +129,26 @@ export const html = (strings, ...args) => {
     })
 
     return results; 
+}
+
+const UUID_REG = /[xy]/g
+
+export function uuid(){
+    var dt = new Date().getTime();
+    var uuid = 'xxx12-xx-34xx'.replace(UUID_REG, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
+
+export function uuidShort(){
+    var dt = new Date().getTime();
+    var uuid = 'idxxxxxxx'.replace(UUID_REG, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
 }

@@ -1,11 +1,5 @@
-export * from './Dom'
-export * from './Event'
-export * from './Module'
-export * from './Store'
-export * from './func'
-export * from './UIElement'
-export * from './App'
+import Util from "./util/index";
 
-export const start = (opt) => {
-    return new App(opt);
-}
+export default {
+  ...Util
+};
