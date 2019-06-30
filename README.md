@@ -254,6 +254,10 @@ App.start({
 
 `
 npm run build
+
+# Projects 
+
+* https://editor.easylogic.studio - Fantastic CSS Editor
 `
 
 
