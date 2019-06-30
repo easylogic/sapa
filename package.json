@@ -1,6 +1,6 @@
 {
-  "name": "sa-pa",
-  "version": "0.0.1",
+  "name": "@easylogic/sapa",
+  "version": "0.0.2",
   "description": "Simple JS Application Library",
   "main": "dist/sapa.js",
   "directories": {
@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/easylogic/sa-pa.git"
+    "url": "git+https://github.com/easylogic/sapa.git"
   },
   "keywords": [
     "sa-pa",
@@ -49,7 +49,7 @@
   "author": "easylogic",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/easylogic/sa-pa/issues"
+    "url": "https://github.com/easylogic/sapa/issues"
   },
-  "homepage": "https://github.com/easylogic/sa-pa"
+  "homepage": "https://github.com/easylogic/sapa"
 }

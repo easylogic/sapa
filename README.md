@@ -11,7 +11,7 @@ npm install @easylogic/sapa
 # How to use in es6 
 
 ```js
-import {App, UIElement, CLICK} from 'sapa'
+import {App, UIElement, CLICK} from '@easylogic/sapa'
 
 ```
 
