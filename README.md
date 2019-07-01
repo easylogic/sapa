@@ -211,8 +211,7 @@ UIElement ->
 
 ## Method Based DOM Event Handler 
 
-sapa sets the DOM Event in a somewhat unique way. sapa take full advantage of the fact that javascript's methods are strings.
-
+sapa sets the DOM Event in a unique way. sapa take full advantage of the fact that javascript's methods are strings.
 
 ```js
 
@@ -227,8 +226,7 @@ class Test extends UIElement {
 }
 ```
 
-
-`[CLICK()]` is basically the same as `CLICK('$el')`. Sets $ el's click event automatically.
+`[CLICK()]` is basically the same as `CLICK('$el')`. Sets `$el`'s click event automatically.
 
 The `CLICK()` method internally creates a string. The final result is shown below.
 
