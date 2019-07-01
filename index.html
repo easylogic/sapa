@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" /> 
-    <title>sa-pa - Simple JS Application Library</title>
+    <title>sapa - Simple JS Application Library</title>
     <meta name="description" content="This tool has easy way to make css gradient. It's really really simple. Let's make a beautiful gradient for the web. ">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -24,11 +24,18 @@
 
     class Test extends UIElement {
         template() {
-            return '<div>Text</div>'
+            return `
+            <div>
+                <div ref='$list'>
+                    <div class='item selected'>aaaa</div>
+                    <div class='item'>vvvv</div>
+                </div>
+            </div>
+            `
         }
 
-        [CLICK()] (e) {
-            console.log(e);
+        [CLICK('$list .item:not(.selected)')] (e) {
+            console.log(e.$delegateTarget.html());
         }
     }
 

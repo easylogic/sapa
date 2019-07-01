@@ -82,7 +82,7 @@ export const start = opt => {
     }
 
     getClassName() {
-      return opt.className || "sa-pa";
+      return opt.className || "sapa";
     }
 
     getContainer() {

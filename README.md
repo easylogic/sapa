@@ -1,6 +1,6 @@
-# sa-pa
+# sapa
 
-sa-pa a simple library to make JS Application. 
+sapa a simple library to make JS Application. 
 
 # Install 
 
@@ -38,10 +38,9 @@ class MyElement extends UIElement {
 
 ```
 
-`template()` 메소드를 통해서 MyElement의 실질적인 HTML 문자열을 지정합니다. 
+Use the `template ()` method to specify the actual HTML string for MyElement.
 
-
-UIElement 는 형식상 다른 UIElement 에 포함 될 수 있습니다.
+A UIElement can be contained in other UIElement.
 
 ```js
 class SecondElement extends UIElement {
@@ -59,9 +58,14 @@ class SecondElement extends UIElement {
 
 ```
 
-SecondElement 가 생성 될 때 내부적으로 MyElement 를 생성해줍니다. 이때 MyElement 의 parent  속성은 SecondElement 의 instance 가 됩니다. 
+It creates MyElement internally when SecondElement is created. At this time, the parent property of MyElement becomes the instance of SecondElement.
 
-### access dom element 
+
+### Access DOM 
+
+Use `this.$el`  
+
+$el is jQuery-liked DOM wrapper object.
 
 ```js
 class Test extends UIElement {
@@ -72,15 +76,13 @@ class Test extends UIElement {
             console.log('this element has .test-item')
         }
     }
-
-    
 }
-
 ```
 
 ## Method Based DOM Event Handler 
 
-sa-pa 는 DOM Event 를 조금은 독특한 방식으로 셋팅합니다. javascript 의 메소드가 문자열이다라는 사실을 적극 활용합니다. 
+sapa sets the DOM Event in a somewhat unique way. sapa take full advantage of the fact that javascript's methods are strings.
+
 
 ```js
 
@@ -95,9 +97,10 @@ class Test extends UIElement {
 }
 ```
 
-`[CLICK()]` 은 기본적으로 CLICK('$el') 와 같습니다. $el 의 click 이벤트를 자동으로 설정해줍니다. 
 
-CLICK() 메소드는 내부적으로 문자열을 만드는데요. 최종 결과물은 아래와 같습니다. 
+`[CLICK()]` is basically the same as CLICK ('$ el'). Sets $ el's click event automatically.
+
+The CLICK() method internally creates a string. The final result is shown below.
 
 ```js
 'click $el' (e) { 
@@ -105,7 +108,7 @@ CLICK() 메소드는 내부적으로 문자열을 만드는데요. 최종 결과
 }
 ```
 
-적용할 수 이벤트는 아래와 같습니다. 
+### Support DOM Event List 
 
 ```
 CLICK = "click"
@@ -150,15 +153,19 @@ CHANGEINPUT = "change", "input"
 WHEEL = "wheel", "mousewheel", "DOMMouseScroll"
 ```
 
-필요한 이벤트는 추가해서 정의하면 됩니다. 일반적인 DOM 이벤트가 정의 되어 있습니다. 
+You can define any additional events you need. Common DOM events are defined.
+
+You can set several DOM events at the same time.
 
 `
-대문자로 되어 있는 POINTERSTART 는 임의로 정의된 이름이고 이것을 지정하면 실제로는 mousedow, touchstart 라는 2개의 이벤트가 지정이 됩니다. 
+POINTERSTART, which is in upper case, is a randomly defined name. When this is specified, two events are actually specified, namely mousedow and touchstart.
 `
 
-DOM 이벤트에는 $el 이외의 특수한 몇가지 element 를 지정할 수 있습니다. 
+DOM events can have some special elements other than $ el.
 
 ### ref  
+
+When the DOM is created, the DOM with the ref attribute is managed as a variable that can be used in advance.
 
 ```js
 template () {
@@ -167,7 +174,12 @@ template () {
 [CLICK('$text')]  (e) { }
 ```
 
+You can apply CLICK events to the `$text` DOM object.
+
+
 ### window, document 
+
+Global objects such as window and document can also apply events to their methods.
 
 ```js
 [RESIZE('window')] (e) { }
@@ -175,6 +187,9 @@ template () {
 ```
 
 ### delegate 
+
+Applying events to individual DOMs may be bad for performance. In that case, use delegate to handle it.
+
 
 ```js
 template () {
@@ -192,15 +207,44 @@ template () {
 }
 ```
 
+This is also possible the css selector.
 
 
-DOM 이벤트에는 몇가지 PIPE 기능들이 붙을 수 있습니다. 
+```js
+[CLICK('$list .item:not(.selected)')] (e) {
+    // do event 
+    console.log(e.$delegateTarget.html())
+}
+```
+You can run the method only when you click on the `.item` that is not applied to the` .selected` class.
 
+`e. $ delegateTarget` points to the element where the actual event occurred.
+
+
+DOM events can have several PIPE functions.
+
+PIPE is a concept that combines predefined functions in an event.
 
 ### ALT
 
+The event will only work when Alt key is pressed.
+
+
 ```js
-[CLICK() + ALT]   
+[CLICK() + ALT] (e) {
+    // when alt key is pressed
+}
+```
+
+In addition to ALT, you can use default key combinations such as CTRL, SHIFT, and META.
+
+PIPE can be connected with `+` character.
+
+```js
+[CLICK() + ALT + CTRL] (e) {
+    // when alt and control key are pressed 
+}
+
 ```
 
 ### IF 
@@ -217,10 +261,17 @@ checkTarget(e) {
 
 ### DEBOUNCE 
 
+Some PIPEs can also use actual methods in other ways. A typical example is DEBOUNCE.
+
 ```js
 [RESIZE('window') + DEBOUNCE(100)] (e) {}
 ```
 
+TROTTLE is also available.
+
+```js
+[SCROLL('document') + TROTTLE(100)] (e) {}
+```
 
 ## Method Based Messaging System 
 
@@ -231,7 +282,7 @@ This sample make a clickable element.
 
 ```js
 
-import {App, UIElement, CLICK} from 'sa-pa'
+import {App, UIElement, CLICK} from 'sapa'
 
 class Test extends UIElement {
     template() {
