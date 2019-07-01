@@ -1,5 +1,3 @@
-const CompressionPlugin = require('compression-webpack-plugin');
-
 module.exports = {
   // Entry files for our popup and background pages
   entry: {
@@ -21,8 +19,5 @@ module.exports = {
         }
       }
     ]
-  },
-  plugins: [
-    new CompressionPlugin()
-  ]
+  }
 };
