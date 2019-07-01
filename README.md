@@ -157,9 +157,9 @@ You can define any additional events you need. Common DOM events are defined.
 
 You can set several DOM events at the same time.
 
-`
-POINTERSTART, which is in upper case, is a randomly defined name. When this is specified, two events are actually specified, namely mousedow and touchstart.
-`
+```
+POINTERSTART is a defined name. Two events are actually specified, namely `mousedown` and `touchstart`.
+```
 
 DOM events can have some special elements other than $ el.
 
@@ -218,7 +218,7 @@ This is also possible the css selector.
 ```
 You can run the method only when you click on the `.item` that is not applied to the` .selected` class.
 
-`e. $ delegateTarget` points to the element where the actual event occurred.
+`e.$delegateTarget` points to the element where the actual event occurred.
 
 
 DOM events can have several PIPE functions.
