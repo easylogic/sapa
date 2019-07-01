@@ -27,6 +27,23 @@ import {App, UIElement, CLICK} from '@easylogic/sapa'
 
 # Core System Design 
 
+
+## Start a application 
+
+```js
+App.start({
+    components: {A},
+    template: `
+        <A />
+    `,
+    container: document.getElementById('sample') // default value is document.body
+})
+```
+
+The `start` method defines the point in time of the first run. Apply the template to the location specified by container.
+
+
+
 ## DOM Based Class 
 
 ```js
@@ -368,7 +385,13 @@ The trigger method allows you to execute an event defined on the object itself. 
 this.trigger('setLocale', 'en')  // setLocale message is run only on self instance 
 ```
 
-# simple example 
+If you want to send a message only to the parent object, you can do the following:
+
+```js
+this.parent.trigger('setLocale', 'en'); 
+```
+
+# Simple example 
 
 This sample make a clickable element.
 
