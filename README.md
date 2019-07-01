@@ -28,6 +28,7 @@ import {App, UIElement, CLICK} from '@easylogic/sapa'
 # Core System Design 
 
 
+
 ## Start a application 
 
 ```js
@@ -180,6 +181,25 @@ this.bindMethod('$list');
 
 ```
 
+
+## Life Cycle 
+
+sapa has a life cycle. 
+
+```js
+UIElement ->
+    created()
+    initialize() -> 
+        initState()
+    load()
+    render -> 
+        template() 
+        get `ref` attribute 
+        parseComponent() -> 
+            create child component -> 
+    initializeEvent()
+    afterRender()
+```
 
 ## Method Based DOM Event Handler 
 
