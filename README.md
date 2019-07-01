@@ -138,7 +138,7 @@ refresh( ) {
 
 ### BIND 
 
-BIND are used to change the attributes and style of a particular element. That is, it does not create the DOM itself.
+`BIND` are used to change the attributes and style of a particular element. That is, it does not create the DOM itself.
 
 ```js
 template () {
@@ -177,7 +177,6 @@ The final output after `BIND` is as follows.
 this.load('$list')
 this.bindMethod('$list');
 ```
-
 
 ## Life Cycle 
 
