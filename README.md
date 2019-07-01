@@ -115,8 +115,7 @@ You can apply CLICK events to the `$text` DOM object.
 
 ### LOAD 
 
-`LOAD` can only update that part by defining the part that changed frequently.
-
+`LOAD` can define the part that changed frequently.
 
 ```js
 template () {
@@ -176,9 +175,7 @@ The final output after `BIND` is as follows.
 
 ```js
 this.load('$list')
-
 this.bindMethod('$list');
-
 ```
 
 
@@ -214,7 +211,6 @@ UIElement ->
 sapa sets the DOM Event in a unique way. sapa take full advantage of the fact that javascript's methods are strings.
 
 ```js
-
 class Test extends UIElement {
     template() {
         return '<div>Text</div>'
