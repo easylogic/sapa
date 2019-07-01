@@ -201,17 +201,13 @@ UIElement ->
     afterRender()
 ```
 
-| Method | Predefined | Override | Description |
-| --- | --- | --- | --- |
-| created | | O | When the UIElement is created  |
-| initialize | | O | It is the same as `created` but it is used when creating initial data. |
-| initState | | O | Methods to initialize state  |
-| load | O |  | Execute methods using `BIND`, `LOAD` |
-| render | O |  | Create the DOM with HTML |
-| template | | O | Generate html at render time |
-| parseComponent | O |  | Create sub-component  |
-| initializeEvent | O |  | Assign DOM, EVENT  |
-| afterRender | | O | When the DOM is applied to the actual browser, the element can be accessed from outside |
+| Method | Override | Description |
+| --- | --- | --- |
+| created | O | When the UIElement is created  |
+| initialize | O | It is the same as `created` but it is used when creating initial data. |
+| initState | O | Methods to initialize state  |
+| template | O | Generate html at render time |
+| afterRender | O | When the DOM is applied to the actual browser, the element can be accessed from outside |
 
 ## Method Based DOM Event Handler 
 
