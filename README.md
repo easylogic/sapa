@@ -201,6 +201,18 @@ UIElement ->
     afterRender()
 ```
 
+| Method | Predefined | Override | Description |
+| --- | --- | --- | --- |
+| created | | O | --- |
+| initialize | | O | --- |
+| initState | | O | --- |
+| load | O |  | --- |
+| render | O |  | --- |
+| template | | O | --- |
+| parseComponent | O |  | --- |
+| initializeEvent | O |  | --- |
+| afterRender | | O | --- |
+
 ## Method Based DOM Event Handler 
 
 sapa sets the DOM Event in a somewhat unique way. sapa take full advantage of the fact that javascript's methods are strings.
