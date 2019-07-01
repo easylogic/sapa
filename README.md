@@ -98,9 +98,9 @@ class Test extends UIElement {
 ```
 
 
-`[CLICK()]` is basically the same as CLICK ('$ el'). Sets $ el's click event automatically.
+`[CLICK()]` is basically the same as `CLICK('$el')`. Sets $ el's click event automatically.
 
-The CLICK() method internally creates a string. The final result is shown below.
+The `CLICK()` method internally creates a string. The final result is shown below.
 
 ```js
 'click $el' (e) { 
