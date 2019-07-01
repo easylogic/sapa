@@ -96,6 +96,91 @@ class Test extends UIElement {
 }
 ```
 
+
+### ref  
+
+When the DOM is created, the DOM with the ref attribute is managed as a variable that can be used in advance.
+
+```js
+template () {
+    return `<div><span ref='$text'></span></div>`
+}
+[CLICK('$text')]  (e) { 
+    console.log(this.refs.$text.html())
+}
+```
+
+You can apply CLICK events to the `$text` DOM object.
+
+### LOAD 
+
+`LOAD` can only update that part by defining the part that changed frequently.
+
+
+```js
+template () {
+    return `
+        <div>
+            <div ref='$list'></div>
+        </div>
+    `
+}
+
+[LOAD('$list')] () {
+    const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    return arr.map(value => `<div class='item'>${value}</div>`)
+}
+
+refresh( ) {
+    this.load();
+}
+```
+
+### BIND 
+
+BIND are used to change the attributes and style of a particular element. That is, it does not create the DOM itself.
+
+```js
+template () {
+    return `
+        <div>
+            <div ref='$list'></div>
+        </div>
+    `
+}
+
+[BIND('$list')] () {
+    return {
+        'data-length': arr.length,
+        style: {
+            overflow: 'hidden'
+        }
+    }
+}
+
+refresh( ) {
+    this.load();
+}
+```
+
+The final output after `BIND` is as follows.
+
+```html
+<div ref='$list' data-value='0' style='overflow:hidden'></div>
+```
+
+## Run separately
+
+`LOAD` and `BIND` can be executed separately.
+
+```js
+this.load('$list')
+
+this.bindMethod('$list');
+
+```
+
+
 ## Method Based DOM Event Handler 
 
 sapa sets the DOM Event in a somewhat unique way. sapa take full advantage of the fact that javascript's methods are strings.
