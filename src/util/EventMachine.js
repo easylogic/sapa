@@ -35,9 +35,7 @@ const ATTR_lIST = [REFERENCE_PROPERTY]
 
 const matchPath = (el, selector) => {
   if (el) {
-    if (el.matches(selector)) {
-      return el;
-    }
+    if (el.matches(selector)) { return el; }
     return matchPath(el.parentElement, selector);
   }
   return null;
@@ -58,9 +56,7 @@ const makeCallback = (context, eventObject, callback) => {
 const makeDefaultCallback = (context, eventObject, callback) => {
   return e => {
     var returnValue = runEventCallback(context, e, eventObject, callback);
-    if (isNotUndefined(returnValue)) {
-      return returnValue;
-    }
+    if (isNotUndefined(returnValue)) { return returnValue; }
   };
 };
 
@@ -68,13 +64,10 @@ const makeDelegateCallback = (context, eventObject, callback) => {
   return e => {
     const delegateTarget = hasDelegate(e, eventObject);
     if (delegateTarget) {
-      // delegate target 이 있는 경우만 callback 실행
       e.$delegateTarget = Dom.create(delegateTarget);
 
       var returnValue = runEventCallback(context, e, eventObject, callback);
-      if (isNotUndefined(returnValue)) {
-        return returnValue;
-      }
+      if (isNotUndefined(returnValue)) { return returnValue; }
     }
   };
 };
@@ -102,7 +95,6 @@ const runEventCallback = (context, e, eventObject, callback) => {
 };
 
 const checkEventType = (context, e, eventObject) => {
-  // 특정 keycode 를 가지고 있는지 체크
   var hasKeyCode = true;
   if (eventObject.codes.length) {
     hasKeyCode =
@@ -110,7 +102,6 @@ const checkEventType = (context, e, eventObject) => {
       (e.key ? eventObject.codes.includes(e.key.toLowerCase()) : false);
   }
 
-  // 체크 메소드들은 모든 메소드를 다 적용해야한다.
   var isAllCheck = true;
   if (eventObject.checkMethodList.length) {
     isAllCheck = eventObject.checkMethodList.every(field => {
@@ -202,12 +193,7 @@ const getDefaultEventObject = (context, eventName, checkMethodFilters) => {
 const addEvent = (context, eventObject, callback) => {
   eventObject.callback = makeCallback(context, eventObject, callback);
   context.addBinding(eventObject);
-  Event.addEvent(
-    eventObject.dom,
-    eventObject.eventName,
-    eventObject.callback,
-    !!eventObject.captures.length
-  );
+  Event.addEvent(eventObject.dom, eventObject.eventName, eventObject.callback, !!eventObject.captures.length);
 };
 
 const bindingEvent = (
@@ -216,11 +202,7 @@ const bindingEvent = (
   checkMethodFilters,
   callback
 ) => {
-  let eventObject = getDefaultEventObject(
-    context,
-    eventName,
-    checkMethodFilters
-  );
+  let eventObject = getDefaultEventObject(context, eventName, checkMethodFilters);
 
   eventObject.dom = getDefaultDomElement(context, dom);
   eventObject.delegate = delegate.join(SAPARATOR);
@@ -239,11 +221,7 @@ const bindingEvent = (
 const getEventNames = eventName => {
   let results = [];
 
-  eventName.split(NAME_SAPARATOR).forEach(e => {
-    var arr = e.split(NAME_SAPARATOR);
-
-    results.push(...arr);
-  });
+  eventName.split(NAME_SAPARATOR).forEach(e => results.push(...e.split(NAME_SAPARATOR)));
 
   return results;
 };
@@ -264,7 +242,6 @@ const parseEvent = (context, key) => {
 const applyElementAttribute = ($element, key, value) => {
   if (key === "style") {
     if (isObject(value)) {
-      // 문자열이 아니라 객체 일때는 직접 입력하는 방식으로
       keyEach(value, (sKey, sValue) => {
         if (!sValue) {
           $element.removeStyle(sKey);
@@ -276,7 +253,6 @@ const applyElementAttribute = ($element, key, value) => {
 
     return;
   } else if (key === "class") {
-    // 문자열이 아닐 때는 문자열로 만들어 준다.
 
     if (isArray(value)) {
       $element.addClass(...value);
@@ -357,25 +333,12 @@ export default class EventMachine {
     this.state = this.initState();
   }
   afterRender() {}
-  components() {
-    return {};
-  }
+  components() { return {}; }
 
-  // ref 에 있는 객체를 좀 더 편하게 가지고 오고자 만들었다.
-  // 예를 들어 ref='$xxxRadius' 라고 했을 때
-  // this.refs[`$${type}Radius`] 처럼 이름을 재 구성하는 방식을 써야 하는데
-  // this.getRef('$', type, 'Radius') 형태로 끝낼 수 있다.
-  // 변수적용하기 좀 더 편해진다.
-  // 사용은 각자가 알아서 ㅋ
-  getRef(...args) {
-    const key = args.join('')
-    return this.refs[key];
-  }
+  getRef(...args) { return this.refs[args.join('')]; }
 
   parseTemplate(html, isLoad) {
-    if (isArray(html)) {
-      html = html.join('');
-    }
+    if (isArray(html)) html = html.join('');
 
     html = html.trim();
     const list = TEMP_DIV.html(html).children();
@@ -399,8 +362,6 @@ export default class EventMachine {
 
         this.refs[name] = $dom;        
       });
-
-
     });
 
     if (!isLoad) {
@@ -414,17 +375,6 @@ export default class EventMachine {
     return  keyMap(this.children, (key, obj) => {
       return obj.id;
     })
-  }
-
-  exists () {
-
-    if (this.parent) {
-      if (this.parent.childrenIds) {
-        return this.parent.childrenIds().includes(this.id)
-      }
-    }
-
-    return true  
   }
 
   parseProperty ($dom) {
@@ -456,28 +406,13 @@ export default class EventMachine {
     return props;
   }
 
-  parseSourceName(obj) {
-
-    if (obj.parent) {
-      return [obj.sourceName, ...this.parseSourceName(obj.parent)]
-    }
-
-    return [obj.sourceName]
-  }
-
   parseComponent() {
     const $el = this.$el;
-
-    // var str = Object.keys(this.childComponents).map(key => key).join(',')
-
-    // $el.$$(str).forEach(e => console.log(e))
 
     keyEach(this.childComponents, (ComponentName, Component) => {
       const targets = $el.$$(ComponentName.toLowerCase());
       targets.forEach($dom => {
         let props = this.parseProperty($dom);
-
-        // create component 
 
         let refName = $dom.attr(REFERENCE_PROPERTY);
         var instance = null; 
@@ -495,12 +430,8 @@ export default class EventMachine {
         }
 
         $dom.replace(instance.$el);        
-
       });
     });
-
-    // DOM 에서 빠지 애들  ( this.$el.parent() 가 null  인 경우 )
-    // destroy () 시킨다. 
 
     keyEach(this.children, (key, obj) => {
       if (obj && obj.clean()) {
@@ -519,7 +450,6 @@ export default class EventMachine {
       this.destroy();  
 
       this.$el = null;
-      // console.log('removed', 'el', this.sourceName)
       return true; 
     }
   }
@@ -527,9 +457,7 @@ export default class EventMachine {
   /**
    * refresh 는 load 함수들을 실행한다. 
    */
-  refresh() {
-    this.load()
-  }
+  refresh() {this.load()}
 
   /**
    * 특정 load 함수를 실행한다.  문자열을 그대로 return 한다. 
@@ -564,9 +492,6 @@ export default class EventMachine {
 
         this.refs[elName].html(fragment);
 
-        // 새로운 html 이 로드가 되었으니 
-        // 이벤트를 재설정 하자. 
-        // 그래야 refs 에 있던 객체를 다시 사용할 수 있다. 
         this.initializeDomEvent()
       }
     });
@@ -581,11 +506,7 @@ export default class EventMachine {
     if (!this._bindMethods) {
       this._bindMethods = this.filterProps(CHECK_BIND_PATTERN);
     }
-    /**
-     * BIND 를 해보자.
-     * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
-     * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
-     */
+    
     this._bindMethods
       .filter(originalCallbackName => {
         if (!args.length) return true; 
@@ -611,7 +532,6 @@ export default class EventMachine {
         const elName = callbackName.split(BIND_SAPARATOR)[1];
         let $element = this.refs[elName];
 
-        // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
         const isBindCheck = isFunction(refCallback) && refCallback.call(this);
         if ($element && isBindCheck) {
           const results = bindMethod.call(this, ...args);
@@ -633,16 +553,12 @@ export default class EventMachine {
     return `<div ${classString}></div>`;
   }
 
-  templateClass() {
-    return null;
-  }
+  templateClass() { return null; }
 
   eachChildren(callback) {
     if (!isFunction(callback)) return;
 
-    keyEach(this.children, (_, Component) => {
-      callback(Component);
-    });
+    keyEach(this.children, (_, Component) => callback(Component));
   }
 
   /**
@@ -651,11 +567,7 @@ export default class EventMachine {
   initializeEvent() {
     this.initializeDomEvent();
 
-    // 자식 이벤트도 같이 초기화 한다.
-    // 그래서 이 메소드는 부모에서 한번만 불려도 된다.
-    this.eachChildren(Component => {
-      Component.initializeEvent();
-    });
+    this.eachChildren(Component => Component.initializeEvent());
   }
 
   /**
@@ -665,9 +577,7 @@ export default class EventMachine {
   destroy() {
     this.destroyDomEvent();
 
-    this.eachChildren(Component => {
-      Component.destroy();
-    });
+    this.eachChildren(Component => Component.destroy());
   }
 
   destroyDomEvent() {

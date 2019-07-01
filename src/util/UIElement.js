@@ -14,10 +14,6 @@ export const EVENT = (...args) => {
   return MULTI_PREFIX + PIPE(...args);
 };
 
-export const COMMAND = (...args) => {
-  return COMMAND_PREFIX + PIPE(...args);
-}
-
 class UIElement extends EventMachine {
   constructor(opt, props = {}) {
     super(opt);
@@ -43,13 +39,8 @@ class UIElement extends EventMachine {
     this.source = uuid();
     this.sourceName = this.constructor.name;
 
-    if (opt && opt.$store) {
-      this.$store = opt.$store;
-    }
-
-    if (opt && opt.$app) {
-      this.$app = opt.$app;
-    }    
+    if (opt && opt.$store) this.$store = opt.$store;
+    if (opt && opt.$app) this.$app = opt.$app;
   }
 
   created() {}
@@ -59,13 +50,6 @@ class UIElement extends EventMachine {
     return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
   }
 
-  /**
-   * initialize store event
-   *
-   * you can define '@xxx' method(event) in UIElement
-   *
-   *
-   */
   initializeStoreEvent() {
     this.storeEvents = {};
 
@@ -73,22 +57,19 @@ class UIElement extends EventMachine {
       const events = this.getRealEventName(key, MULTI_PREFIX);
 
       // support deboounce for store event 
-      var [methods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
+      var [debounceMethods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
 
       var debounceSecond = 0 
-      if (methods.length) {
+      if (debounceMethods.length) {
         debounceSecond = +params[0].target || 0 
       }
 
       events
         .split(SPLITTER)
-        .filter(it => {
-          return methods.includes(it) === false
-        })
+        .filter(it => debounceMethods.includes(it) === false)
         .map(it => it.trim())
         .forEach(e => {
           var callback = this[key].bind(this);
-          callback.displayName = e;
           callback.source = this.source;
           this.storeEvents[e] = callback;
           this.$store.on(e, this.storeEvents[e], this, debounceSecond);
@@ -103,20 +84,17 @@ class UIElement extends EventMachine {
 
   destroy () {
     super.destroy()
-
-    // 객체가 남아있지 않도록 store 에 저장된 이벤트를 지운다. 
-    // context 변수로 참조가 남아 있어서 이벤트를 그대로 받아들이기 때문 
     this.destoryStoreEvent();
   }
 
-  emit($1, $2, $3, $4, $5) {
+  emit(...args) {
     this.$store.source = this.source;
-    this.$store.emit($1, $2, $3, $4, $5);
+    this.$store.emit(...args);
   }
 
-  trigger($1, $2, $3, $4, $5) {
+  trigger(...args) {
     this.$store.source = this.source;
-    this.$store.trigger($1, $2, $3, $4, $5);
+    this.$store.trigger(...args);
   }
 
   on (message, callback) {

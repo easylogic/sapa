@@ -1,7 +1,5 @@
 import { debounce } from "./functions/func";
 
-export const PREVENT = "PREVENT";
-
 export default class BaseStore {
   constructor(opt = {}) {
     this.callbacks = {};
@@ -37,7 +35,6 @@ export default class BaseStore {
   }
 
   offAll (context) {
-
     Object.keys(this.callbacks).forEach(event => {
       this.setCallbacks(event, this.getCallbacks(event).filter(f => {
         return f.context !== context;  
@@ -55,11 +52,8 @@ export default class BaseStore {
       if (list) {
         list
         .filter(f => f.originalCallback.source !== source)
-        .forEach(f => {
-          f.callback($2, $3, $4, $5)
-        });
+        .forEach(f => f.callback($2, $3, $4, $5));
       }
-
     }, 0);
   }
 
@@ -73,26 +67,8 @@ export default class BaseStore {
       } else {
         console.warn(event, ' is not valid event');
       }
-
-
     }, 0);
   }
-
-
-  runCommand(source, event, $2, $3, $4, $5) {
-
-      var list = this.getCachedCallbacks(event);
-      var results = []
-      if (list) {
-        results = list
-          .filter(f => f.originalCallback.source === source)
-          .filter((i, index) => index === 0)
-          .map(f => f.callback($2, $3, $4, $5));
-      } 
-
-      return results[0]
-  }
-
 
   emit($1, $2, $3, $4, $5) {
     this.sendMessage(this.source, $1, $2, $3, $4, $5);
@@ -100,9 +76,5 @@ export default class BaseStore {
 
   trigger($1, $2, $3, $4, $5) {
     this.triggerMessage(this.source, $1, $2, $3, $4, $5);
-  }
-
-  execute($1, $2, $3, $4, $5){
-    this.runCommand(this.source, $1, $2, $3, $4, $5);
   }
 }

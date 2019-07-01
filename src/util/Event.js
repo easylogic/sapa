@@ -84,6 +84,7 @@ const DOM_EVENT_MAKE = (...keys) => {
 };
 
 export const CUSTOM = DOM_EVENT_MAKE;
+
 export const CLICK = DOM_EVENT_MAKE("click");
 export const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
 export const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
@@ -126,38 +127,18 @@ export const CHANGEINPUT = CUSTOM("change", "input");
 export const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
 
 // Predefined CHECKER
-export const CHECKER = (value, split = CHECK_SAPARATOR) => {
-  return new EventChecker(value, split);
-};
-
-export const AFTER = (value, split = CHECK_SAPARATOR) => {
-  return new EventAfterRunner(value, split);
-};
-
-export const BEFORE = (value, split = CHECK_SAPARATOR) => {
-  return new EventBeforeRunner(value, split);
-};
+export const CHECKER = (value, split = CHECK_SAPARATOR) => new EventChecker(value, split)
+export const AFTER = (value, split = CHECK_SAPARATOR) => new EventAfterRunner(value, split)
+export const BEFORE = (value, split = CHECK_SAPARATOR) => new EventBeforeRunner(value, split)
 
 export const IF = CHECKER;
 
-export const KEY_ALT = "ALT";
-export const KEY_SHIFT = "SHIFT";
-export const KEY_META = "META";
-export const KEY_CONTROL = "CONTROL";
-
-export const KEY_ARROW_UP = "ArrowUp";
-export const KEY_ARROW_DOWN = "ArrowDown";
-export const KEY_ARROW_LEFT = "ArrowLeft";
-export const KEY_ARROW_RIGHT = "ArrowRight";
-export const KEY_ENTER = "Enter";
-export const KEY_SPACE = "Space";
-
-export const ARROW_UP = CHECKER(KEY_ARROW_UP);
-export const ARROW_DOWN = CHECKER(KEY_ARROW_DOWN);
-export const ARROW_LEFT = CHECKER(KEY_ARROW_LEFT);
-export const ARROW_RIGHT = CHECKER(KEY_ARROW_RIGHT);
-export const ENTER = CHECKER(KEY_ENTER);
-export const SPACE = CHECKER(KEY_SPACE);
+export const ARROW_UP = CHECKER('ArrowUp');
+export const ARROW_DOWN = CHECKER('ArrowDown');
+export const ARROW_LEFT = CHECKER('ArrowLeft');
+export const ARROW_RIGHT = CHECKER('ArrowRight');
+export const ENTER = CHECKER('Enter');
+export const SPACE = CHECKER('Space');
 
 export const ALT = CHECKER("isAltKey");
 export const SHIFT = CHECKER("isShiftKey");
@@ -165,38 +146,21 @@ export const META = CHECKER("isMetaKey");
 export const CONTROL = CHECKER("isCtrlKey");
 export const SELF = CHECKER("self");
 
-export const FIT = CHECKER("fit");
-export const PASSIVE = CHECKER("passive");
-
 // event config method
-export const DEBOUNCE = (t = 100) => {
-  return CHECKER(`debounce(${t})`);
-};
-
-export const THROTTLE = (t = 100) => {
-  return CHECKER(`throttle(${t})`);
-};
-
+export const DEBOUNCE = (t = 100) => CHECKER(`debounce(${t})`)
+export const THROTTLE = (t = 100) => CHECKER(`throttle(${t})`)
 export const CAPTURE = CHECKER("capture()");
+
 // event config method
 
 // before method
 
 // after method
-export const MOVE = (method = "move") => {
-  return AFTER(`bodyMouseMove ${method}`);
-};
-export const END = (method = "end") => {
-  return AFTER(`bodyMouseUp ${method}`);
-};
+export const MOVE = (method = "move") => AFTER(`bodyMouseMove ${method}`)
+export const END = (method = "end") => AFTER(`bodyMouseUp ${method}`)
 
 export const PREVENT = AFTER(`preventDefault`);
 export const STOP = AFTER(`stopPropagation`);
-
-// Predefined LOADER
-export const LOAD = (value = "$el") => {
-  return LOAD_SAPARATOR + value;
-};
 
 export const createRef = value => {
   if (value === '') return '';
@@ -207,9 +171,7 @@ export const createRef = value => {
   return id;
 };
 
-export const getRef = id => {
-  return refManager[id] || '';
-};
+export const getRef = id => refManager[id] || ''
 
 export const BIND_CHECK_FUNCTION = field => {
   return function() {
@@ -217,10 +179,10 @@ export const BIND_CHECK_FUNCTION = field => {
   };
 };
 
-export const BIND_CHECK_DEFAULT_FUNCTION = () => {
-  return true;
-};
+export const BIND_CHECK_DEFAULT_FUNCTION = () => true
 
+// Predefined LOADER
+export const LOAD = (value = "$el") => LOAD_SAPARATOR + value
 export const BIND = (value = "$el", checkFieldOrCallback = '') => {
   return (
     BIND_SAPARATOR + value + ( 
