@@ -1,6 +1,6 @@
 # sapa
 
-sapa a simple library to make JS Application. 
+sapa is a simple library to make JS Application. 
 
 # Install 
 
