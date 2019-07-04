@@ -1,5 +1,5 @@
 import Dom from "./Dom";
-import { POINTERMOVE, POINTEREND } from "./Event";
+import { POINTERMOVE, POINTEREND, DEBOUNCE } from "./Event";
 import BaseStore from "./BaseStore";
 import UIElement, { EVENT } from "./UIElement";
 
@@ -110,7 +110,7 @@ export const start = opt => {
       }
     }
 
-    [POINTEREND("document")](e) {
+    [POINTEREND("document") + DEBOUNCE(50)](e) {
       var newPos = e.xy || EMPTY_POS;
       this.setState({bodyEvent : e, pos: newPos}, false);
       this.removeBodyMoves();
