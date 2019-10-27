@@ -175,7 +175,7 @@ The final output after `BIND` is as follows.
 
 ```js
 this.load('$list')
-this.bindMethod('$list');
+this.bindData('$list');
 ```
 
 ## Life Cycle 
