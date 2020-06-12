@@ -18,12 +18,20 @@ import {App, UIElement, CLICK} from '@easylogic/sapa'
 # How to use in browser 
 
 ```html
-<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.2/dist/sapa.js'></script>
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.4/dist/sapa.js'></script>
 <script type='text/javacript'>
     const {App, CLICK, UIElement} = sapa;   // or window.sapa 
 </script>
 
 ```
+
+# View examples 
+
+```
+npm run dev 
+open localhost:8080/examples/first.html
+```
+
 
 # Core System Design 
 
