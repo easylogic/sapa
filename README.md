@@ -11,7 +11,7 @@ npm install @easylogic/sapa
 # How to use in es6
 
 ```js
-import {App, UIElement, CLICK} from '@easylogic/sapa'
+import {App, UIElement, EVENT, CLICK} from '@easylogic/sapa'
 
 ```
 
@@ -20,7 +20,7 @@ import {App, UIElement, CLICK} from '@easylogic/sapa'
 ```html
 <script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.5/dist/sapa.js'></script>
 <script type='text/javacript'>
-    const {App, CLICK, UIElement} = sapa;   // or window.sapa 
+    const {App, CLICK, EVENT, UIElement} = sapa;   // or window.sapa 
 </script>
 
 ```
