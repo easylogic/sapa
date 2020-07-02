@@ -18,7 +18,7 @@ import {App, UIElement, CLICK} from '@easylogic/sapa'
 # How to use in browser 
 
 ```html
-<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.4/dist/sapa.js'></script>
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.5/dist/sapa.js'></script>
 <script type='text/javacript'>
     const {App, CLICK, UIElement} = sapa;   // or window.sapa 
 </script>
