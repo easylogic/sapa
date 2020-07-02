@@ -8,7 +8,7 @@ sapa is a simple library to make JS Application.
 npm install @easylogic/sapa
 `
 
-# How to use in es6 
+# How to use in es6
 
 ```js
 import {App, UIElement, CLICK} from '@easylogic/sapa'

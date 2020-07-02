@@ -35,11 +35,11 @@
 <body>
 <script type="text/javascript">
     
-    const {App, CLICK, UIElement} = sapa; 
+    const {App, CLICK, EVENT, UIElement} = sapa; 
 
     class Test extends UIElement {
         template() {
-            return `
+            return /*html*/`
             <div class='test-view'>
                 <h1>Sample List</h1>
                 <p>Click an  item</p>
@@ -51,12 +51,19 @@
             `
         }
 
+        [EVENT('test')] (value) {
+            console.log('test', value)
+        }
+
         [CLICK('$list .item.selected')] (e) {
             alert('click a selcted item')
+
+            this.trigger('test', 'click a selected item');
         }
 
         [CLICK('$list .item:not(.selected)')] (e) {
             alert('click an item  that is not selected')
+            this.trigger('test', 'click a unselected item');            
         }
     }
 
