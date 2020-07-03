@@ -9,6 +9,10 @@ export default [
                 name: 'sapa',
                 format: 'umd',
             },
+            {
+                file: 'dist/sapa.esm.js',
+                format: 'es',
+            }
         ],
         plugins: [
             serve({
@@ -18,6 +22,11 @@ export default [
                 host: 'localhost',
                 port: '10001',
             })
-        ]
+        ],
+        watch: {
+            chokidar: {
+                usePolling: true
+            }
+        }
     }
 ]

@@ -90,14 +90,7 @@ export const start = opt => {
     }
 
     template() {
-
-      let str = `${opt.template}`;
-
-      if (str.trim() === '') {
-        str = `<div>${opt.template}</div>`
-      }
-
-      return str; 
+      return `${opt.template}`
     }
 
     components() {

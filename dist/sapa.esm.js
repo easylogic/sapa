@@ -1403,8 +1403,26 @@ class EventMachine {
   parseComponent() {
     const $el = this.$el;
 
+    // root 가 element 인 경우에 대비해서 component 를 맞춰야함 
     keyEach(this.childComponents, (ComponentName, Component) => {
-      const targets = [$el, ...$el.$$(ComponentName.toLowerCase())];
+      if (ComponentName.toLowerCase() === $el.el.tagName.toLowerCase()) {
+        const props = this.parseProperty($el);
+
+        const instance = new Component(this, props);    
+        this.children[instance.id] = instance;
+        instance.render();
+        instance.initializeEvent();    
+
+        $el.replace(instance.$el);
+      }
+
+    });
+
+
+
+    keyEach(this.childComponents, (ComponentName, Component) => {
+
+      const targets = $el.$$(ComponentName.toLowerCase());
       targets.forEach($dom => {
         let props = this.parseProperty($dom);
 
@@ -1482,10 +1500,11 @@ class EventMachine {
           newTemplate = newTemplate.join('');
         }
 
-        const fragment = this.parseTemplate(newTemplate, true);
+        const fragment = this.parseTemplate(html`
+          ${newTemplate}
+        `, true);
 
         this.refs[elName].html(fragment);
-
         this.initializeDomEvent();
       }
     });
@@ -1885,14 +1904,7 @@ const start = opt => {
     }
 
     template() {
-
-      let str = `${opt.template}`;
-
-      if (str.trim() === '') {
-        str = `<div>${opt.template}</div>`;
-      }
-
-      return str; 
+      return `${opt.template}`
     }
 
     components() {

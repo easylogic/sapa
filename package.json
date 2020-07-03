@@ -1,6 +1,6 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Simple JS Application Library",
   "main": "dist/sapa.js",
   "module": "dist/sapa.esm.js",
@@ -36,7 +36,7 @@
   },
   "scripts": {
     "build": "rollup --config",
-    "dev": "rollup --config rollup.dev.config.js",
+    "dev": "rollup --config rollup.dev.config.js -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
