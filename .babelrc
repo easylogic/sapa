@@ -1,13 +1,16 @@
 {
   "env": {
     "test": {
-      "presets": ["@babel/preset-env"]
+      "presets": ["@babel/preset-env"],
+      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
     },
     "development": {
-      "presets": ["@babel/preset-env"]
+      "presets": ["@babel/preset-env"],
+      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
     },
     "production": {
-      "presets": ["@babel/preset-env"]
+      "presets": ["@babel/preset-env"],
+      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
     }
   }
 }

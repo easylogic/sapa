@@ -15,7 +15,7 @@ export const EVENT = (...args) => {
   return MULTI_PREFIX + PIPE(...args);
 };
 
-class UIElement extends EventMachine {
+export class UIElement extends EventMachine {
   constructor(opt, props = {}) {
     super(opt);
 
@@ -110,5 +110,3 @@ class UIElement extends EventMachine {
     this.$store.off(message, callback);
   }
 }
-
-export default UIElement;

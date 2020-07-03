@@ -1,15 +1,18 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "Simple JS Application Library",
   "main": "dist/sapa.js",
+  "module": "dist/sapa.esm.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-export-namespace-from": "^7.10.4",
     "@babel/preset-env": "^7.4.4",
+    "@purtuga/esm-webpack-plugin": "^1.2.1",
     "acorn": "^6.1.1",
     "autoprefixer": "^9.5.1",
     "babel-loader": "^8.0.5",
@@ -24,6 +27,7 @@
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.6.0",
     "postcss-loader": "^3.0.0",
+    "rollup-plugin-serve": "^1.0.1",
     "sass": "^1.19.0",
     "sass-loader": "^7.1.0",
     "webpack": "^4.30.0",
@@ -31,9 +35,8 @@
     "webpack-dev-server": "^3.3.1"
   },
   "scripts": {
-    "build:web": "webpack --mode=production",
-    "build": "npm run build:web",
-    "dev": "webpack-dev-server --config=webpack.dev.config.js --progress --open",
+    "build": "rollup --config",
+    "dev": "rollup --config rollup.dev.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

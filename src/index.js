@@ -1,3 +1,1 @@
-import  sapa from "./util/index";
-
-export default sapa
+export * from "./util/index";

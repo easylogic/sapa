@@ -1,7 +1,7 @@
 import Dom from "./Dom";
 import { POINTERMOVE, POINTEREND, DEBOUNCE } from "./Event";
 import BaseStore from "./BaseStore";
-import UIElement, { EVENT } from "./UIElement";
+import { EVENT, UIElement } from "./UIElement";
 
 import { debounce } from "./functions/func";
 
