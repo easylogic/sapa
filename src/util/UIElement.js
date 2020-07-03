@@ -1,5 +1,6 @@
 import { uuid } from "./functions/func";
 import EventMachine, { splitMethodByKeyword } from "./EventMachine";
+import BaseStore from "./BaseStore";
 
 const REG_STORE_MULTI_PATTERN = /^ME@/;
 
@@ -41,6 +42,10 @@ class UIElement extends EventMachine {
 
     if (opt && opt.$store) this.$store = opt.$store;
     if (opt && opt.$app) this.$app = opt.$app;
+
+    if (!this.$store) {
+      this.$store = new BaseStore(opt);
+    }
   }
 
   created() {}

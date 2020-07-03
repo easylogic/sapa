@@ -363,7 +363,6 @@ export default class EventMachine {
         this.refs[name] = $dom;        
       });
     });
-
     if (!isLoad) {
       return list[0];
     }
@@ -410,7 +409,7 @@ export default class EventMachine {
     const $el = this.$el;
 
     keyEach(this.childComponents, (ComponentName, Component) => {
-      const targets = $el.$$(ComponentName.toLowerCase());
+      const targets = [$el, ...$el.$$(ComponentName.toLowerCase())];
       targets.forEach($dom => {
         let props = this.parseProperty($dom);
 

@@ -1,6 +1,6 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Simple JS Application Library",
   "module": "dist/src/index.js",
   "main": "dist/sapa.js",
@@ -36,8 +36,7 @@
   },
   "scripts": {
     "build:web": "webpack --mode=production",
-    "esm": "build-esm",
-    "build": "npm run esm && npm run build:web",
+    "build": "npm run build:web",
     "dev": "webpack-dev-server --config=webpack.dev.config.js --progress --open",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
