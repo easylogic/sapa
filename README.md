@@ -344,12 +344,12 @@ This is also possible the css selector.
 ```js
 [CLICK('$list .item:not(.selected)')] (e) {
     // do event 
-    console.log(e.$delegateTarget.html())
+    console.log(e.$dt.html())
 }
 ```
 You can run the method only when you click on the `.item` that is not applied to the` .selected` class.
 
-`e.$delegateTarget` points to the element where the actual event occurred.
+`e.$dt` points to the element where the actual event occurred.
 
 
 DOM events can have several PIPE functions.

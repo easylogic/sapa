@@ -1,4 +1,8 @@
-function debounce (callback, delay) {
+function debounce (callback, delay = 0) {
+
+    if (delay === 0) {
+        return callback;
+    }
 
     var t = undefined;
 
@@ -82,13 +86,18 @@ function clone (obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-const short_tag_regexp = /\<(\w*)([^\>]*)\/\>/gim;
-
 const HTML_TAG = {
     'image': true,
     'input': true,
     'br': true,
-    'path': true 
+    'path': true,
+    'line': true,
+    'circle': true,
+    'rect': true,
+    'path': true, 
+    'polygon': true,
+    'polyline': true,
+    'use': true
 };
 
 
@@ -106,20 +115,12 @@ const html = (strings, ...args) => {
             results = [results];
         }
 
-        results = results.map(r => {
-            if (isObject(r) && !isArray(r)) {
-                return Object.keys(r).map(key => {
-                    return `${key}="${r[key]}"`
-                }).join(' ')
-            }
-
-            return r
-        }).join('');
+        results = results.join('');
 
         return it + results;
     }).join('');
 
-    results = results.replace(short_tag_regexp, function (match, p1) {
+    results = results.replace(/\<(\w*)([^\>]*)\/\>/gim, function (match, p1) {
         if (HTML_TAG[p1.toLowerCase()]) {
             return match;
         } else {
@@ -152,6 +153,129 @@ function uuidShort(){
     return uuid;
 }
 
+const setBooleanProp = (el, name, value) => {
+    if (value) {
+        el.setAttribute(name, name);
+        el[name] = value;
+    } else {
+        el.removeAttribute(name);
+        el[name] = value;
+    }
+  };
+  
+const setProp = (el, name, value) => {
+    if (typeof value === 'boolean') {
+        setBooleanProp(el, name, value);
+    } else {
+        el.setAttribute(name, value);
+    }
+};
+
+
+const removeBooleanProp = (node, name) => {
+    node.removeAttribute(name);
+    node[name] = false;
+};
+
+const removeUndefinedProp = (node, name) => {
+    node.removeAttribute(name);
+};
+  
+const removeProp = (node, name, value) => {
+    if (typeof value === 'boolean') {
+        removeBooleanProp(node, name);
+    } else if (name) {
+        removeUndefinedProp(node, name);
+    }
+};
+  
+
+const updateProp = (node, name, newValue, oldValue) => {
+    if (!newValue) {
+      removeProp(node, name, oldValue);
+    } else if (!oldValue || newValue !== oldValue) {
+      setProp(node, name, newValue);
+    }
+  };
+
+
+const updateProps = (node, newProps = {}, oldProps = {}) => {
+    const props = {...newProps,...oldProps};
+  
+    Object.keys(props).forEach((name) => {
+      updateProp(node, name, newProps[name], oldProps[name]);
+    });
+};
+
+function changed(node1, node2) {
+    return (
+        (node1.nodeType === Node.TEXT_NODE && node1 !== node2) 
+        || node1.nodeName !== node2.nodeName
+    ) 
+}
+
+function getProps (attributes) {
+    var results = {};
+    for(var t of attributes) {
+        results[t.name] = t.value;
+    }
+
+    return results;
+    
+}
+
+function updateElement (parentElement, oldEl, newEl, i) {
+    if (!oldEl) {
+        parentElement.appendChild(newEl.cloneNode(true));
+    } else if (!newEl) {
+        parentElement.removeChild(oldEl);
+    } else if (changed(newEl, oldEl)) {
+        parentElement.replaceChild(newEl.cloneNode(true), oldEl);
+    } else if (newEl.nodeType !== Node.TEXT_NODE) {
+        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
+        var oldChildren = children(oldEl);
+        var newChildren = children(newEl);
+        var max = Math.max(oldChildren.length, newChildren.length);
+
+        for (var i = 0; i < max; i++) {
+            updateElement(oldEl, oldChildren[i], newChildren[i], i);
+        }
+    }
+
+}
+
+const children = (el) => {
+    var element = el.firstChild; 
+
+    if (!element) {
+        return [] 
+    }
+
+    var results = []; 
+
+    do {
+        results.push(element);
+        element = element.nextSibling;
+    } while (element);
+
+    return results; 
+};
+
+
+function DomDiff (A, B) {
+
+    A = A.el || A; 
+    B = B.el || B; 
+
+    var childrenA = children(A);
+    var childrenB = children(B); 
+
+    var len = Math.max(childrenA.length, childrenB.length);
+    for (var i = 0; i < len; i++) {
+        updateElement(A, childrenA[i], childrenB[i], i);
+    }
+}
+
 class Dom {
   constructor(tag, className, attr) {
     if (isNotString(tag)) {
@@ -176,6 +300,17 @@ class Dom {
   static create (tag, className, attr) {
     return new Dom(tag, className, attr);
   }
+ 
+  static createByHTML (htmlString) {
+    var div = Dom.create('div');
+    var list = div.html(htmlString).children();
+
+    if (list.length) {
+      return Dom.create(list[0].el);
+    }
+
+    return null; 
+  }
 
   static getScrollTop() {
     return Math.max(
@@ -198,6 +333,17 @@ class Dom {
     return parser.parseFromString(html, "text/htmll");
   }
 
+  static body () {
+    return Dom.create(document.body)
+  }
+
+  setAttr (obj) {
+    Object.keys(obj).forEach(key => {
+      this.attr(key, obj[key]);
+    });
+    return this;  
+  }
+
   attr(key, value) {
     if (arguments.length == 1) {
       return this.el.getAttribute(key);
@@ -206,6 +352,12 @@ class Dom {
     this.el.setAttribute(key, value);
 
     return this;
+  }
+
+  attrKeyValue(keyField) {
+    return {
+      [this.el.getAttribute(keyField)]: this.val()
+    }
   }
 
   attrs(...args) {
@@ -233,6 +385,10 @@ class Dom {
 
   is(checkElement) {
     return this.el === (checkElement.el || checkElement);
+  }
+
+  isTag(tag) {
+    return this.el.tagName.toLowerCase() === tag.toLowerCase()
   }
 
   closest(cls) {
@@ -280,8 +436,11 @@ class Dom {
 
   onlyOneClass(cls) {
     var parent = this.parent();
-    var selected = parent.$(`.${cls}`);
-    if (selected) selected.removeClass(cls);
+
+    parent.children().forEach(it => {
+      it.removeClass(cls);
+    });
+
     this.addClass(cls);
   }
 
@@ -303,6 +462,18 @@ class Dom {
     return this;
   }
 
+  htmlDiff(fragment) {
+    DomDiff(this, fragment);
+  }
+  updateDiff (html, rootElement = 'div') {
+    DomDiff(this, Dom.create(rootElement).html(html));
+  }
+
+  updateSVGDiff (html, rootElement = 'div') {
+
+    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild);
+  }  
+
   find(selector) {
     return this.el.querySelector(selector);
   }
@@ -317,13 +488,15 @@ class Dom {
   }
 
   $$(selector) {
-    return [...this.findAll(selector)].map(node => {
-      return Dom.create(node);
+    var arr = this.findAll(selector);
+    return Object.keys(arr).map(key => {
+      return Dom.create(arr[key]);
     });
   }
 
   empty() {
-    return this.html('');
+    while (this.el.firstChild) this.el.removeChild(this.el.firstChild);
+    return this;
   }
 
   append(el) {
@@ -336,10 +509,30 @@ class Dom {
     return this;
   }
 
+  prepend(el) {
+    if (isString(el)) {
+      this.el.prepend(document.createTextNode(el));
+    } else {
+      this.el.prepend(el.el || el);
+    }
+
+    return this;    
+  }
+
+  prependHTML(html) {
+    var $dom = Dom.create("div").html(html);
+
+    this.prepend($dom.createChildrenFragment());
+
+    return $dom;
+  }
+
   appendHTML(html) {
     var $dom = Dom.create("div").html(html);
 
     this.append($dom.createChildrenFragment());
+
+    return $dom;
   }
 
   /**
@@ -370,6 +563,11 @@ class Dom {
     return this;
   }
 
+  removeChild(el) {
+    this.el.removeChild(el.el || el);
+    return this; 
+  }
+
   text(value) {
     if (isUndefined(value)) {
       return this.el.textContent;
@@ -397,17 +595,12 @@ class Dom {
 
   css(key, value) {
     if (isNotUndefined(key) && isNotUndefined(value)) {
-      this.el.style[key] = value;
+      Object.assign(this.el.style, {[key]: value});
     } else if (isNotUndefined(key)) {
       if (isString(key)) {
-        return getComputedStyle(this.el)[key];
+        return getComputedStyle(this.el)[key];  
       } else {
-        var keys = Object.keys(key || {});
-
-        for (var i = 0, len = keys.length; i < len; i++) {
-          var k = keys[i];
-          this.el.style[k] = key[k];
-        }
+        Object.assign(this.el.style, key);
       }
     }
 
@@ -447,9 +640,10 @@ class Dom {
       return this.el.style.cssText;
     }
 
-    if (value != this.el.style.cssText) {
+    if (value != this.el.tempCssText) {
       this.el.style.cssText = value;
-    }
+      this.el.tempCssText = value; 
+    } 
 
     return this;
   }
@@ -480,8 +674,29 @@ class Dom {
     return this.el.getBoundingClientRect();
   }
 
+  isSVG () {
+    return this.el.tagName.toUpperCase() === 'SVG';
+  }
+
   offsetRect() {
+
+    if (this.isSVG()) {
+      const parentBox = this.parent().rect();
+      const box = this.rect();
+
+      return {
+        x: box.x - parentBox.x,
+        y: box.y - parentBox.y,
+        top: box.x - parentBox.x,
+        left: box.y - parentBox.y,
+        width: box.width,
+        height: box.height
+      }
+    }
+
     return {
+      x: this.el.offsetLeft,
+      y: this.el.offsetTop,
       top: this.el.offsetTop,
       left: this.el.offsetLeft,
       width: this.el.offsetWidth,
@@ -549,21 +764,65 @@ class Dom {
   }
 
   val(value) {
+    if (isUndefined(value)) {
+      return this.el.value;
+    } else if (isNotUndefined(value)) {
+      var tempValue = value;
 
-    var tempValue = value;
+      if (value instanceof Dom) {
+        tempValue = value.val();
+      }
 
-    if (value instanceof Dom) {
-      tempValue = value.val();
+      this.el.value = tempValue;
     }
 
-    this.el.value = tempValue;
-
     return this;
-
   }
+
+  matches (selector) {
+    if (this.el) {
+
+      if (!this.el.matches) return null;
+
+      if (this.el.matches(selector)) {
+        return this;
+      }
+      return this.parent().matches(selector);
+    }
+
+    return null;
+}  
+
 
   get value() {
     return this.el.value;
+  }
+
+  get naturalWidth () {
+    return this.el.naturalWidth
+  }
+
+  get naturalHeight () {
+    return this.el.naturalHeight
+  }  
+
+  get files() {
+    return this.el.files ? [...this.el.files] : [];
+  }
+
+  realVal() {
+    switch (this.el.nodeType) {
+      case "INPUT":
+        var type = this.attr("type");
+        if (type == "checkbox" || type == "radio") {
+          return this.checked();
+        }
+      case "SELECT":
+      case "TEXTAREA":
+        return this.el.value;
+    }
+
+    return "";
   }
 
   show(displayType = "block") {
@@ -574,11 +833,19 @@ class Dom {
     return this.css("display", "none");
   }
 
+  isHide () {
+    return this.css("display") == "none"
+  }
+
+  isShow () {
+    return !this.isHide();
+  }
+
   toggle(isForce) {
-    var currentHide = this.css("display") == "none";
+    var currentHide = this.isHide();
 
     if (arguments.length == 1) {
-      if (currentHide && isForce) {
+      if (isForce) {
         return this.show();
       } else {
         return this.hide();
@@ -592,9 +859,23 @@ class Dom {
     }
   }
 
+  get totalLength () {
+    return this.el.getTotalLength()
+  }
+
   scrollIntoView () {
     this.el.scrollIntoView();
   }
+
+  addScrollLeft (dt) {
+    this.el.scrollLeft += dt; 
+    return this; 
+  }
+
+  addScrollTop (dt) {
+    this.el.scrollTop += dt; 
+    return this; 
+  }  
 
   setScrollTop(scrollTop) {
     this.el.scrollTop = scrollTop;
@@ -606,7 +887,7 @@ class Dom {
     return this;
   }
 
-  get scrollTop() {
+  scrollTop() {
     if (this.el === document.body) {
       return Dom.getScrollTop();
     }
@@ -614,7 +895,7 @@ class Dom {
     return this.el.scrollTop;
   }
 
-  get scrollLeft() {
+  scrollLeft() {
     if (this.el === document.body) {
       return Dom.getScrollLeft();
     }
@@ -622,11 +903,11 @@ class Dom {
     return this.el.scrollLeft;
   }
 
-  get scrollHeight() {
+  scrollHeight() {
     return this.el.scrollHeight;
   }
 
-  get scrollWidth() {
+  scrollWidth() {
     return this.el.scrollWidth;
   }  
 
@@ -655,7 +936,7 @@ class Dom {
     return $element;
   }
 
-  firstChild() {
+  get firstChild() {
     return Dom.create(this.el.firstElementChild);
   }
 
@@ -689,6 +970,12 @@ class Dom {
     return this;
   }
 
+  replaceChild(oldElement, newElement) {
+    this.el.replaceChild(newElement.el || newElement, oldElement.el || oldElement);
+
+    return this;
+  }  
+
   checked(isChecked = false) {
     if (arguments.length == 0) {
       return !!this.el.checked;
@@ -698,6 +985,13 @@ class Dom {
 
     return this;
   }
+
+
+  click () {
+    this.el.click();
+
+    return this; 
+  }  
 
   focus() {
     this.el.focus();
@@ -721,93 +1015,137 @@ class Dom {
 
     return this;
   }
+
+  // canvas functions
+
+  context(contextType = "2d") {
+    if (!this._initContext) {
+      this._initContext = this.el.getContext(contextType);
+    }
+
+    return this._initContext;
+  }
+
+  resize({ width, height }) {
+    // support hi-dpi for retina display
+    this._initContext = null;
+    var ctx = this.context();
+    var scale = window.devicePixelRatio || 1;
+
+    this.px("width", +width);
+    this.px("height", +height);
+
+    this.el.width = width * scale;
+    this.el.height = height * scale;
+
+    ctx.scale(scale, scale);
+  }
+
+  toDataURL (type = 'image/png', quality = 1) {
+    return this.el.toDataURL(type, quality)
+  }
+
+  clear() {
+    this.context().clearRect(0, 0, this.el.width, this.el.height);
+  }
+
+  update(callback) {
+    this.clear();
+    callback.call(this, this);
+  }
+
+  drawImage (img, dx = 0, dy = 0) {
+    var ctx = this.context();
+    var scale = window.devicePixelRatio || 1;    
+    ctx.drawImage(img, dx, dy, img.width, img.height, 0, 0, this.el.width / scale, this.el.height / scale);
+  }
+
+  drawOption(option = {}) {
+    var ctx = this.context();
+
+    Object.assign(ctx, option);
+  }
+
+  drawLine(x1, y1, x2, y2) {
+    var ctx = this.context();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  drawPath(...path) {
+    var ctx = this.context();
+
+    ctx.beginPath();
+
+    path.forEach((p, index) => {
+      if (index == 0) {
+        ctx.moveTo(p[0], p[1]);
+      } else {
+        ctx.lineTo(p[0], p[1]);
+      }
+    });
+    ctx.stroke();
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  drawCircle(cx, cy, r) {
+    var ctx = this.context();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  drawText(x, y, text) {
+    this.context().fillText(text, x, y);
+  }
+
+  /* utility */ 
+  fullscreen () {
+    var element = this.el; 
+    
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.wekitRequestFullscreen) {
+      element.wekitRequestFullscreen();
+    }
+  }
 }
 
-class EventChecker {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} ` + this.value;
-  }
-}
-
-class EventAfterRunner {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} after(${this.value})`;
-  }
-}
-
-class EventBeforeRunner {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} before(${this.value})`;
-  }
-}
+const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+  return ` ${split} ${value}`;
+};
 
 // event name regular expression
+const CHECK_DOM_EVENT_PATTERN = /^dom (.*)/gi;
 const CHECK_LOAD_PATTERN = /^load (.*)/gi;
 const CHECK_BIND_PATTERN = /^bind (.*)/gi;
 
-const CHECK_CLICK_PATTERN = "click|dblclick";
-const CHECK_MOUSE_PATTERN = "mouse(down|up|move|over|out|enter|leave)";
-const CHECK_POINTER_PATTERN = "pointer(start|move|end)";
-const CHECK_TOUCH_PATTERN = "touch(start|move|end)";
-const CHECK_KEY_PATTERN = "key(down|up|press)";
-const CHECK_DRAGDROP_PATTERN =
-  "drag|drop|drag(start|over|enter|leave|exit|end)";
-const CHECK_CONTEXT_PATTERN = "contextmenu";
-const CHECK_INPUT_PATTERN = "change|input|focus|blur|focus(in|out)";
-const CHECK_CLIPBOARD_PATTERN = "paste";
-const CHECK_BEHAVIOR_PATTERN = "resize|scroll|wheel|mousewheel|DOMMouseScroll";
-const CHECK_FORM_PATTERN = "submit";
 
-const CHECK_PATTERN_LIST = [
-  CHECK_CLICK_PATTERN,
-  CHECK_MOUSE_PATTERN,
-  CHECK_POINTER_PATTERN,
-  CHECK_TOUCH_PATTERN,
-  CHECK_KEY_PATTERN,
-  CHECK_DRAGDROP_PATTERN,
-  CHECK_CONTEXT_PATTERN,
-  CHECK_INPUT_PATTERN,
-  CHECK_CLIPBOARD_PATTERN,
-  CHECK_BEHAVIOR_PATTERN,
-  CHECK_FORM_PATTERN
-].join("|");
-
-const CHECK_PATTERN = new RegExp(`^(${CHECK_PATTERN_LIST}\s)`, "ig");
 
 const NAME_SAPARATOR = ":";
 const CHECK_SAPARATOR = "|";
+const DOM_EVENT_SAPARATOR = "dom ";
 const LOAD_SAPARATOR = "load ";
 const BIND_SAPARATOR = "bind ";
+
 const SAPARATOR = ' ';
 
-// 임의의 값을 저장하기 위한 구조
-// 임의의 값은 하나의 id 로 만들어지고 id 를 조회 할 때  값으로 다시 치환
 const refManager = {};
 
 const DOM_EVENT_MAKE = (...keys) => {
   var key = keys.join(NAME_SAPARATOR);
   return (...args) => {
-    return [key, ...args].join(SAPARATOR);
+    return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
   };
 };
 
 const CUSTOM = DOM_EVENT_MAKE;
-
 const CLICK = DOM_EVENT_MAKE("click");
 const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
 const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
@@ -843,18 +1181,34 @@ const PASTE = DOM_EVENT_MAKE("paste");
 const RESIZE = DOM_EVENT_MAKE("resize");
 const SCROLL = DOM_EVENT_MAKE("scroll");
 const SUBMIT = DOM_EVENT_MAKE("submit");
-const POINTERSTART = CUSTOM("mousedown", "touchstart");
-const POINTERMOVE = CUSTOM("mousemove", "touchmove");
-const POINTEREND = CUSTOM("mouseup", "touchend");
+const POINTERSTART = CUSTOM("pointerdown");
+const POINTERMOVE = CUSTOM("pointermove");
+const POINTEREND = CUSTOM("pointerup");
 const CHANGEINPUT = CUSTOM("change", "input");
 const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
+const ANIMATIONSTART = DOM_EVENT_MAKE('animationstart');
+const ANIMATIONEND = DOM_EVENT_MAKE('animationend');
+const ANIMATIONITERATION = DOM_EVENT_MAKE('animationiteration');
+const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
+const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
+const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
+const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
 
 // Predefined CHECKER
-const CHECKER = (value, split = CHECK_SAPARATOR) => new EventChecker(value, split);
-const AFTER = (value, split = CHECK_SAPARATOR) => new EventAfterRunner(value, split);
-const BEFORE = (value, split = CHECK_SAPARATOR) => new EventBeforeRunner(value, split);
+const CHECKER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(value, split);
+};
+
+const AFTER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`after(${value})`, split);
+};
+
+const BEFORE = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`before(${value})`, split);  
+};
 
 const IF = CHECKER;
+const KEY = CHECKER; 
 
 const ARROW_UP = CHECKER('ArrowUp');
 const ARROW_DOWN = CHECKER('ArrowDown');
@@ -862,6 +1216,7 @@ const ARROW_LEFT = CHECKER('ArrowLeft');
 const ARROW_RIGHT = CHECKER('ArrowRight');
 const ENTER = CHECKER('Enter');
 const SPACE = CHECKER('Space');
+const ESCAPE = CHECKER('Escape');
 
 const ALT = CHECKER("isAltKey");
 const SHIFT = CHECKER("isShiftKey");
@@ -869,21 +1224,41 @@ const META = CHECKER("isMetaKey");
 const CONTROL = CHECKER("isCtrlKey");
 const SELF = CHECKER("self");
 
-// event config method
-const DEBOUNCE = (t = 100) => CHECKER(`debounce(${t})`);
-const THROTTLE = (t = 100) => CHECKER(`throttle(${t})`);
-const CAPTURE = CHECKER("capture()");
+const FIT = CHECKER("fit");
+const PASSIVE = CHECKER("passive");
+const VDOM = CHECKER('vdom');
 
+// event config method
+const DEBOUNCE = (t = 100) => {
+  return CHECKER(`debounce(${t})`);
+};
+
+const D1000 = DEBOUNCE(1000);
+
+const THROTTLE = (t = 100) => {
+  return CHECKER(`throttle(${t})`);
+};
+
+const CAPTURE = CHECKER("capture()");
 // event config method
 
 // before method
 
 // after method
-const MOVE = (method = "move") => AFTER(`bodyMouseMove ${method}`);
-const END = (method = "end") => AFTER(`bodyMouseUp ${method}`);
+const MOVE = (method = "move") => {
+  return AFTER(`bodyMouseMove ${method}`);
+};
+const END = (method = "end") => {
+  return AFTER(`bodyMouseUp ${method}`);
+};
 
 const PREVENT = AFTER(`preventDefault`);
 const STOP = AFTER(`stopPropagation`);
+
+// Predefined LOADER
+const LOAD = (value = "$el") => {
+  return LOAD_SAPARATOR + value;
+};
 
 const createRef = value => {
   if (value === '') return '';
@@ -894,7 +1269,9 @@ const createRef = value => {
   return id;
 };
 
-const getRef = id => refManager[id] || '';
+const getRef = id => {
+  return refManager[id] || '';
+};
 
 const BIND_CHECK_FUNCTION = field => {
   return function() {
@@ -902,10 +1279,10 @@ const BIND_CHECK_FUNCTION = field => {
   };
 };
 
-const BIND_CHECK_DEFAULT_FUNCTION = () => true;
+const BIND_CHECK_DEFAULT_FUNCTION = () => {
+  return true;
+};
 
-// Predefined LOADER
-const LOAD = (value = "$el") => LOAD_SAPARATOR + value;
 const BIND = (value = "$el", checkFieldOrCallback = '') => {
   return (
     BIND_SAPARATOR + value + ( 
@@ -914,7 +1291,7 @@ const BIND = (value = "$el", checkFieldOrCallback = '') => {
   );
 };
 
-const Event = {
+var Event = {
   addEvent(dom, eventName, callback, useCapture = false) {
     if (dom) {
       dom.addEventListener(eventName, callback, useCapture);
@@ -946,7 +1323,9 @@ const Event = {
 
 class BaseStore {
   constructor(opt = {}) {
+    this.cachedCallback = {};
     this.callbacks = {};
+    this.commandes = [];
   }
 
   getCallbacks(event) {
@@ -979,6 +1358,7 @@ class BaseStore {
   }
 
   offAll (context) {
+
     Object.keys(this.callbacks).forEach(event => {
       this.setCallbacks(event, this.getCallbacks(event).filter(f => {
         return f.context !== context;  
@@ -991,28 +1371,38 @@ class BaseStore {
   }
 
   sendMessage(source, event, $2, $3, $4, $5) {
-    setTimeout(() => {
+    Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
       if (list) {
         list
         .filter(f => f.originalCallback.source !== source)
-        .forEach(f => f.callback($2, $3, $4, $5));
+        .forEach(f => {
+          f.callback($2, $3, $4, $5);
+        });
       }
-    }, 0);
+
+    });
   }
 
   triggerMessage(source, event, $2, $3, $4, $5) {
-    setTimeout(() => {
+    Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
       if (list) {
         list
           .filter(f => f.originalCallback.source === source)
-          .forEach(f => f.callback($2, $3, $4, $5));
+          .forEach(f => {      
+            f.callback($2, $3, $4, $5);
+          });
       } else {
         console.warn(event, ' is not valid event');
       }
-    }, 0);
+
+
+    });
   }
+
+
+
 
   emit($1, $2, $3, $4, $5) {
     this.sendMessage(this.source, $1, $2, $3, $4, $5);
@@ -1021,115 +1411,548 @@ class BaseStore {
   trigger($1, $2, $3, $4, $5) {
     this.triggerMessage(this.source, $1, $2, $3, $4, $5);
   }
+
+  execute($1, $2, $3, $4, $5){
+    this.runCommand(this.source, $1, $2, $3, $4, $5);
+  }
 }
+
+// collectProps 에서 제외될 메소드 목록 
+const expectMethod = {
+    "constructor": true,
+    "initState": true,
+    "refresh": true,
+    "updateData": true,
+    "constructor": true,
+    "initializeProperty": true,
+    "created": true,
+    "getRealEventName": true,
+    "initializeStoreEvent": true,
+    "destoryStoreEvent": true,
+    "destroy": true,
+    "emit": true,
+    "trigger": true,
+    "on": true,
+    "off": true,
+    "setState": true,
+    "_reload": true,
+    "render": true,
+    "initialize": true,
+    "afterRender": true,
+    "components": true,
+    "getRef": true,
+    "parseTemplate": true,
+    "childrenIds": true,
+    "exists": true,
+    "parseProperty": true,
+    "parseSourceName": true,
+    "parseComponent": true,
+    "clean": true,
+    "refresh": true,
+    "template": true,
+    "eachChildren": true,
+    "initializeEvent": true,
+    "destroy": true,
+    "self": true,
+    "isAltKey": true,
+    "isCtrlKey": true,
+    "isShiftKey": true,
+    "isMetaKey": true,
+    "preventDefault": true,
+    "stopPropagation": true,
+    "bodyMouseMove": true,
+    "bodyMouseUp": true,
+  };
+
+class BaseHandler {
+    constructor (context, options = {}) {
+        this.context = context;
+        this.options = options;
+    }
+
+    // 초기화 설정 
+    initialize () {
+
+    }
+
+    // html 을 로드 할 때 
+    load () {
+
+    }
+
+    // 새로고침 할 때 
+    refresh () {
+
+    }
+    
+    // 화면에 그린 이후에 실행 되는 로직들 
+    render () {
+
+    }
+
+    getRef(id) {
+        return this.context.getRef(id);
+    }
+        
+    splitMethodByKeyword (arr, keyword) {
+        var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
+        var filterMaps = filterKeys.map(code => {
+          var [target, param] = code
+            .split(`${keyword}(`)[1]
+            .split(")")[0]
+            .trim()
+            .split(" ");
+      
+          return { target, param };
+        });
+      
+        return [filterKeys, filterMaps];
+    }    
+
+    /**
+     * property 수집하기
+     * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+     */
+    collectProps() {
+
+        var context = this.context;
+        var p = context.__proto__;
+        var results = [];
+        do {
+        var isObject = p instanceof Object;
+
+        if (isObject === false) {
+            break;
+        }
+        const names = Object.getOwnPropertyNames(p).filter(name => {
+            return context && isFunction(context[name]) && !expectMethod[name];
+        });
+
+        results.push(...names);
+        p = p.__proto__;
+        } while (p);
+
+        return results;
+    }
+
+
+
+    filterProps(pattern) {
+        return this.collectProps().filter(key => {
+            return key.match(pattern);
+        });
+    }    
+
+    run () {
+
+    }
+
+    destroy() {
+
+    }
+}
+
+const scrollBlockingEvents = {
+    'touchstart': true,
+    'touchmove': true,
+    'mousedown': true,
+    'mouseup': true,
+    'mousemove': true, 
+    'wheel': true,
+    'mousewheel': true
+};
+
+class DomEventHandler extends BaseHandler {
+
+
+    initialize() {
+        this.destroy();
+
+        if (!this._domEvents) {
+          this._domEvents = this.filterProps(CHECK_DOM_EVENT_PATTERN);
+        }
+        this._domEvents.forEach(key => this.parseEvent(key));
+    }
+
+    destroy() {
+        this.removeEventAll();
+    }
+
+
+    removeEventAll() {
+        this.getBindings().forEach(obj => {
+          this.removeEvent(obj);
+        });
+        this.initBindings();
+    }
+
+    removeEvent({ eventName, dom, callback }) {
+        Event.removeEvent(dom, eventName, callback);
+    }    
+
+    getBindings() {
+        if (!this._bindings) {
+          this.initBindings();
+        }
+    
+        return this._bindings;
+    }
+
+    addBinding(obj) {
+        this.getBindings().push(obj);
+    }
+
+    initBindings() {
+        this._bindings = [];
+    }    
+
+
+    matchPath (el, selector) {
+        if (el) {
+          if (el.matches(selector)) {
+            return el;
+          }
+          return this.matchPath(el.parentElement, selector);
+        }
+        return null;
+    }
+      
+    hasDelegate (e, eventObject) {
+        return this.matchPath(e.target || e.srcElement, eventObject.delegate);
+    }
+      
+    makeCallback (eventObject, callback) {
+        if (eventObject.delegate) {
+          return this.makeDelegateCallback(eventObject, callback);
+        } else {
+          return this.makeDefaultCallback(eventObject, callback);
+        }
+    }
+      
+    makeDefaultCallback (eventObject, callback) {
+        return e => {
+          var returnValue = this.runEventCallback(e, eventObject, callback);
+          if (isNotUndefined(returnValue)) {
+            return returnValue;
+          }
+        };
+    }
+      
+    makeDelegateCallback (eventObject, callback) {
+        return e => {
+          const delegateTarget = this.hasDelegate(e, eventObject);
+      
+          if (delegateTarget) {
+            // delegate target 이 있는 경우만 callback 실행
+            e.$dt = Dom.create(delegateTarget);      
+      
+            var returnValue = this.runEventCallback(e, eventObject, callback);
+            if (isNotUndefined(returnValue)) {
+              return returnValue;
+            }
+          }
+        };
+    }
+      
+    runEventCallback (e, eventObject, callback) {
+        const context = this.context;
+        e.xy = Event.posXY(e);
+      
+        if (eventObject.beforeMethods.length) {
+          eventObject.beforeMethods.every(before => {
+            return context[before.target].call(context, e, before.param);
+          });
+        }
+      
+        if (this.checkEventType(e, eventObject)) {
+          var returnValue = callback(e, e.$dt, e.xy);
+      
+          if (returnValue !== false && eventObject.afterMethods.length) {
+            eventObject.afterMethods.forEach(after =>
+              context[after.target].call(context, e, after.param)
+            );
+          }
+      
+          return returnValue;
+        }
+    }
+      
+    checkEventType (e, eventObject) {
+        const context = this.context;
+        // 특정 keycode 를 가지고 있는지 체크
+        var hasKeyCode = true;
+        if (eventObject.codes.length) {
+          hasKeyCode =
+            (e.code ? eventObject.codes.indexOf(e.code.toLowerCase()) > -1 : false) ||
+            (e.key ? eventObject.codes.indexOf(e.key.toLowerCase()) > -1 : false);
+        }
+      
+        // 체크 메소드들은 모든 메소드를 다 적용해야한다.
+        var isAllCheck = true;
+        if (eventObject.checkMethodList.length) {
+          isAllCheck = eventObject.checkMethodList.every(field => {
+            var fieldValue = context[field];    
+            if (isFunction(fieldValue) && fieldValue) {
+              // check method
+              return fieldValue.call(context, e);
+            } else if (isNotUndefined(fieldValue)) {
+      
+              // check field value
+              return !!fieldValue;
+            }
+            return true;
+          });
+        }
+      
+        return hasKeyCode && isAllCheck;
+    }
+      
+    getDefaultDomElement(dom) {
+        const context = this.context;
+        let el;
+      
+        if (dom) {
+          el = context.refs[dom] || context[dom] || window[dom];
+        } else {
+          el = context.el || context.$el || context.$root;
+        }
+      
+        if (el instanceof Dom) {
+          return el.getElement();
+        }
+      
+        return el;
+    };
+      
+    getDefaultEventObject (eventName, checkMethodFilters) {
+        const context = this.context;
+        let arr = checkMethodFilters;
+      
+        // context 에 속한 변수나 메소드 리스트 체크
+        const checkMethodList = arr.filter(code => !!context[code]);
+      
+        // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
+        const [afters, afterMethods] = this.splitMethodByKeyword(arr, "after");
+        const [befores, beforeMethods] = this.splitMethodByKeyword(arr, "before");
+        const [debounces, debounceMethods] = this.splitMethodByKeyword(arr, "debounce");
+        const [throttles, throttleMethods] = this.splitMethodByKeyword(arr, "throttle");
+        const [captures] = this.splitMethodByKeyword(arr, "capture");
+      
+        // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
+        const filteredList = [
+          ...checkMethodList,
+          ...afters,
+          ...befores,
+          ...debounces,
+          ...throttles,
+          ...captures
+        ];
+      
+        var codes = arr
+          .filter(code => filteredList.indexOf(code) === -1)
+          .map(code => code.toLowerCase());
+      
+        return {
+          eventName,
+          codes,
+          captures,
+          afterMethods,
+          beforeMethods,
+          debounceMethods,
+          throttleMethods,
+          checkMethodList
+        };
+    }
+      
+      
+    addEvent (eventObject, callback) {
+        eventObject.callback = this.makeCallback(eventObject, callback);
+        this.addBinding(eventObject);
+      
+        var options = !!eventObject.captures.length;
+      
+        if (scrollBlockingEvents[eventObject.eventName]) {
+          options = {
+            passive: true,
+            capture: options  
+          };
+        }
+      
+        Event.addEvent(
+          eventObject.dom,
+          eventObject.eventName,
+          eventObject.callback,
+          options
+        );
+    }
+      
+    bindingEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
+        const context = this.context;
+        let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
+      
+        eventObject.dom = this.getDefaultDomElement(dom);
+        eventObject.delegate = delegate.join(SAPARATOR);
+      
+        if (eventObject.debounceMethods.length) {
+          var debounceTime = +eventObject.debounceMethods[0].target;
+          callback = debounce(callback, debounceTime);
+        } else if (eventObject.throttleMethods.length) {
+          var throttleTime = +eventObject.throttleMethods[0].target;
+          callback = throttle(callback, throttleTime);
+        }
+      
+        this.addEvent(eventObject, callback);
+      };
+      
+    getEventNames (eventName) {
+        let results = [];
+        
+        eventName.split(NAME_SAPARATOR).forEach(e => {
+            var arr = e.split(NAME_SAPARATOR);
+        
+            results.push(...arr);
+        });
+        
+        return results;
+    }
+      
+    parseEvent (key) {
+        const context = this.context;
+        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim());
+        
+        var prefix = checkMethodFilters.shift();
+        var eventSelectorAndBehave = prefix.split(DOM_EVENT_SAPARATOR)[1];
+        
+        var arr = eventSelectorAndBehave.split(SAPARATOR);
+        var eventNames = this.getEventNames(arr[0]);
+        var callback = context[key].bind(context);
+        
+        eventNames.forEach(eventName => {
+            arr[0] = eventName;
+            this.bindingEvent(arr, checkMethodFilters, callback);
+        });
+    }  
+}
+
+const applyElementAttribute = ($element, key, value) => {
+
+  if (key === 'cssText') {
+    /**
+     * cssText: 'position:absolute'
+     */
+    $element.cssText(value);
+    return; 
+  } else if (key === "style") {
+    /**
+     * style: { key: value }
+     */
+    if (isNotString(value)) {
+      $element.css(value);
+    }
+
+    return;
+  } else if (key === "class") {
+    //  "class" : [ 'className', 'className' ] 
+    //  "class" : { key: true, key: false } 
+    //  "class" : 'string-class' 
+
+    if (isArray(value)) {
+      $element.addClass(...value);
+    } else if (isObject(value)) {
+      keyEach(value, (className, hasClass) => $element.toggleClass(className, hasClass));
+    } else {
+      $element.addClass(value);
+    }
+
+    return;
+  }
+
+  if (isUndefined(value)) {
+    $element.removeAttr(key);
+  } else {
+    if ($element.el.nodeName === "TEXTAREA" && key === "value") {
+      $element.text(value);
+    } else if (key === 'text' || key === 'textContent') {
+      $element.text(value);
+    } else if (key === 'innerHTML' || key === 'html') {
+      $element.html(value);
+    } else if (key === 'value') {
+      $element.val(value);
+    } else {
+      $element.attr(key, value);
+    }
+  }
+};
+
+class BindHandler extends BaseHandler {
+
+    load (...args) {
+      this.bindData(...args);
+    }
+
+    // 어떻게 실행하는게 좋을까? 
+    // this.runHandle('bind', ...);
+    bindData (...args) {
+      if (!this._bindMethods) {
+        this._bindMethods = this.filterProps(CHECK_BIND_PATTERN);
+      }
+      /**
+       * BIND 를 해보자.
+       * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
+       * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
+       */
+      this._bindMethods
+        .filter(originalCallbackName => {
+          if (!args.length) return true; 
+          var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
+  
+          var [_, $bind] = callbackName.split(' ');
+  
+          return args.indexOf($bind) >  -1 
+        })
+        .forEach(callbackName => {
+          const bindMethod = this.context[callbackName];
+          var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
+  
+          const refObject = this.getRef(id);
+          let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
+  
+          if (refObject != '' && isString(refObject)) {
+            refCallback = BIND_CHECK_FUNCTION(refObject);
+          } else if (isFunction(refObject)) {
+            refCallback = refObject;
+          }
+  
+          const elName = callbackName.split(BIND_SAPARATOR)[1];
+          let $element = this.context.refs[elName];
+  
+          // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
+          const isBindCheck = isFunction(refCallback) && refCallback.call(this.context);
+          if ($element && isBindCheck) {
+            const results = bindMethod.call(this.context, ...args);
+
+            if (!results) return;
+  
+            keyEach(results, (key, value) => {
+              applyElementAttribute($element, key, value);
+            });
+          }
+        });
+    }    
+
+    destroy() {
+      this._bindMethods = undefined;
+    }
+
+
+}
+
+const ADD_BODY_MOUSEMOVE = 'add/body/mousemove';
+const ADD_BODY_MOUSEUP = 'add/body/mouseup';
 
 const REFERENCE_PROPERTY = "ref";
 const TEMP_DIV = Dom.create("div");
 const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
-const ATTR_lIST = [REFERENCE_PROPERTY];
-
-const matchPath = (el, selector) => {
-  if (el) {
-    if (el.matches(selector)) { return el; }
-    return matchPath(el.parentElement, selector);
-  }
-  return null;
-};
-
-const hasDelegate = (e, eventObject) => {
-  return matchPath(e.target || e.srcElement, eventObject.delegate);
-};
-
-const makeCallback = (context, eventObject, callback) => {
-  if (eventObject.delegate) {
-    return makeDelegateCallback(context, eventObject, callback);
-  } else {
-    return makeDefaultCallback(context, eventObject, callback);
-  }
-};
-
-const makeDefaultCallback = (context, eventObject, callback) => {
-  return e => {
-    var returnValue = runEventCallback(context, e, eventObject, callback);
-    if (isNotUndefined(returnValue)) { return returnValue; }
-  };
-};
-
-const makeDelegateCallback = (context, eventObject, callback) => {
-  return e => {
-    const delegateTarget = hasDelegate(e, eventObject);
-    if (delegateTarget) {
-      e.$delegateTarget = Dom.create(delegateTarget);
-
-      var returnValue = runEventCallback(context, e, eventObject, callback);
-      if (isNotUndefined(returnValue)) { return returnValue; }
-    }
-  };
-};
-
-const runEventCallback = (context, e, eventObject, callback) => {
-  e.xy = Event.posXY(e);
-
-  if (eventObject.beforeMethods.length) {
-    eventObject.beforeMethods.every(before => {
-      return context[before.target].call(context, e, before.param);
-    });
-  }
-
-  if (checkEventType(context, e, eventObject)) {
-    var returnValue = callback(e, e.$delegateTarget, e.xy);
-
-    if (eventObject.afterMethods.length) {
-      eventObject.afterMethods.forEach(after =>
-        context[after.target].call(context, e, after.param)
-      );
-    }
-
-    return returnValue;
-  }
-};
-
-const checkEventType = (context, e, eventObject) => {
-  var hasKeyCode = true;
-  if (eventObject.codes.length) {
-    hasKeyCode =
-      (e.code ? eventObject.codes.includes(e.code.toLowerCase()) : false) ||
-      (e.key ? eventObject.codes.includes(e.key.toLowerCase()) : false);
-  }
-
-  var isAllCheck = true;
-  if (eventObject.checkMethodList.length) {
-    isAllCheck = eventObject.checkMethodList.every(field => {
-      var fieldValue = context[field];
-      if (isFunction(fieldValue) && fieldValue) {
-        // check method
-        return fieldValue.call(context, e);
-      } else if (isNotUndefined(fieldValue)) {
-        // check field value
-        return !!fieldValue;
-      }
-      return true;
-    });
-  }
-
-  return hasKeyCode && isAllCheck;
-};
-
-const getDefaultDomElement = (context, dom) => {
-  let el;
-
-  if (dom) {
-    el = context.refs[dom] || context[dom] || window[dom];
-  } else {
-    el = context.el || context.$el || context.$root;
-  }
-
-  if (el instanceof Dom) {
-    return el.getElement();
-  }
-
-  return el;
-};
 
 const splitMethodByKeyword = (arr, keyword) => {
   var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
@@ -1146,148 +1969,88 @@ const splitMethodByKeyword = (arr, keyword) => {
   return [filterKeys, filterMaps];
 };
 
-const getDefaultEventObject = (context, eventName, checkMethodFilters) => {
-  let arr = checkMethodFilters;
-
-  // context 에 속한 변수나 메소드 리스트 체크
-  const checkMethodList = arr.filter(code => !!context[code]);
-
-  // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
-  const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
-  const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
-  const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
-  const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
-  const [captures] = splitMethodByKeyword(arr, "capture");
-
-  // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
-  const filteredList = [
-    ...checkMethodList,
-    ...afters,
-    ...befores,
-    ...debounces,
-    ...throttles,
-    ...captures
-  ];
-
-  var codes = arr
-    .filter(code => !filteredList.includes(code))
-    .map(code => code.toLowerCase());
-
-  return {
-    eventName,
-    codes,
-    captures,
-    afterMethods,
-    beforeMethods,
-    debounceMethods,
-    throttleMethods,
-    checkMethodList
-  };
-};
-
-const addEvent = (context, eventObject, callback) => {
-  eventObject.callback = makeCallback(context, eventObject, callback);
-  context.addBinding(eventObject);
-  Event.addEvent(eventObject.dom, eventObject.eventName, eventObject.callback, !!eventObject.captures.length);
-};
-
-const bindingEvent = (
-  context,
-  [eventName, dom, ...delegate],
-  checkMethodFilters,
-  callback
-) => {
-  let eventObject = getDefaultEventObject(context, eventName, checkMethodFilters);
-
-  eventObject.dom = getDefaultDomElement(context, dom);
-  eventObject.delegate = delegate.join(SAPARATOR);
-
-  if (eventObject.debounceMethods.length) {
-    var debounceTime = +eventObject.debounceMethods[0].target;
-    callback = debounce(callback, debounceTime);
-  } else if (eventObject.throttleMethods.length) {
-    var throttleTime = +eventObject.throttleMethods[0].target;
-    callback = throttle(callback, throttleTime);
-  }
-
-  addEvent(context, eventObject, callback);
-};
-
-const getEventNames = eventName => {
-  let results = [];
-
-  eventName.split(NAME_SAPARATOR).forEach(e => results.push(...e.split(NAME_SAPARATOR)));
-
-  return results;
-};
-
-const parseEvent = (context, key) => {
-  let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim());
-  var eventSelectorAndBehave = checkMethodFilters.shift();
-
-  var [eventName, ...params] = eventSelectorAndBehave.split(SAPARATOR);
-  var eventNames = getEventNames(eventName);
-  var callback = context[key].bind(context);
-
-  eventNames.forEach(eventName => {
-    bindingEvent(context, [eventName, ...params], checkMethodFilters, callback);
-  });
-};
-
-const applyElementAttribute = ($element, key, value) => {
-  if (key === "style") {
-    if (isObject(value)) {
-      keyEach(value, (sKey, sValue) => {
-        if (!sValue) {
-          $element.removeStyle(sKey);
-        } else {
-          $element.css(sKey, sValue);
-        }
-      });
-    }
-
-    return;
-  } else if (key === "class") {
-
-    if (isArray(value)) {
-      $element.addClass(...value);
-    } else if (isObject(value)) {
-      keyEach(value, (k, v) => {
-        if (!value) {
-          $element.removeClass(k);
-        } else {
-          $element.addClass(k);
-        }
-      });
-    } else {
-      $element.addClass(value);
-    }
-
-    return;
-  }
-
-  if (isUndefined(value)) {
-    $element.removeAttr(key);
-  } else {
-    if ($element.el.nodeName === "TEXTAREA" && key === "value") {
-      $element.text(value);
-    } else if (key === 'innerHTML') {
-      $element.html(value);
-    } else {
-      $element.attr(key, value);
-    }
-  }
+// collectProps 에서 제외될 메소드 목록 
+const expectMethod$1 = {
+  "constructor": true,
+  "initState": true,
+  "refresh": true,
+  "updateData": true,
+  "constructor": true,
+  "initializeProperty": true,
+  "created": true,
+  "getRealEventName": true,
+  "initializeStoreEvent": true,
+  "destoryStoreEvent": true,
+  "destroy": true,
+  "emit": true,
+  "trigger": true,
+  "on": true,
+  "off": true,
+  "setState": true,
+  "_reload": true,
+  "render": true,
+  "initialize": true,
+  "afterRender": true,
+  "components": true,
+  "getRef": true,
+  "parseTemplate": true,
+  "childrenIds": true,
+  "exists": true,
+  "parseProperty": true,
+  "parseSourceName": true,
+  "parseComponent": true,
+  "clean": true,
+  "refresh": true,
+  "loadTemplate": true,
+  "load": true,
+  "bindData": true,
+  "template": true,
+  "eachChildren": true,
+  "initializeEvent": true,
+  "destroy": true,
+  "collectProps": true,
+  "filterProps": true,
+  "self": true,
+  "isAltKey": true,
+  "isCtrlKey": true,
+  "isShiftKey": true,
+  "isMetaKey": true,
+  "preventDefault": true,
+  "stopPropagation": true,
+  "bodyMouseMove": true,
+  "bodyMouseUp": true,
 };
 
 class EventMachine {
-  constructor() {
+  constructor(opt, props) {
     this.state = {};
     this.prevState = {};
     this.refs = {};
     this.children = {};
     this._bindings = [];
     this.id = uuid();    
+    this.handlers = this.initializeHandler();
+
+    this.initializeProperty(opt, props);
+
+    this.initComponents();
+  }
+
+  initComponents() {
     this.childComponents = this.components();
+    this.childComponentKeys = Object.keys(this.childComponents);
+    this.childComponentSet = new Map();
+    this.childComponentKeys.forEach(key => {
+      this.childComponentSet.set(key.toLowerCase(), key);
+    });
+    this.childComponentKeysString = [...this.childComponentSet.keys()].join(',');
+  }
+
+  initializeHandler () {
+    return [
+      new BindHandler(this),
+      new DomEventHandler(this)
+    ]
   }
 
   initState() {
@@ -1296,7 +2059,7 @@ class EventMachine {
 
   setState(state = {}, isLoad = true) {
     this.prevState = this.state;
-    this.state = { ...this.state, ...state };
+    this.state = Object.assign({}, this.state, state );
     if (isLoad) {
       this.load();
     }
@@ -1304,8 +2067,9 @@ class EventMachine {
 
   _reload(props) {
     this.props = props;
+    this.state = {}; 
     this.setState(this.initState(), false);
-    this.refresh();
+    this.refresh(true);
   }
 
   render($container) {
@@ -1316,10 +2080,11 @@ class EventMachine {
     );
     this.refs.$el = this.$el;
 
-    if ($container) $container.append(this.$el);
+    if ($container) {
+      $container.append(this.$el);
+    }
 
     this.load();
-    this.parseComponent(false);
 
     this.afterRender();
   }
@@ -1328,18 +2093,25 @@ class EventMachine {
     this.state = this.initState();
   }
   afterRender() {}
-  components() { return {}; }
+  components() {
+    return {};
+  }
 
-  getRef(...args) { return this.refs[args.join('')]; }
+  getRef(...args) {
+    const key = args.join('');
+    return this.refs[key];
+  }
 
   parseTemplate(html, isLoad) {
-    if (isArray(html)) html = html.join('');
+
+    if (isArray(html)) {
+      html = html.join('');
+    }
 
     html = html.trim();
     const list = TEMP_DIV.html(html).children();
 
     list.forEach($el => {
-      // ref element 정리
       var ref = $el.attr(REFERENCE_PROPERTY);
       if (ref) {
         this.refs[ref] = $el;
@@ -1348,16 +2120,20 @@ class EventMachine {
       var refs = $el.$$(QUERY_PROPERTY);
       var temp = {}; 
       refs.forEach($dom => {
+
         const name = $dom.attr(REFERENCE_PROPERTY);
         if (temp[name]) {
-          console.warn(`${ref} is duplicated. - ${this.sourceName}`);
+          console.warn(`${ref} is duplicated. - ${this.sourceName}`, this);
         } else {
           temp[name] = true; 
         }
 
         this.refs[name] = $dom;        
       });
+
+
     });
+
     if (!isLoad) {
       return list[0];
     }
@@ -1371,25 +2147,30 @@ class EventMachine {
     })
   }
 
+  exists () {
+
+    if (this.parent) {
+      if (isFunction(this.parent.childrenIds)) {
+        return this.parent.childrenIds().indexOf(this.id) > -1 
+      }
+    }
+
+    return true  
+  }
+
   parseProperty ($dom) {
     let props = {};
 
     // parse properties 
-    [...$dom.el.attributes]
-      .filter(t => {
-        return ATTR_lIST.indexOf(t.nodeName) < 0;
-      })
-      .forEach(t => {
-        props[t.nodeName] = t.nodeValue;
-      });
+    for(var t of $dom.el.attributes) {
+      props[t.nodeName] = t.nodeValue;
+    }
 
-    // property 태그는 속성으로 대체 
     $dom.$$('property').forEach($p => {
       const [name, value, type] = $p.attrs('name', 'value', 'type');
 
       let realValue = value || $p.text();
 
-      // JSON 타입이면 JSON.parse 로 객체를 복원해서 넘겨준다. 
       if (type === 'json') {            
         realValue = JSON.parse(realValue);
       }
@@ -1398,6 +2179,15 @@ class EventMachine {
     });
 
     return props;
+  }
+
+  parseSourceName(obj) {
+
+    if (obj.parent) {
+      return [obj.sourceName, ...this.parseSourceName(obj.parent)]
+    }
+
+    return [obj.sourceName]
   }
 
   parseComponent() {
@@ -1411,38 +2201,40 @@ class EventMachine {
         const instance = new Component(this, props);    
         this.children[instance.id] = instance;
         instance.render();
-        instance.initializeEvent();    
 
         $el.replace(instance.$el);
       }
 
     });
 
+    let targets = []; 
+    if (this.childComponentKeysString) {
+      targets = $el.$$(this.childComponentKeysString);
+    }
 
+    
+    targets.forEach($dom => {
+      var tagName = $dom.el.tagName.toLowerCase();
+      var ComponentName = this.childComponentSet.get(tagName);
+      var Component = this.childComponents[ComponentName];
+      let props = this.parseProperty($dom);
 
-    keyEach(this.childComponents, (ComponentName, Component) => {
+      // create component 
+      let refName = $dom.attr(REFERENCE_PROPERTY);
+      var instance = null; 
+      if (this.children[refName]) {
+        instance = this.children[refName]; 
+        instance._reload(props);
+      } else {
+        instance = new Component(this, props);
 
-      const targets = $el.$$(ComponentName.toLowerCase());
-      targets.forEach($dom => {
-        let props = this.parseProperty($dom);
+        this.children[refName || instance.id] = instance;
 
-        let refName = $dom.attr(REFERENCE_PROPERTY);
-        var instance = null; 
-        if (this.children[refName]) {
-          //  기존의 같은 객체가 있으면 객체를 새로 생성하지 않고 재활용한다. 
-          instance = this.children[refName]; 
-          instance._reload(props);
-        } else {
-          instance = new Component(this, props);
-
-          this.children[refName || instance.id] = instance;
-
-          instance.render();
-          instance.initializeEvent();  
-        }
-
-        $dom.replace(instance.$el);        
-      });
+        instance.render();
+      }
+      
+      $dom.replace(instance.$el);      
+  
     });
 
     keyEach(this.children, (key, obj) => {
@@ -1453,7 +2245,7 @@ class EventMachine {
   }
 
   clean () {
-    if (!this.$el.hasParent()) {
+    if (this.$el && !this.$el.hasParent()) {
 
       keyEach(this.children, (key, child) => {
         child.clean();
@@ -1469,7 +2261,9 @@ class EventMachine {
   /**
    * refresh 는 load 함수들을 실행한다. 
    */
-  refresh() {this.load();}
+  refresh() {
+    this.load();
+  }
 
   /**
    * 특정 load 함수를 실행한다.  문자열을 그대로 return 한다. 
@@ -1486,12 +2280,18 @@ class EventMachine {
 
     this._loadMethods
     .filter(callbackName => {
-      const elName = callbackName.split(LOAD_SAPARATOR)[1];
+      const elName = callbackName.split(LOAD_SAPARATOR)[1].split(CHECK_SAPARATOR)[0];
       if (!args.length) return true; 
-      return args.includes(elName)
+      return args.indexOf(elName) > -1
     })
     .forEach(callbackName => {
-      const elName = callbackName.split(LOAD_SAPARATOR)[1];
+      let methodName = callbackName.split(LOAD_SAPARATOR)[1];
+      var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map(it => it.trim());
+
+      checker = checker.map(it => it.trim());
+      
+      const isVdom = Boolean(checker.filter(it => VDOM.includes(it)).length);
+
       if (this.refs[elName]) {
         
         var newTemplate = this[callbackName].call(this, ...args);
@@ -1500,106 +2300,77 @@ class EventMachine {
           newTemplate = newTemplate.join('');
         }
 
-        const fragment = this.parseTemplate(html`
-          ${newTemplate}
-        `, true);
+        // create fragment 
+        const fragment = this.parseTemplate(html`${newTemplate}`, true);
+        if (isVdom) {
+          this.refs[elName].htmlDiff(fragment);
+        } else {
+          this.refs[elName].html(fragment);
+        }
 
-        this.refs[elName].html(fragment);
-        this.initializeDomEvent();
       }
     });
+
+    this.runHandlers('initialize');
 
     this.bindData();
 
     this.parseComponent();
-    
+
+  }
+
+  runHandlers(func = 'run', ...args) {
+    this.handlers.forEach(h => h[func](...args));
   }
 
   bindData (...args) {
-    if (!this._bindMethods) {
-      this._bindMethods = this.filterProps(CHECK_BIND_PATTERN);
-    }
-    
-    this._bindMethods
-      .filter(originalCallbackName => {
-        if (!args.length) return true; 
-        var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
-
-        var [_, $bind] = callbackName.split(' ');
-
-        return args.includes($bind)
-      })
-      .forEach(callbackName => {
-        const bindMethod = this[callbackName];
-        var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
-
-        const refObject = this.getRef(id);
-        let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
-
-        if (refObject != '' && isString(refObject)) {
-          refCallback = BIND_CHECK_FUNCTION(refObject);
-        } else if (isFunction(refObject)) {
-          refCallback = refObject;
-        }
-
-        const elName = callbackName.split(BIND_SAPARATOR)[1];
-        let $element = this.refs[elName];
-
-        const isBindCheck = isFunction(refCallback) && refCallback.call(this);
-        if ($element && isBindCheck) {
-          const results = bindMethod.call(this, ...args);
-
-          if (!results) return;
-
-          keyEach(results, (key, value) => {
-            applyElementAttribute($element, key, value);
-          });
-        }
-      });
+    this.runHandlers('load', ...args);
   }
 
   // 기본 템플릿 지정
   template() {
-    var className = this.templateClass();
-    var classString = className ? `class="${className}"` : '';
-
-    return `<div ${classString}></div>`;
+    return `<div></div>`;
   }
-
-  templateClass() { return null; }
 
   eachChildren(callback) {
     if (!isFunction(callback)) return;
 
-    keyEach(this.children, (_, Component) => callback(Component));
+    keyEach(this.children, (_, Component) => {
+      callback(Component);
+    });
+  }
+
+  rerender () {
+    var $parent = this.$el.parent();
+    this.destroy();
+    this.render($parent);  
   }
 
   /**
+   * @deprecated 
+   * render 이후에 부를려고 했는데  이미 Dom Event 는 render 이후에 자동으로 불리게 되어 있다. 
+   * 현재는 DomEvent, Bind 기준으로만 작성하도록 한다. 
+   * 나머지 라이프 사이클은 다음에 고민해보자. 
    * 이벤트를 초기화한다.
    */
-  initializeEvent() {
-    this.initializeDomEvent();
-
-    this.eachChildren(Component => Component.initializeEvent());
-  }
+  // initializeEvent() {
+  //   this.runHandlers('initialize');
+  // }
 
   /**
    * 자원을 해제한다.
    * 이것도 역시 자식 컴포넌트까지 제어하기 때문에 가장 최상위 부모에서 한번만 호출되도 된다.
    */
   destroy() {
-    this.destroyDomEvent();
+    this.eachChildren(childComponent => {
+      childComponent.destroy();
+    });
 
-    this.eachChildren(Component => Component.destroy());
-  }
-
-  destroyDomEvent() {
-    this.removeEventAll();
-  }
-
-  initializeDomEvent() {
-    this.destroyDomEvent();
-    this.filterProps(CHECK_PATTERN).forEach(key => parseEvent(this, key));
+    this.runHandlers('destroy');
+    this.$el.remove();
+    this.$el = null; 
+    this.refs = {}; 
+    this.children = {}; 
   }
 
   /**
@@ -1617,7 +2388,7 @@ class EventMachine {
         break;
       }
       const names = Object.getOwnPropertyNames(p).filter(name => {
-        return isFunction(this[name]);
+        return this && isFunction(this[name]) && !expectMethod$1[name];
       });
 
       results.push(...names);
@@ -1636,7 +2407,7 @@ class EventMachine {
   /* magic check method  */
 
   self(e) {
-    return e && e.$delegateTarget && e.$delegateTarget.is(e.target);
+    return e && e.$dt && e.$dt.is(e.target);
   }
   isAltKey(e) {
     return e.altKey;
@@ -1648,12 +2419,8 @@ class EventMachine {
     return e.shiftKey;
   }
   isMetaKey(e) {
-    return e.metaKey;
+    return e.metaKey || e.key == 'Meta' || e.code.indexOf('Meta') > -1 ;
   }
-
-  /* magic check method */
-
-  /** before check method */
 
   /** before check method */
 
@@ -1671,43 +2438,16 @@ class EventMachine {
 
   bodyMouseMove(e, methodName) {
     if (this[methodName]) {
-      this.emit('add/body/mousemove', this[methodName], this, e.xy);
+      this.emit(ADD_BODY_MOUSEMOVE, this[methodName], this, e.xy);
     }
   }
 
   bodyMouseUp(e, methodName) {
     if (this[methodName]) {
-      this.emit('add/body/mouseup', this[methodName], this, e.xy);
+      this.emit(ADD_BODY_MOUSEUP, this[methodName], this, e.xy);
     }
   }
-  /* after check method */
 
-  getBindings() {
-    if (!this._bindings) {
-      this.initBindings();
-    }
-
-    return this._bindings;
-  }
-
-  addBinding(obj) {
-    this.getBindings().push(obj);
-  }
-
-  initBindings() {
-    this._bindings = [];
-  }
-
-  removeEventAll() {
-    this.getBindings().forEach(obj => {
-      this.removeEvent(obj);
-    });
-    this.initBindings();
-  }
-
-  removeEvent({ eventName, dom, callback }) {
-    Event.removeEvent(dom, eventName, callback);
-  }
 }
 
 const REG_STORE_MULTI_PATTERN = /^ME@/;
@@ -1725,9 +2465,7 @@ const EVENT = (...args) => {
 
 class UIElement extends EventMachine {
   constructor(opt, props = {}) {
-    super(opt);
-
-    this.initializeProperty(opt, props);
+    super(opt, props);
 
     this.created();
 
@@ -1750,10 +2488,6 @@ class UIElement extends EventMachine {
 
     if (opt && opt.$store) this.$store = opt.$store;
     if (opt && opt.$app) this.$app = opt.$app;
-
-    if (!this.$store) {
-      this.$store = new BaseStore(opt);
-    }
   }
 
   created() {}
@@ -1763,51 +2497,69 @@ class UIElement extends EventMachine {
     return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
   }
 
+  /**
+   * initialize store event
+   *
+   * you can define '@xxx' method(event) in UIElement
+   *
+   *
+   */
   initializeStoreEvent() {
-    this.storeEvents = {};
 
     this.filterProps(REG_STORE_MULTI_PATTERN).forEach(key => {
       const events = this.getRealEventName(key, MULTI_PREFIX);
 
       // support deboounce for store event 
-      var [debounceMethods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
+      var [methods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
 
       var debounceSecond = 0; 
-      if (debounceMethods.length) {
+      if (methods.length) {
         debounceSecond = +params[0].target || 0; 
       }
 
       events
         .split(SPLITTER)
-        .filter(it => debounceMethods.includes(it) === false)
+        .filter(it => {
+          return methods.indexOf(it) === -1
+        })
         .map(it => it.trim())
         .forEach(e => {
           var callback = this[key].bind(this);
+          callback.displayName = `${this.sourceName}.${e}`;
           callback.source = this.source;
-          this.storeEvents[e] = callback;
-          this.$store.on(e, this.storeEvents[e], this, debounceSecond);
+          this.$store.on(e, callback, this, debounceSecond);
       });
     });
   }
 
   destoryStoreEvent() {
     this.$store.offAll(this);
-    this.storeEvents = {}; 
   }
 
   destroy () {
     super.destroy();
+
     this.destoryStoreEvent();
   }
 
-  emit(...args) {
-    this.$store.source = this.source;
-    this.$store.emit(...args);
+  rerender() {
+    super.rerender();
+
+    this.initialize();
+
+    this.initializeStoreEvent();
   }
 
-  trigger(...args) {
+
+  emit($1, $2, $3, $4, $5) {
     this.$store.source = this.source;
-    this.$store.trigger(...args);
+    this.$store.sourceContext = this; 
+    this.$store.emit($1, $2, $3, $4, $5);
+  }
+
+  trigger($1, $2, $3, $4, $5) {
+    this.$store.source = this.source;
+    this.$store.trigger($1, $2, $3, $4, $5);
   }
 
   on (message, callback) {
@@ -1820,7 +2572,8 @@ class UIElement extends EventMachine {
 }
 
 const EMPTY_POS = { x: 0, y: 0 };
-const MOVE_CHECK_MS = 10;
+const DEFAULT_POS = { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER };
+const MOVE_CHECK_MS = 0;
 
 const start = opt => {
   class App extends UIElement {
@@ -1834,9 +2587,6 @@ const start = opt => {
       this.$container.addClass(this.getClassName());
 
       this.render(this.$container);
-
-      // 이벤트 연결
-      this.initializeEvent();
 
       this.initBodyMoves();
     }
@@ -1860,38 +2610,42 @@ const start = opt => {
     }
 
     loopBodyMoves() {
-      var {oldPos, pos} = this.state;
+      var {bodyEvent, pos, lastPos} = this.state;
 
-      var isRealMoved = oldPos.x != pos.x || oldPos.y != pos.y;
+      var localLastPos = lastPos || DEFAULT_POS;
+      var isNotEqualLastPos = !(localLastPos.x === pos.x && localLastPos.y === pos.y);
 
-      if (isRealMoved && this.moves.size) {
+      if (isNotEqualLastPos && this.moves.size) {
         this.moves.forEach(v => {
           var dx = pos.x - v.xy.x;
           var dy = pos.y - v.xy.y;
           if (dx != 0 || dy != 0) {
-            //  변화가 있을 때만 호출 한다.
-            v.func.call(v.context, dx, dy, 'move');
+            v.func.call(v.context, dx, dy, 'move', bodyEvent.pressure);
           }
         });
+
+        this.state.lastPos = pos;
       }
       requestAnimationFrame(this.funcBodyMoves);
     }
 
     removeBodyMoves() {
-      var {pos} = this.state; 
-      this.ends.forEach(v => {
-        v.func.call(v.context, pos.x - v.xy.x, pos.y - v.xy.y, 'end');
-      });
+      var {pos, bodyEvent} = this.state;       
+      if (pos) {
+        this.ends.forEach(v => {
+          v.func.call(v.context, pos.x - v.xy.x, pos.y - v.xy.y, 'end', bodyEvent.pressure);
+        });
+      }
 
       this.moves.clear();
       this.ends.clear();
     }
 
-    [EVENT('add/body/mousemove')](func, context, xy) {
+    [EVENT(ADD_BODY_MOUSEMOVE)](func, context, xy) {
       this.moves.add({ func, context, xy });
     }
 
-    [EVENT('add/body/mouseup')](func, context, xy) {
+    [EVENT(ADD_BODY_MOUSEUP)](func, context, xy) {
       this.ends.add({ func, context, xy });
     }
 
@@ -1912,10 +2666,9 @@ const start = opt => {
     }
 
     [POINTERMOVE("document")](e) {
-      var oldPos = this.state.pos || EMPTY_POS;
+      var oldPos = this.state.pos || EMPTY_POS;      
+      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return; 
       var newPos = e.xy || EMPTY_POS;
-
-      this.bodyMoved = !(oldPos.x == newPos.x && oldPos.y == newPos.y);
 
       this.setState({bodyEvent : e, pos: newPos, oldPos}, false);
 
@@ -1924,8 +2677,9 @@ const start = opt => {
       }
     }
 
-    [POINTEREND("document") + DEBOUNCE(50)](e) {
-      var newPos = e.xy || EMPTY_POS;
+    [POINTEREND("document")](e) {
+      var newPos = e.xy || EMPTY_POS;      
+      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return;       
       this.setState({bodyEvent : e, pos: newPos}, false);
       this.removeBodyMoves();
       this.requestId = null;
@@ -1940,4 +2694,4 @@ var App = /*#__PURE__*/Object.freeze({
   start: start
 });
 
-export { AFTER, ALT, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, App, BEFORE, BIND, BIND_CHECK_DEFAULT_FUNCTION, BIND_CHECK_FUNCTION, BIND_SAPARATOR, BLUR, CAPTURE, CHANGE, CHANGEINPUT, CHECKER, CHECK_BIND_PATTERN, CHECK_LOAD_PATTERN, CHECK_PATTERN, CHECK_SAPARATOR, CLICK, CONTEXTMENU, CONTROL, CUSTOM, DEBOUNCE, DOUBLECLICK, DRAG, DRAGEND, DRAGENTER, DRAGEXIT, DRAGLEAVE, DRAGOUT, DRAGOVER, DRAGSTART, DROP, END, ENTER, EVENT, Event, EventAfterRunner, EventBeforeRunner, EventChecker, FOCUS, FOCUSIN, FOCUSOUT, IF, INPUT, KEYDOWN, KEYPRESS, KEYUP, LOAD, LOAD_SAPARATOR, META, MOUSEDOWN, MOUSEENTER, MOUSELEAVE, MOUSEMOVE, MOUSEOUT, MOUSEOVER, MOUSEUP, MOVE, NAME_SAPARATOR, PASTE, PIPE, POINTEREND, POINTERMOVE, POINTERSTART, PREVENT, RESIZE, SAPARATOR, SCROLL, SELF, SHIFT, SPACE, STOP, SUBMIT, THROTTLE, TOUCHEND, TOUCHMOVE, TOUCHSTART, UIElement, WHEEL, clone, createRef, debounce, getRef, html, isArray, isBoolean, isFunction, isNotString, isNotUndefined, isNumber, isObject, isString, isUndefined, keyEach, keyMap, throttle, uuid, uuidShort };
+export { AFTER, ALT, ANIMATIONEND, ANIMATIONITERATION, ANIMATIONSTART, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, App, BEFORE, BIND, BIND_CHECK_DEFAULT_FUNCTION, BIND_CHECK_FUNCTION, BIND_SAPARATOR, BLUR, CAPTURE, CHANGE, CHANGEINPUT, CHECKER, CHECK_BIND_PATTERN, CHECK_DOM_EVENT_PATTERN, CHECK_LOAD_PATTERN, CHECK_SAPARATOR, CLICK, CONTEXTMENU, CONTROL, CUSTOM, D1000, DEBOUNCE, DOM_EVENT_SAPARATOR, DOUBLECLICK, DRAG, DRAGEND, DRAGENTER, DRAGEXIT, DRAGLEAVE, DRAGOUT, DRAGOVER, DRAGSTART, DROP, END, ENTER, ESCAPE, EVENT, FIT, FOCUS, FOCUSIN, FOCUSOUT, IF, INPUT, KEY, KEYDOWN, KEYPRESS, KEYUP, LOAD, LOAD_SAPARATOR, META, MOUSEDOWN, MOUSEENTER, MOUSELEAVE, MOUSEMOVE, MOUSEOUT, MOUSEOVER, MOUSEUP, MOVE, NAME_SAPARATOR, PASSIVE, PASTE, PIPE, POINTEREND, POINTERMOVE, POINTERSTART, PREVENT, RESIZE, SAPARATOR, SCROLL, SELF, SHIFT, SPACE, STOP, SUBMIT, THROTTLE, TOUCHEND, TOUCHMOVE, TOUCHSTART, TRANSITIONCANCEL, TRANSITIONEND, TRANSITIONRUN, TRANSITIONSTART, UIElement, VDOM, WHEEL, clone, createRef, debounce, getRef, html, isArray, isBoolean, isFunction, isNotString, isNotUndefined, isNumber, isObject, isString, isUndefined, keyEach, keyMap, makeEventChecker, throttle, uuid, uuidShort };

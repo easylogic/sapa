@@ -1065,7 +1065,7 @@
     return e => {
       const delegateTarget = hasDelegate(e, eventObject);
       if (delegateTarget) {
-        e.$delegateTarget = Dom.create(delegateTarget);
+        e.$dt = Dom.create(delegateTarget);
 
         var returnValue = runEventCallback(context, e, eventObject, callback);
         if (isNotUndefined(returnValue)) { return returnValue; }
@@ -1083,7 +1083,7 @@
     }
 
     if (checkEventType(context, e, eventObject)) {
-      var returnValue = callback(e, e.$delegateTarget, e.xy);
+      var returnValue = callback(e, e.$dt, e.xy);
 
       if (eventObject.afterMethods.length) {
         eventObject.afterMethods.forEach(after =>
@@ -1623,7 +1623,7 @@
     /* magic check method  */
 
     self(e) {
-      return e && e.$delegateTarget && e.$delegateTarget.is(e.target);
+      return e && e.$dt && e.$dt.is(e.target);
     }
     isAltKey(e) {
       return e.altKey;

@@ -2,7 +2,9 @@ import { debounce } from "./functions/func";
 
 export default class BaseStore {
   constructor(opt = {}) {
+    this.cachedCallback = {};
     this.callbacks = {};
+    this.commandes = [];
   }
 
   getCallbacks(event) {
@@ -35,6 +37,7 @@ export default class BaseStore {
   }
 
   offAll (context) {
+
     Object.keys(this.callbacks).forEach(event => {
       this.setCallbacks(event, this.getCallbacks(event).filter(f => {
         return f.context !== context;  
@@ -47,28 +50,38 @@ export default class BaseStore {
   }
 
   sendMessage(source, event, $2, $3, $4, $5) {
-    setTimeout(() => {
+    Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
       if (list) {
         list
         .filter(f => f.originalCallback.source !== source)
-        .forEach(f => f.callback($2, $3, $4, $5));
+        .forEach(f => {
+          f.callback($2, $3, $4, $5)
+        });
       }
-    }, 0);
+
+    });
   }
 
   triggerMessage(source, event, $2, $3, $4, $5) {
-    setTimeout(() => {
+    Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
       if (list) {
         list
           .filter(f => f.originalCallback.source === source)
-          .forEach(f => f.callback($2, $3, $4, $5));
+          .forEach(f => {      
+            f.callback($2, $3, $4, $5)
+          });
       } else {
         console.warn(event, ' is not valid event');
       }
-    }, 0);
+
+
+    });
   }
+
+
+
 
   emit($1, $2, $3, $4, $5) {
     this.sendMessage(this.source, $1, $2, $3, $4, $5);
@@ -76,5 +89,9 @@ export default class BaseStore {
 
   trigger($1, $2, $3, $4, $5) {
     this.triggerMessage(this.source, $1, $2, $3, $4, $5);
+  }
+
+  execute($1, $2, $3, $4, $5){
+    this.runCommand(this.source, $1, $2, $3, $4, $5);
   }
 }

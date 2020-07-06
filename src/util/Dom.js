@@ -5,6 +5,7 @@ import {
   isNotString,
   isNotUndefined
 } from "./functions/func";
+import { DomDiff } from "./DomDiff";
 
 export default class Dom {
   constructor(tag, className, attr) {
@@ -30,6 +31,17 @@ export default class Dom {
   static create (tag, className, attr) {
     return new Dom(tag, className, attr);
   }
+ 
+  static createByHTML (htmlString) {
+    var div = Dom.create('div')
+    var list = div.html(htmlString).children();
+
+    if (list.length) {
+      return Dom.create(list[0].el);
+    }
+
+    return null; 
+  }
 
   static getScrollTop() {
     return Math.max(
@@ -52,6 +64,17 @@ export default class Dom {
     return parser.parseFromString(html, "text/htmll");
   }
 
+  static body () {
+    return Dom.create(document.body)
+  }
+
+  setAttr (obj) {
+    Object.keys(obj).forEach(key => {
+      this.attr(key, obj[key])
+    })
+    return this;  
+  }
+
   attr(key, value) {
     if (arguments.length == 1) {
       return this.el.getAttribute(key);
@@ -60,6 +83,12 @@ export default class Dom {
     this.el.setAttribute(key, value);
 
     return this;
+  }
+
+  attrKeyValue(keyField) {
+    return {
+      [this.el.getAttribute(keyField)]: this.val()
+    }
   }
 
   attrs(...args) {
@@ -87,6 +116,10 @@ export default class Dom {
 
   is(checkElement) {
     return this.el === (checkElement.el || checkElement);
+  }
+
+  isTag(tag) {
+    return this.el.tagName.toLowerCase() === tag.toLowerCase()
   }
 
   closest(cls) {
@@ -134,8 +167,11 @@ export default class Dom {
 
   onlyOneClass(cls) {
     var parent = this.parent();
-    var selected = parent.$(`.${cls}`);
-    if (selected) selected.removeClass(cls);
+
+    parent.children().forEach(it => {
+      it.removeClass(cls);
+    })
+
     this.addClass(cls);
   }
 
@@ -157,6 +193,18 @@ export default class Dom {
     return this;
   }
 
+  htmlDiff(fragment) {
+    DomDiff(this, fragment);
+  }
+  updateDiff (html, rootElement = 'div') {
+    DomDiff(this, Dom.create(rootElement).html(html))
+  }
+
+  updateSVGDiff (html, rootElement = 'div') {
+
+    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild)
+  }  
+
   find(selector) {
     return this.el.querySelector(selector);
   }
@@ -171,13 +219,15 @@ export default class Dom {
   }
 
   $$(selector) {
-    return [...this.findAll(selector)].map(node => {
-      return Dom.create(node);
+    var arr = this.findAll(selector);
+    return Object.keys(arr).map(key => {
+      return Dom.create(arr[key]);
     });
   }
 
   empty() {
-    return this.html('');
+    while (this.el.firstChild) this.el.removeChild(this.el.firstChild);
+    return this;
   }
 
   append(el) {
@@ -190,10 +240,30 @@ export default class Dom {
     return this;
   }
 
+  prepend(el) {
+    if (isString(el)) {
+      this.el.prepend(document.createTextNode(el));
+    } else {
+      this.el.prepend(el.el || el);
+    }
+
+    return this;    
+  }
+
+  prependHTML(html) {
+    var $dom = Dom.create("div").html(html);
+
+    this.prepend($dom.createChildrenFragment());
+
+    return $dom;
+  }
+
   appendHTML(html) {
     var $dom = Dom.create("div").html(html);
 
     this.append($dom.createChildrenFragment());
+
+    return $dom;
   }
 
   /**
@@ -224,6 +294,11 @@ export default class Dom {
     return this;
   }
 
+  removeChild(el) {
+    this.el.removeChild(el.el || el);
+    return this; 
+  }
+
   text(value) {
     if (isUndefined(value)) {
       return this.el.textContent;
@@ -251,17 +326,12 @@ export default class Dom {
 
   css(key, value) {
     if (isNotUndefined(key) && isNotUndefined(value)) {
-      this.el.style[key] = value;
+      Object.assign(this.el.style, {[key]: value});
     } else if (isNotUndefined(key)) {
       if (isString(key)) {
-        return getComputedStyle(this.el)[key];
+        return getComputedStyle(this.el)[key];  
       } else {
-        var keys = Object.keys(key || {});
-
-        for (var i = 0, len = keys.length; i < len; i++) {
-          var k = keys[i];
-          this.el.style[k] = key[k];
-        }
+        Object.assign(this.el.style, key);
       }
     }
 
@@ -301,9 +371,10 @@ export default class Dom {
       return this.el.style.cssText;
     }
 
-    if (value != this.el.style.cssText) {
+    if (value != this.el.tempCssText) {
       this.el.style.cssText = value;
-    }
+      this.el.tempCssText = value; 
+    } 
 
     return this;
   }
@@ -334,8 +405,29 @@ export default class Dom {
     return this.el.getBoundingClientRect();
   }
 
+  isSVG () {
+    return this.el.tagName.toUpperCase() === 'SVG';
+  }
+
   offsetRect() {
+
+    if (this.isSVG()) {
+      const parentBox = this.parent().rect();
+      const box = this.rect();
+
+      return {
+        x: box.x - parentBox.x,
+        y: box.y - parentBox.y,
+        top: box.x - parentBox.x,
+        left: box.y - parentBox.y,
+        width: box.width,
+        height: box.height
+      }
+    }
+
     return {
+      x: this.el.offsetLeft,
+      y: this.el.offsetTop,
       top: this.el.offsetTop,
       left: this.el.offsetLeft,
       width: this.el.offsetWidth,
@@ -403,21 +495,65 @@ export default class Dom {
   }
 
   val(value) {
+    if (isUndefined(value)) {
+      return this.el.value;
+    } else if (isNotUndefined(value)) {
+      var tempValue = value;
 
-    var tempValue = value;
+      if (value instanceof Dom) {
+        tempValue = value.val();
+      }
 
-    if (value instanceof Dom) {
-      tempValue = value.val();
+      this.el.value = tempValue;
     }
 
-    this.el.value = tempValue;
-
     return this;
-
   }
+
+  matches (selector) {
+    if (this.el) {
+
+      if (!this.el.matches) return null;
+
+      if (this.el.matches(selector)) {
+        return this;
+      }
+      return this.parent().matches(selector);
+    }
+
+    return null;
+}  
+
 
   get value() {
     return this.el.value;
+  }
+
+  get naturalWidth () {
+    return this.el.naturalWidth
+  }
+
+  get naturalHeight () {
+    return this.el.naturalHeight
+  }  
+
+  get files() {
+    return this.el.files ? [...this.el.files] : [];
+  }
+
+  realVal() {
+    switch (this.el.nodeType) {
+      case "INPUT":
+        var type = this.attr("type");
+        if (type == "checkbox" || type == "radio") {
+          return this.checked();
+        }
+      case "SELECT":
+      case "TEXTAREA":
+        return this.el.value;
+    }
+
+    return "";
   }
 
   show(displayType = "block") {
@@ -428,11 +564,19 @@ export default class Dom {
     return this.css("display", "none");
   }
 
+  isHide () {
+    return this.css("display") == "none"
+  }
+
+  isShow () {
+    return !this.isHide();
+  }
+
   toggle(isForce) {
-    var currentHide = this.css("display") == "none";
+    var currentHide = this.isHide();
 
     if (arguments.length == 1) {
-      if (currentHide && isForce) {
+      if (isForce) {
         return this.show();
       } else {
         return this.hide();
@@ -446,9 +590,23 @@ export default class Dom {
     }
   }
 
+  get totalLength () {
+    return this.el.getTotalLength()
+  }
+
   scrollIntoView () {
     this.el.scrollIntoView()
   }
+
+  addScrollLeft (dt) {
+    this.el.scrollLeft += dt; 
+    return this; 
+  }
+
+  addScrollTop (dt) {
+    this.el.scrollTop += dt; 
+    return this; 
+  }  
 
   setScrollTop(scrollTop) {
     this.el.scrollTop = scrollTop;
@@ -460,7 +618,7 @@ export default class Dom {
     return this;
   }
 
-  get scrollTop() {
+  scrollTop() {
     if (this.el === document.body) {
       return Dom.getScrollTop();
     }
@@ -468,7 +626,7 @@ export default class Dom {
     return this.el.scrollTop;
   }
 
-  get scrollLeft() {
+  scrollLeft() {
     if (this.el === document.body) {
       return Dom.getScrollLeft();
     }
@@ -476,11 +634,11 @@ export default class Dom {
     return this.el.scrollLeft;
   }
 
-  get scrollHeight() {
+  scrollHeight() {
     return this.el.scrollHeight;
   }
 
-  get scrollWidth() {
+  scrollWidth() {
     return this.el.scrollWidth;
   }  
 
@@ -509,7 +667,7 @@ export default class Dom {
     return $element;
   }
 
-  firstChild() {
+  get firstChild() {
     return Dom.create(this.el.firstElementChild);
   }
 
@@ -543,6 +701,12 @@ export default class Dom {
     return this;
   }
 
+  replaceChild(oldElement, newElement) {
+    this.el.replaceChild(newElement.el || newElement, oldElement.el || oldElement);
+
+    return this;
+  }  
+
   checked(isChecked = false) {
     if (arguments.length == 0) {
       return !!this.el.checked;
@@ -552,6 +716,13 @@ export default class Dom {
 
     return this;
   }
+
+
+  click () {
+    this.el.click();
+
+    return this; 
+  }  
 
   focus() {
     this.el.focus();
@@ -574,5 +745,105 @@ export default class Dom {
     this.el.select();
 
     return this;
+  }
+
+  // canvas functions
+
+  context(contextType = "2d") {
+    if (!this._initContext) {
+      this._initContext = this.el.getContext(contextType);
+    }
+
+    return this._initContext;
+  }
+
+  resize({ width, height }) {
+    // support hi-dpi for retina display
+    this._initContext = null;
+    var ctx = this.context();
+    var scale = window.devicePixelRatio || 1;
+
+    this.px("width", +width);
+    this.px("height", +height);
+
+    this.el.width = width * scale;
+    this.el.height = height * scale;
+
+    ctx.scale(scale, scale);
+  }
+
+  toDataURL (type = 'image/png', quality = 1) {
+    return this.el.toDataURL(type, quality)
+  }
+
+  clear() {
+    this.context().clearRect(0, 0, this.el.width, this.el.height);
+  }
+
+  update(callback) {
+    this.clear();
+    callback.call(this, this);
+  }
+
+  drawImage (img, dx = 0, dy = 0) {
+    var ctx = this.context()
+    var scale = window.devicePixelRatio || 1;    
+    ctx.drawImage(img, dx, dy, img.width, img.height, 0, 0, this.el.width / scale, this.el.height / scale);
+  }
+
+  drawOption(option = {}) {
+    var ctx = this.context();
+
+    Object.assign(ctx, option);
+  }
+
+  drawLine(x1, y1, x2, y2) {
+    var ctx = this.context();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  drawPath(...path) {
+    var ctx = this.context();
+
+    ctx.beginPath();
+
+    path.forEach((p, index) => {
+      if (index == 0) {
+        ctx.moveTo(p[0], p[1]);
+      } else {
+        ctx.lineTo(p[0], p[1]);
+      }
+    });
+    ctx.stroke();
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  drawCircle(cx, cy, r) {
+    var ctx = this.context();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  drawText(x, y, text) {
+    this.context().fillText(text, x, y);
+  }
+
+  /* utility */ 
+  fullscreen () {
+    var element = this.el; 
+    
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.wekitRequestFullscreen) {
+      element.wekitRequestFullscreen();
+    }
   }
 }

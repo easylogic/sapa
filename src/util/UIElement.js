@@ -1,6 +1,5 @@
-import { uuid } from "./functions/func";
 import EventMachine, { splitMethodByKeyword } from "./EventMachine";
-import BaseStore from "./BaseStore";
+import { uuid } from "./functions/func";
 
 const REG_STORE_MULTI_PATTERN = /^ME@/;
 
@@ -17,9 +16,7 @@ export const EVENT = (...args) => {
 
 export class UIElement extends EventMachine {
   constructor(opt, props = {}) {
-    super(opt);
-
-    this.initializeProperty(opt, props)
+    super(opt, props);
 
     this.created();
 
@@ -42,10 +39,6 @@ export class UIElement extends EventMachine {
 
     if (opt && opt.$store) this.$store = opt.$store;
     if (opt && opt.$app) this.$app = opt.$app;
-
-    if (!this.$store) {
-      this.$store = new BaseStore(opt);
-    }
   }
 
   created() {}
@@ -55,51 +48,69 @@ export class UIElement extends EventMachine {
     return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
   }
 
+  /**
+   * initialize store event
+   *
+   * you can define '@xxx' method(event) in UIElement
+   *
+   *
+   */
   initializeStoreEvent() {
-    this.storeEvents = {};
 
     this.filterProps(REG_STORE_MULTI_PATTERN).forEach(key => {
       const events = this.getRealEventName(key, MULTI_PREFIX);
 
       // support deboounce for store event 
-      var [debounceMethods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
+      var [methods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
 
       var debounceSecond = 0 
-      if (debounceMethods.length) {
+      if (methods.length) {
         debounceSecond = +params[0].target || 0 
       }
 
       events
         .split(SPLITTER)
-        .filter(it => debounceMethods.includes(it) === false)
+        .filter(it => {
+          return methods.indexOf(it) === -1
+        })
         .map(it => it.trim())
         .forEach(e => {
           var callback = this[key].bind(this);
+          callback.displayName = `${this.sourceName}.${e}`;
           callback.source = this.source;
-          this.storeEvents[e] = callback;
-          this.$store.on(e, this.storeEvents[e], this, debounceSecond);
+          this.$store.on(e, callback, this, debounceSecond);
       });
     });
   }
 
   destoryStoreEvent() {
     this.$store.offAll(this);
-    this.storeEvents = {} 
   }
 
   destroy () {
     super.destroy()
+
     this.destoryStoreEvent();
   }
 
-  emit(...args) {
-    this.$store.source = this.source;
-    this.$store.emit(...args);
+  rerender() {
+    super.rerender();
+
+    this.initialize();
+
+    this.initializeStoreEvent();
   }
 
-  trigger(...args) {
+
+  emit($1, $2, $3, $4, $5) {
     this.$store.source = this.source;
-    this.$store.trigger(...args);
+    this.$store.sourceContext = this; 
+    this.$store.emit($1, $2, $3, $4, $5);
+  }
+
+  trigger($1, $2, $3, $4, $5) {
+    this.$store.source = this.source;
+    this.$store.trigger($1, $2, $3, $4, $5);
   }
 
   on (message, callback) {

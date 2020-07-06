@@ -1,90 +1,34 @@
 import { uuid } from "./functions/func";
 
-export class EventChecker {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} ` + this.value;
-  }
-}
-
-export class EventAfterRunner {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} after(${this.value})`;
-  }
-}
-
-export class EventBeforeRunner {
-  constructor(value, split = CHECK_SAPARATOR) {
-    this.value = value;
-    this.split = split;
-  }
-
-  toString() {
-    return ` ${this.split} before(${this.value})`;
-  }
+export const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+  return ` ${split} ${value}`;
 }
 
 // event name regular expression
+export const CHECK_DOM_EVENT_PATTERN = /^dom (.*)/gi;
 export const CHECK_LOAD_PATTERN = /^load (.*)/gi;
 export const CHECK_BIND_PATTERN = /^bind (.*)/gi;
 
-const CHECK_CLICK_PATTERN = "click|dblclick";
-const CHECK_MOUSE_PATTERN = "mouse(down|up|move|over|out|enter|leave)";
-const CHECK_POINTER_PATTERN = "pointer(start|move|end)";
-const CHECK_TOUCH_PATTERN = "touch(start|move|end)";
-const CHECK_KEY_PATTERN = "key(down|up|press)";
-const CHECK_DRAGDROP_PATTERN =
-  "drag|drop|drag(start|over|enter|leave|exit|end)";
-const CHECK_CONTEXT_PATTERN = "contextmenu";
-const CHECK_INPUT_PATTERN = "change|input|focus|blur|focus(in|out)";
-const CHECK_CLIPBOARD_PATTERN = "paste";
-const CHECK_BEHAVIOR_PATTERN = "resize|scroll|wheel|mousewheel|DOMMouseScroll";
-const CHECK_FORM_PATTERN = "submit";
 
-const CHECK_PATTERN_LIST = [
-  CHECK_CLICK_PATTERN,
-  CHECK_MOUSE_PATTERN,
-  CHECK_POINTER_PATTERN,
-  CHECK_TOUCH_PATTERN,
-  CHECK_KEY_PATTERN,
-  CHECK_DRAGDROP_PATTERN,
-  CHECK_CONTEXT_PATTERN,
-  CHECK_INPUT_PATTERN,
-  CHECK_CLIPBOARD_PATTERN,
-  CHECK_BEHAVIOR_PATTERN,
-  CHECK_FORM_PATTERN
-].join("|");
-
-export const CHECK_PATTERN = new RegExp(`^(${CHECK_PATTERN_LIST}\s)`, "ig");
 
 export const NAME_SAPARATOR = ":";
 export const CHECK_SAPARATOR = "|";
+export const DOM_EVENT_SAPARATOR = "dom ";
 export const LOAD_SAPARATOR = "load ";
 export const BIND_SAPARATOR = "bind ";
+
 export const SAPARATOR = ' ';
 
-// 임의의 값을 저장하기 위한 구조
-// 임의의 값은 하나의 id 로 만들어지고 id 를 조회 할 때  값으로 다시 치환
 const refManager = {};
 
 const DOM_EVENT_MAKE = (...keys) => {
   var key = keys.join(NAME_SAPARATOR);
   return (...args) => {
-    return [key, ...args].join(SAPARATOR);
+    return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
   };
 };
 
 export const CUSTOM = DOM_EVENT_MAKE;
-
 export const CLICK = DOM_EVENT_MAKE("click");
 export const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
 export const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
@@ -120,18 +64,34 @@ export const PASTE = DOM_EVENT_MAKE("paste");
 export const RESIZE = DOM_EVENT_MAKE("resize");
 export const SCROLL = DOM_EVENT_MAKE("scroll");
 export const SUBMIT = DOM_EVENT_MAKE("submit");
-export const POINTERSTART = CUSTOM("mousedown", "touchstart");
-export const POINTERMOVE = CUSTOM("mousemove", "touchmove");
-export const POINTEREND = CUSTOM("mouseup", "touchend");
+export const POINTERSTART = CUSTOM("pointerdown");
+export const POINTERMOVE = CUSTOM("pointermove");
+export const POINTEREND = CUSTOM("pointerup");
 export const CHANGEINPUT = CUSTOM("change", "input");
 export const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
+export const ANIMATIONSTART = DOM_EVENT_MAKE('animationstart');
+export const ANIMATIONEND = DOM_EVENT_MAKE('animationend');
+export const ANIMATIONITERATION = DOM_EVENT_MAKE('animationiteration');
+export const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
+export const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
+export const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
+export const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
 
 // Predefined CHECKER
-export const CHECKER = (value, split = CHECK_SAPARATOR) => new EventChecker(value, split)
-export const AFTER = (value, split = CHECK_SAPARATOR) => new EventAfterRunner(value, split)
-export const BEFORE = (value, split = CHECK_SAPARATOR) => new EventBeforeRunner(value, split)
+export const CHECKER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(value, split);
+};
+
+export const AFTER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`after(${value})`, split);
+};
+
+export const BEFORE = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`before(${value})`, split);  
+};
 
 export const IF = CHECKER;
+export const KEY = CHECKER; 
 
 export const ARROW_UP = CHECKER('ArrowUp');
 export const ARROW_DOWN = CHECKER('ArrowDown');
@@ -139,6 +99,7 @@ export const ARROW_LEFT = CHECKER('ArrowLeft');
 export const ARROW_RIGHT = CHECKER('ArrowRight');
 export const ENTER = CHECKER('Enter');
 export const SPACE = CHECKER('Space');
+export const ESCAPE = CHECKER('Escape');
 
 export const ALT = CHECKER("isAltKey");
 export const SHIFT = CHECKER("isShiftKey");
@@ -146,21 +107,41 @@ export const META = CHECKER("isMetaKey");
 export const CONTROL = CHECKER("isCtrlKey");
 export const SELF = CHECKER("self");
 
-// event config method
-export const DEBOUNCE = (t = 100) => CHECKER(`debounce(${t})`)
-export const THROTTLE = (t = 100) => CHECKER(`throttle(${t})`)
-export const CAPTURE = CHECKER("capture()");
+export const FIT = CHECKER("fit");
+export const PASSIVE = CHECKER("passive");
+export const VDOM = CHECKER('vdom');
 
+// event config method
+export const DEBOUNCE = (t = 100) => {
+  return CHECKER(`debounce(${t})`);
+};
+
+export const D1000 = DEBOUNCE(1000)
+
+export const THROTTLE = (t = 100) => {
+  return CHECKER(`throttle(${t})`);
+};
+
+export const CAPTURE = CHECKER("capture()");
 // event config method
 
 // before method
 
 // after method
-export const MOVE = (method = "move") => AFTER(`bodyMouseMove ${method}`)
-export const END = (method = "end") => AFTER(`bodyMouseUp ${method}`)
+export const MOVE = (method = "move") => {
+  return AFTER(`bodyMouseMove ${method}`);
+};
+export const END = (method = "end") => {
+  return AFTER(`bodyMouseUp ${method}`);
+};
 
 export const PREVENT = AFTER(`preventDefault`);
 export const STOP = AFTER(`stopPropagation`);
+
+// Predefined LOADER
+export const LOAD = (value = "$el") => {
+  return LOAD_SAPARATOR + value;
+};
 
 export const createRef = value => {
   if (value === '') return '';
@@ -171,7 +152,9 @@ export const createRef = value => {
   return id;
 };
 
-export const getRef = id => refManager[id] || ''
+export const getRef = id => {
+  return refManager[id] || '';
+};
 
 export const BIND_CHECK_FUNCTION = field => {
   return function() {
@@ -179,10 +162,10 @@ export const BIND_CHECK_FUNCTION = field => {
   };
 };
 
-export const BIND_CHECK_DEFAULT_FUNCTION = () => true
+export const BIND_CHECK_DEFAULT_FUNCTION = () => {
+  return true;
+};
 
-// Predefined LOADER
-export const LOAD = (value = "$el") => LOAD_SAPARATOR + value
 export const BIND = (value = "$el", checkFieldOrCallback = '') => {
   return (
     BIND_SAPARATOR + value + ( 
@@ -191,7 +174,7 @@ export const BIND = (value = "$el", checkFieldOrCallback = '') => {
   );
 };
 
-export const Event = {
+export default {
   addEvent(dom, eventName, callback, useCapture = false) {
     if (dom) {
       dom.addEventListener(eventName, callback, useCapture);

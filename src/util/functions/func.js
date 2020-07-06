@@ -1,5 +1,8 @@
+export function debounce (callback, delay = 0) {
 
-export function debounce (callback, delay) {
+    if (delay === 0) {
+        return callback;
+    }
 
     var t = undefined;
 
@@ -83,13 +86,18 @@ export function clone (obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-const short_tag_regexp = /\<(\w*)([^\>]*)\/\>/gim;
-
 const HTML_TAG = {
     'image': true,
     'input': true,
     'br': true,
-    'path': true 
+    'path': true,
+    'line': true,
+    'circle': true,
+    'rect': true,
+    'path': true, 
+    'polygon': true,
+    'polyline': true,
+    'use': true
 }
 
 
@@ -107,20 +115,12 @@ export const html = (strings, ...args) => {
             results = [results]
         }
 
-        results = results.map(r => {
-            if (isObject(r) && !isArray(r)) {
-                return Object.keys(r).map(key => {
-                    return `${key}="${r[key]}"`
-                }).join(' ')
-            }
-
-            return r
-        }).join('')
+        results = results.join('')
 
         return it + results;
     }).join('');
 
-    results = results.replace(short_tag_regexp, function (match, p1) {
+    results = results.replace(/\<(\w*)([^\>]*)\/\>/gim, function (match, p1) {
         if (HTML_TAG[p1.toLowerCase()]) {
             return match;
         } else {
