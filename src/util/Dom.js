@@ -43,6 +43,11 @@ export default class Dom {
     return null; 
   }
 
+  static createFragment (htmlString) {
+    var div = Dom.create('div')
+    return Dom.create(div.html(htmlString).createChildrenFragment())
+  }
+
   static getScrollTop() {
     return Math.max(
       window.pageYOffset,
@@ -68,7 +73,12 @@ export default class Dom {
     return Dom.create(document.body)
   }
 
+  isFragment () {
+    return this.el.nodeType === 11;
+  }
+
   setAttr (obj) {
+    if (this.isFragment()) return; 
     Object.keys(obj).forEach(key => {
       this.attr(key, obj[key])
     })
@@ -76,8 +86,14 @@ export default class Dom {
   }
 
   attr(key, value) {
+    if (this.isFragment()) return; 
     if (arguments.length == 1) {
-      return this.el.getAttribute(key);
+      if (this.el.getAttribute) {
+        return this.el.getAttribute(key);
+      } else {
+        return undefined;
+      }
+
     }
 
     this.el.setAttribute(key, value);
@@ -86,12 +102,14 @@ export default class Dom {
   }
 
   attrKeyValue(keyField) {
+    if (this.isFragment()) return {};     
     return {
       [this.el.getAttribute(keyField)]: this.val()
     }
   }
 
   attrs(...args) {
+    if (this.isFragment()) return [];
     return args.map(key => {
       return this.el.getAttribute(key);
     });

@@ -312,6 +312,11 @@ class Dom {
     return null; 
   }
 
+  static createFragment (htmlString) {
+    var div = Dom.create('div');
+    return Dom.create(div.html(htmlString).createChildrenFragment())
+  }
+
   static getScrollTop() {
     return Math.max(
       window.pageYOffset,
@@ -337,7 +342,12 @@ class Dom {
     return Dom.create(document.body)
   }
 
+  isFragment () {
+    return this.el.nodeType === 11;
+  }
+
   setAttr (obj) {
+    if (this.isFragment()) return; 
     Object.keys(obj).forEach(key => {
       this.attr(key, obj[key]);
     });
@@ -345,8 +355,14 @@ class Dom {
   }
 
   attr(key, value) {
+    if (this.isFragment()) return; 
     if (arguments.length == 1) {
-      return this.el.getAttribute(key);
+      if (this.el.getAttribute) {
+        return this.el.getAttribute(key);
+      } else {
+        return undefined;
+      }
+
     }
 
     this.el.setAttribute(key, value);
@@ -355,12 +371,14 @@ class Dom {
   }
 
   attrKeyValue(keyField) {
+    if (this.isFragment()) return {};     
     return {
       [this.el.getAttribute(keyField)]: this.val()
     }
   }
 
   attrs(...args) {
+    if (this.isFragment()) return [];
     return args.map(key => {
       return this.el.getAttribute(key);
     });
@@ -2073,11 +2091,7 @@ class EventMachine {
   }
 
   render($container) {
-    this.$el = this.parseTemplate(
-      html`
-        ${this.template()}
-      `
-    );
+    this.$el = this.parseTemplate(this.template());
     this.refs.$el = this.$el;
 
     if ($container) {
@@ -2102,14 +2116,13 @@ class EventMachine {
     return this.refs[key];
   }
 
-  parseTemplate(html, isLoad) {
+  parseTemplate(htmlString, isLoad) {
 
-    if (isArray(html)) {
-      html = html.join('');
+    if (isArray(htmlString)) {
+      htmlString = htmlString.join('');
     }
 
-    html = html.trim();
-    const list = TEMP_DIV.html(html).children();
+    const list = TEMP_DIV.html(html`${htmlString}`).children();
 
     list.forEach($el => {
       var ref = $el.attr(REFERENCE_PROPERTY);
@@ -2192,20 +2205,6 @@ class EventMachine {
 
   parseComponent() {
     const $el = this.$el;
-
-    // root 가 element 인 경우에 대비해서 component 를 맞춰야함 
-    keyEach(this.childComponents, (ComponentName, Component) => {
-      if (ComponentName.toLowerCase() === $el.el.tagName.toLowerCase()) {
-        const props = this.parseProperty($el);
-
-        const instance = new Component(this, props);    
-        this.children[instance.id] = instance;
-        instance.render();
-
-        $el.replace(instance.$el);
-      }
-
-    });
 
     let targets = []; 
     if (this.childComponentKeysString) {
@@ -2296,12 +2295,8 @@ class EventMachine {
         
         var newTemplate = this[callbackName].call(this, ...args);
 
-        if (isArray(newTemplate)) {
-          newTemplate = newTemplate.join('');
-        }
-
         // create fragment 
-        const fragment = this.parseTemplate(html`${newTemplate}`, true);
+        const fragment = this.parseTemplate(newTemplate, true);
         if (isVdom) {
           this.refs[elName].htmlDiff(fragment);
         } else {
