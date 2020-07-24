@@ -530,6 +530,12 @@ App.start({
 
 ```
 
+# Development
+
+`
+npm run dev
+`
+
 # How to build 
 
 `
