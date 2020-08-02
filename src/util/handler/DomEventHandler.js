@@ -1,8 +1,7 @@
 import BaseHandler from "./BaseHandler";
 import Event, { CHECK_SAPARATOR, DOM_EVENT_SAPARATOR, SAPARATOR, NAME_SAPARATOR, CHECK_DOM_EVENT_PATTERN } from "../Event";
 import { debounce, throttle, isNotUndefined, isFunction } from "../functions/func";
-import Dom from "../Dom";
-
+import { Dom } from "../Dom";
 
 const scrollBlockingEvents = {
     'touchstart': true,

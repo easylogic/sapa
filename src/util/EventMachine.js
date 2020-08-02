@@ -5,7 +5,6 @@ import {
   LOAD,
   VDOM,
 } from "./Event";
-import Dom from "./Dom";
 import {
   isFunction,
   isArray,
@@ -17,6 +16,7 @@ import {
 import DomEventHandler from "./handler/DomEventHandler";
 import BindHandler from "./handler/BindHandler";
 import { ADD_BODY_MOUSEMOVE, ADD_BODY_MOUSEUP } from "../types/constants";
+import { Dom } from "./Dom";
 
 const REFERENCE_PROPERTY = "ref";
 const TEMP_DIV = Dom.create("div");

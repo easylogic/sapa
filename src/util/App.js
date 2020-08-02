@@ -1,9 +1,10 @@
-import Dom from "./Dom";
+
 import { POINTERMOVE, POINTEREND, DEBOUNCE, RESIZE } from "./Event";
 import BaseStore from "./BaseStore";
 import { UIElement, EVENT } from "./UIElement";
 import { debounce } from "./functions/func";
 import { ADD_BODY_MOUSEMOVE, ADD_BODY_MOUSEUP } from "../types/constants";
+import { Dom } from "./Dom";
 
 const EMPTY_POS = { x: 0, y: 0 };
 const DEFAULT_POS = { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER };

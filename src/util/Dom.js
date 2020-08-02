@@ -7,7 +7,7 @@ import {
 } from "./functions/func";
 import { DomDiff } from "./DomDiff";
 
-export default class Dom {
+export class Dom {
   constructor(tag, className, attr) {
     if (isNotString(tag)) {
       this.el = tag;

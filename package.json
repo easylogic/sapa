@@ -1,6 +1,6 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.0.15",
+  "version": "0.1.0",
   "description": "Simple JS Application Library",
   "main": "dist/sapa.js",
   "module": "dist/sapa.esm.js",
@@ -27,6 +27,7 @@
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.6.0",
     "postcss-loader": "^3.0.0",
+    "rollup": "^2.23.0",
     "rollup-plugin-serve": "^1.0.1",
     "sass": "^1.19.0",
     "sass-loader": "^7.1.0",

@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.sapa = {}));
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.sapa = {}));
 }(this, (function (exports) { 'use strict';
 
   function debounce (callback, delay = 0) {
@@ -157,6 +157,441 @@
           return (c=='x' ? r :(r&0x3|0x8)).toString(16);
       });
       return uuid;
+  }
+
+  const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+    return ` ${split} ${value}`;
+  };
+
+  // event name regular expression
+  const CHECK_DOM_EVENT_PATTERN = /^dom (.*)/gi;
+  const CHECK_LOAD_PATTERN = /^load (.*)/gi;
+  const CHECK_BIND_PATTERN = /^bind (.*)/gi;
+
+
+
+  const NAME_SAPARATOR = ":";
+  const CHECK_SAPARATOR = "|";
+  const DOM_EVENT_SAPARATOR = "dom ";
+  const LOAD_SAPARATOR = "load ";
+  const BIND_SAPARATOR = "bind ";
+
+  const SAPARATOR = ' ';
+
+  const refManager = {};
+
+  const DOM_EVENT_MAKE = (...keys) => {
+    var key = keys.join(NAME_SAPARATOR);
+    return (...args) => {
+      return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
+    };
+  };
+
+  const CUSTOM = DOM_EVENT_MAKE;
+  const CLICK = DOM_EVENT_MAKE("click");
+  const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
+  const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
+  const MOUSEUP = DOM_EVENT_MAKE("mouseup");
+  const MOUSEMOVE = DOM_EVENT_MAKE("mousemove");
+  const MOUSEOVER = DOM_EVENT_MAKE("mouseover");
+  const MOUSEOUT = DOM_EVENT_MAKE("mouseout");
+  const MOUSEENTER = DOM_EVENT_MAKE("mouseenter");
+  const MOUSELEAVE = DOM_EVENT_MAKE("mouseleave");
+  const TOUCHSTART = DOM_EVENT_MAKE("touchstart");
+  const TOUCHMOVE = DOM_EVENT_MAKE("touchmove");
+  const TOUCHEND = DOM_EVENT_MAKE("touchend");
+  const KEYDOWN = DOM_EVENT_MAKE("keydown");
+  const KEYUP = DOM_EVENT_MAKE("keyup");
+  const KEYPRESS = DOM_EVENT_MAKE("keypress");
+  const DRAG = DOM_EVENT_MAKE("drag");
+  const DRAGSTART = DOM_EVENT_MAKE("dragstart");
+  const DROP = DOM_EVENT_MAKE("drop");
+  const DRAGOVER = DOM_EVENT_MAKE("dragover");
+  const DRAGENTER = DOM_EVENT_MAKE("dragenter");
+  const DRAGLEAVE = DOM_EVENT_MAKE("dragleave");
+  const DRAGEXIT = DOM_EVENT_MAKE("dragexit");
+  const DRAGOUT = DOM_EVENT_MAKE("dragout");
+  const DRAGEND = DOM_EVENT_MAKE("dragend");
+  const CONTEXTMENU = DOM_EVENT_MAKE("contextmenu");
+  const CHANGE = DOM_EVENT_MAKE("change");
+  const INPUT = DOM_EVENT_MAKE("input");
+  const FOCUS = DOM_EVENT_MAKE("focus");
+  const FOCUSIN = DOM_EVENT_MAKE("focusin");
+  const FOCUSOUT = DOM_EVENT_MAKE("focusout");
+  const BLUR = DOM_EVENT_MAKE("blur");
+  const PASTE = DOM_EVENT_MAKE("paste");
+  const RESIZE = DOM_EVENT_MAKE("resize");
+  const SCROLL = DOM_EVENT_MAKE("scroll");
+  const SUBMIT = DOM_EVENT_MAKE("submit");
+  const POINTERSTART = CUSTOM("pointerdown");
+  const POINTERMOVE = CUSTOM("pointermove");
+  const POINTEREND = CUSTOM("pointerup");
+  const CHANGEINPUT = CUSTOM("change", "input");
+  const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
+  const ANIMATIONSTART = DOM_EVENT_MAKE('animationstart');
+  const ANIMATIONEND = DOM_EVENT_MAKE('animationend');
+  const ANIMATIONITERATION = DOM_EVENT_MAKE('animationiteration');
+  const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
+  const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
+  const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
+  const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
+
+  // Predefined CHECKER
+  const CHECKER = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(value, split);
+  };
+
+  const AFTER = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(`after(${value})`, split);
+  };
+
+  const BEFORE = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(`before(${value})`, split);  
+  };
+
+  const IF = CHECKER;
+  const KEY = CHECKER; 
+
+  const ARROW_UP = CHECKER('ArrowUp');
+  const ARROW_DOWN = CHECKER('ArrowDown');
+  const ARROW_LEFT = CHECKER('ArrowLeft');
+  const ARROW_RIGHT = CHECKER('ArrowRight');
+  const ENTER = CHECKER('Enter');
+  const SPACE = CHECKER('Space');
+  const ESCAPE = CHECKER('Escape');
+
+  const ALT = CHECKER("isAltKey");
+  const SHIFT = CHECKER("isShiftKey");
+  const META = CHECKER("isMetaKey");
+  const CONTROL = CHECKER("isCtrlKey");
+  const SELF = CHECKER("self");
+
+  const FIT = CHECKER("fit");
+  const PASSIVE = CHECKER("passive");
+  const VDOM = CHECKER('vdom');
+
+  // event config method
+  const DEBOUNCE = (t = 100) => {
+    return CHECKER(`debounce(${t})`);
+  };
+
+  const D1000 = DEBOUNCE(1000);
+
+  const THROTTLE = (t = 100) => {
+    return CHECKER(`throttle(${t})`);
+  };
+
+  const CAPTURE = CHECKER("capture()");
+  // event config method
+
+  // before method
+
+  // after method
+  const MOVE = (method = "move") => {
+    return AFTER(`bodyMouseMove ${method}`);
+  };
+  const END = (method = "end") => {
+    return AFTER(`bodyMouseUp ${method}`);
+  };
+
+  const PREVENT = AFTER(`preventDefault`);
+  const STOP = AFTER(`stopPropagation`);
+
+  // Predefined LOADER
+  const LOAD = (value = "$el") => {
+    return LOAD_SAPARATOR + value;
+  };
+
+  const createRef = value => {
+    if (value === '') return '';
+
+    var id = uuid();
+    refManager[id] = value;
+
+    return id;
+  };
+
+  const getRef = id => {
+    return refManager[id] || '';
+  };
+
+  const BIND_CHECK_FUNCTION = field => {
+    return function() {
+      return this.prevState[field] != this.state[field];
+    };
+  };
+
+  const BIND_CHECK_DEFAULT_FUNCTION = () => {
+    return true;
+  };
+
+  const BIND = (value = "$el", checkFieldOrCallback = '') => {
+    return (
+      BIND_SAPARATOR + value + ( 
+        checkFieldOrCallback ?  CHECK_SAPARATOR + createRef(checkFieldOrCallback) : '' 
+      ) 
+    );
+  };
+
+  var Event = {
+    addEvent(dom, eventName, callback, useCapture = false) {
+      if (dom) {
+        dom.addEventListener(eventName, callback, useCapture);
+      }
+    },
+
+    removeEvent(dom, eventName, callback) {
+      if (dom) {
+        dom.removeEventListener(eventName, callback);
+      }
+    },
+
+    pos(e) {
+      if (e.touches && e.touches[0]) {
+        return e.touches[0];
+      }
+
+      return e;
+    },
+
+    posXY(e) {
+      var pos = this.pos(e);
+      return {
+        x: pos.pageX,
+        y: pos.pageY
+      };
+    }
+  };
+
+  class BaseStore {
+    constructor(opt = {}) {
+      this.cachedCallback = {};
+      this.callbacks = {};
+      this.commandes = [];
+    }
+
+    getCallbacks(event) {
+      if (!this.callbacks[event]) {
+        this.callbacks[event] = [];
+      }
+
+      return this.callbacks[event]
+    }
+
+    setCallbacks(event, list = []) {
+      this.callbacks[event] = list; 
+    }
+
+    on(event, originalCallback, context, delay = 0) {
+      var callback = delay > 0 ? debounce(originalCallback, delay) : originalCallback;
+
+      this.getCallbacks(event).push({ event, callback, context, originalCallback });
+    }
+
+    off(event, originalCallback) {
+
+      if (arguments.length == 1) {
+        this.setCallbacks(event);
+      } else if (arguments.length == 2) {      
+        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+          return f.originalCallback !== originalCallback
+        }));
+      }
+    }
+
+    offAll (context) {
+
+      Object.keys(this.callbacks).forEach(event => {
+        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+          return f.context !== context;  
+        }));
+      });
+    }
+
+    getCachedCallbacks (event) {
+      return this.getCallbacks(event);
+    }
+
+    sendMessage(source, event, $2, $3, $4, $5) {
+      Promise.resolve().then(() => {
+        var list = this.getCachedCallbacks(event);
+        if (list) {
+          list
+          .filter(f => f.originalCallback.source !== source)
+          .forEach(f => {
+            f.callback($2, $3, $4, $5);
+          });
+        }
+
+      });
+    }
+
+    triggerMessage(source, event, $2, $3, $4, $5) {
+      Promise.resolve().then(() => {
+        var list = this.getCachedCallbacks(event);
+        if (list) {
+          list
+            .filter(f => f.originalCallback.source === source)
+            .forEach(f => {      
+              f.callback($2, $3, $4, $5);
+            });
+        } else {
+          console.warn(event, ' is not valid event');
+        }
+
+
+      });
+    }
+
+
+
+
+    emit($1, $2, $3, $4, $5) {
+      this.sendMessage(this.source, $1, $2, $3, $4, $5);
+    }
+
+    trigger($1, $2, $3, $4, $5) {
+      this.triggerMessage(this.source, $1, $2, $3, $4, $5);
+    }
+
+    execute($1, $2, $3, $4, $5){
+      this.runCommand(this.source, $1, $2, $3, $4, $5);
+    }
+  }
+
+  // collectProps 에서 제외될 메소드 목록 
+  const expectMethod = {
+      "constructor": true,
+      "initState": true,
+      "refresh": true,
+      "updateData": true,
+      "constructor": true,
+      "initializeProperty": true,
+      "created": true,
+      "getRealEventName": true,
+      "initializeStoreEvent": true,
+      "destoryStoreEvent": true,
+      "destroy": true,
+      "emit": true,
+      "trigger": true,
+      "on": true,
+      "off": true,
+      "setState": true,
+      "_reload": true,
+      "render": true,
+      "initialize": true,
+      "afterRender": true,
+      "components": true,
+      "getRef": true,
+      "parseTemplate": true,
+      "childrenIds": true,
+      "exists": true,
+      "parseProperty": true,
+      "parseSourceName": true,
+      "parseComponent": true,
+      "clean": true,
+      "refresh": true,
+      "template": true,
+      "eachChildren": true,
+      "initializeEvent": true,
+      "destroy": true,
+      "self": true,
+      "isAltKey": true,
+      "isCtrlKey": true,
+      "isShiftKey": true,
+      "isMetaKey": true,
+      "preventDefault": true,
+      "stopPropagation": true,
+      "bodyMouseMove": true,
+      "bodyMouseUp": true,
+    };
+
+  class BaseHandler {
+      constructor (context, options = {}) {
+          this.context = context;
+          this.options = options;
+      }
+
+      // 초기화 설정 
+      initialize () {
+
+      }
+
+      // html 을 로드 할 때 
+      load () {
+
+      }
+
+      // 새로고침 할 때 
+      refresh () {
+
+      }
+      
+      // 화면에 그린 이후에 실행 되는 로직들 
+      render () {
+
+      }
+
+      getRef(id) {
+          return this.context.getRef(id);
+      }
+          
+      splitMethodByKeyword (arr, keyword) {
+          var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
+          var filterMaps = filterKeys.map(code => {
+            var [target, param] = code
+              .split(`${keyword}(`)[1]
+              .split(")")[0]
+              .trim()
+              .split(" ");
+        
+            return { target, param };
+          });
+        
+          return [filterKeys, filterMaps];
+      }    
+
+      /**
+       * property 수집하기
+       * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+       */
+      collectProps() {
+
+          var context = this.context;
+          var p = context.__proto__;
+          var results = [];
+          do {
+          var isObject = p instanceof Object;
+
+          if (isObject === false) {
+              break;
+          }
+          const names = Object.getOwnPropertyNames(p).filter(name => {
+              return context && isFunction(context[name]) && !expectMethod[name];
+          });
+
+          results.push(...names);
+          p = p.__proto__;
+          } while (p);
+
+          return results;
+      }
+
+
+
+      filterProps(pattern) {
+          return this.collectProps().filter(key => {
+              return key.match(pattern);
+          });
+      }    
+
+      run () {
+
+      }
+
+      destroy() {
+
+      }
   }
 
   const setBooleanProp = (el, name, value) => {
@@ -1139,441 +1574,6 @@
         element.wekitRequestFullscreen();
       }
     }
-  }
-
-  const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
-    return ` ${split} ${value}`;
-  };
-
-  // event name regular expression
-  const CHECK_DOM_EVENT_PATTERN = /^dom (.*)/gi;
-  const CHECK_LOAD_PATTERN = /^load (.*)/gi;
-  const CHECK_BIND_PATTERN = /^bind (.*)/gi;
-
-
-
-  const NAME_SAPARATOR = ":";
-  const CHECK_SAPARATOR = "|";
-  const DOM_EVENT_SAPARATOR = "dom ";
-  const LOAD_SAPARATOR = "load ";
-  const BIND_SAPARATOR = "bind ";
-
-  const SAPARATOR = ' ';
-
-  const refManager = {};
-
-  const DOM_EVENT_MAKE = (...keys) => {
-    var key = keys.join(NAME_SAPARATOR);
-    return (...args) => {
-      return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
-    };
-  };
-
-  const CUSTOM = DOM_EVENT_MAKE;
-  const CLICK = DOM_EVENT_MAKE("click");
-  const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
-  const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
-  const MOUSEUP = DOM_EVENT_MAKE("mouseup");
-  const MOUSEMOVE = DOM_EVENT_MAKE("mousemove");
-  const MOUSEOVER = DOM_EVENT_MAKE("mouseover");
-  const MOUSEOUT = DOM_EVENT_MAKE("mouseout");
-  const MOUSEENTER = DOM_EVENT_MAKE("mouseenter");
-  const MOUSELEAVE = DOM_EVENT_MAKE("mouseleave");
-  const TOUCHSTART = DOM_EVENT_MAKE("touchstart");
-  const TOUCHMOVE = DOM_EVENT_MAKE("touchmove");
-  const TOUCHEND = DOM_EVENT_MAKE("touchend");
-  const KEYDOWN = DOM_EVENT_MAKE("keydown");
-  const KEYUP = DOM_EVENT_MAKE("keyup");
-  const KEYPRESS = DOM_EVENT_MAKE("keypress");
-  const DRAG = DOM_EVENT_MAKE("drag");
-  const DRAGSTART = DOM_EVENT_MAKE("dragstart");
-  const DROP = DOM_EVENT_MAKE("drop");
-  const DRAGOVER = DOM_EVENT_MAKE("dragover");
-  const DRAGENTER = DOM_EVENT_MAKE("dragenter");
-  const DRAGLEAVE = DOM_EVENT_MAKE("dragleave");
-  const DRAGEXIT = DOM_EVENT_MAKE("dragexit");
-  const DRAGOUT = DOM_EVENT_MAKE("dragout");
-  const DRAGEND = DOM_EVENT_MAKE("dragend");
-  const CONTEXTMENU = DOM_EVENT_MAKE("contextmenu");
-  const CHANGE = DOM_EVENT_MAKE("change");
-  const INPUT = DOM_EVENT_MAKE("input");
-  const FOCUS = DOM_EVENT_MAKE("focus");
-  const FOCUSIN = DOM_EVENT_MAKE("focusin");
-  const FOCUSOUT = DOM_EVENT_MAKE("focusout");
-  const BLUR = DOM_EVENT_MAKE("blur");
-  const PASTE = DOM_EVENT_MAKE("paste");
-  const RESIZE = DOM_EVENT_MAKE("resize");
-  const SCROLL = DOM_EVENT_MAKE("scroll");
-  const SUBMIT = DOM_EVENT_MAKE("submit");
-  const POINTERSTART = CUSTOM("pointerdown");
-  const POINTERMOVE = CUSTOM("pointermove");
-  const POINTEREND = CUSTOM("pointerup");
-  const CHANGEINPUT = CUSTOM("change", "input");
-  const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
-  const ANIMATIONSTART = DOM_EVENT_MAKE('animationstart');
-  const ANIMATIONEND = DOM_EVENT_MAKE('animationend');
-  const ANIMATIONITERATION = DOM_EVENT_MAKE('animationiteration');
-  const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
-  const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
-  const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
-  const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
-
-  // Predefined CHECKER
-  const CHECKER = (value, split = CHECK_SAPARATOR) => {
-    return makeEventChecker(value, split);
-  };
-
-  const AFTER = (value, split = CHECK_SAPARATOR) => {
-    return makeEventChecker(`after(${value})`, split);
-  };
-
-  const BEFORE = (value, split = CHECK_SAPARATOR) => {
-    return makeEventChecker(`before(${value})`, split);  
-  };
-
-  const IF = CHECKER;
-  const KEY = CHECKER; 
-
-  const ARROW_UP = CHECKER('ArrowUp');
-  const ARROW_DOWN = CHECKER('ArrowDown');
-  const ARROW_LEFT = CHECKER('ArrowLeft');
-  const ARROW_RIGHT = CHECKER('ArrowRight');
-  const ENTER = CHECKER('Enter');
-  const SPACE = CHECKER('Space');
-  const ESCAPE = CHECKER('Escape');
-
-  const ALT = CHECKER("isAltKey");
-  const SHIFT = CHECKER("isShiftKey");
-  const META = CHECKER("isMetaKey");
-  const CONTROL = CHECKER("isCtrlKey");
-  const SELF = CHECKER("self");
-
-  const FIT = CHECKER("fit");
-  const PASSIVE = CHECKER("passive");
-  const VDOM = CHECKER('vdom');
-
-  // event config method
-  const DEBOUNCE = (t = 100) => {
-    return CHECKER(`debounce(${t})`);
-  };
-
-  const D1000 = DEBOUNCE(1000);
-
-  const THROTTLE = (t = 100) => {
-    return CHECKER(`throttle(${t})`);
-  };
-
-  const CAPTURE = CHECKER("capture()");
-  // event config method
-
-  // before method
-
-  // after method
-  const MOVE = (method = "move") => {
-    return AFTER(`bodyMouseMove ${method}`);
-  };
-  const END = (method = "end") => {
-    return AFTER(`bodyMouseUp ${method}`);
-  };
-
-  const PREVENT = AFTER(`preventDefault`);
-  const STOP = AFTER(`stopPropagation`);
-
-  // Predefined LOADER
-  const LOAD = (value = "$el") => {
-    return LOAD_SAPARATOR + value;
-  };
-
-  const createRef = value => {
-    if (value === '') return '';
-
-    var id = uuid();
-    refManager[id] = value;
-
-    return id;
-  };
-
-  const getRef = id => {
-    return refManager[id] || '';
-  };
-
-  const BIND_CHECK_FUNCTION = field => {
-    return function() {
-      return this.prevState[field] != this.state[field];
-    };
-  };
-
-  const BIND_CHECK_DEFAULT_FUNCTION = () => {
-    return true;
-  };
-
-  const BIND = (value = "$el", checkFieldOrCallback = '') => {
-    return (
-      BIND_SAPARATOR + value + ( 
-        checkFieldOrCallback ?  CHECK_SAPARATOR + createRef(checkFieldOrCallback) : '' 
-      ) 
-    );
-  };
-
-  var Event = {
-    addEvent(dom, eventName, callback, useCapture = false) {
-      if (dom) {
-        dom.addEventListener(eventName, callback, useCapture);
-      }
-    },
-
-    removeEvent(dom, eventName, callback) {
-      if (dom) {
-        dom.removeEventListener(eventName, callback);
-      }
-    },
-
-    pos(e) {
-      if (e.touches && e.touches[0]) {
-        return e.touches[0];
-      }
-
-      return e;
-    },
-
-    posXY(e) {
-      var pos = this.pos(e);
-      return {
-        x: pos.pageX,
-        y: pos.pageY
-      };
-    }
-  };
-
-  class BaseStore {
-    constructor(opt = {}) {
-      this.cachedCallback = {};
-      this.callbacks = {};
-      this.commandes = [];
-    }
-
-    getCallbacks(event) {
-      if (!this.callbacks[event]) {
-        this.callbacks[event] = [];
-      }
-
-      return this.callbacks[event]
-    }
-
-    setCallbacks(event, list = []) {
-      this.callbacks[event] = list; 
-    }
-
-    on(event, originalCallback, context, delay = 0) {
-      var callback = delay > 0 ? debounce(originalCallback, delay) : originalCallback;
-
-      this.getCallbacks(event).push({ event, callback, context, originalCallback });
-    }
-
-    off(event, originalCallback) {
-
-      if (arguments.length == 1) {
-        this.setCallbacks(event);
-      } else if (arguments.length == 2) {      
-        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
-          return f.originalCallback !== originalCallback
-        }));
-      }
-    }
-
-    offAll (context) {
-
-      Object.keys(this.callbacks).forEach(event => {
-        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
-          return f.context !== context;  
-        }));
-      });
-    }
-
-    getCachedCallbacks (event) {
-      return this.getCallbacks(event);
-    }
-
-    sendMessage(source, event, $2, $3, $4, $5) {
-      Promise.resolve().then(() => {
-        var list = this.getCachedCallbacks(event);
-        if (list) {
-          list
-          .filter(f => f.originalCallback.source !== source)
-          .forEach(f => {
-            f.callback($2, $3, $4, $5);
-          });
-        }
-
-      });
-    }
-
-    triggerMessage(source, event, $2, $3, $4, $5) {
-      Promise.resolve().then(() => {
-        var list = this.getCachedCallbacks(event);
-        if (list) {
-          list
-            .filter(f => f.originalCallback.source === source)
-            .forEach(f => {      
-              f.callback($2, $3, $4, $5);
-            });
-        } else {
-          console.warn(event, ' is not valid event');
-        }
-
-
-      });
-    }
-
-
-
-
-    emit($1, $2, $3, $4, $5) {
-      this.sendMessage(this.source, $1, $2, $3, $4, $5);
-    }
-
-    trigger($1, $2, $3, $4, $5) {
-      this.triggerMessage(this.source, $1, $2, $3, $4, $5);
-    }
-
-    execute($1, $2, $3, $4, $5){
-      this.runCommand(this.source, $1, $2, $3, $4, $5);
-    }
-  }
-
-  // collectProps 에서 제외될 메소드 목록 
-  const expectMethod = {
-      "constructor": true,
-      "initState": true,
-      "refresh": true,
-      "updateData": true,
-      "constructor": true,
-      "initializeProperty": true,
-      "created": true,
-      "getRealEventName": true,
-      "initializeStoreEvent": true,
-      "destoryStoreEvent": true,
-      "destroy": true,
-      "emit": true,
-      "trigger": true,
-      "on": true,
-      "off": true,
-      "setState": true,
-      "_reload": true,
-      "render": true,
-      "initialize": true,
-      "afterRender": true,
-      "components": true,
-      "getRef": true,
-      "parseTemplate": true,
-      "childrenIds": true,
-      "exists": true,
-      "parseProperty": true,
-      "parseSourceName": true,
-      "parseComponent": true,
-      "clean": true,
-      "refresh": true,
-      "template": true,
-      "eachChildren": true,
-      "initializeEvent": true,
-      "destroy": true,
-      "self": true,
-      "isAltKey": true,
-      "isCtrlKey": true,
-      "isShiftKey": true,
-      "isMetaKey": true,
-      "preventDefault": true,
-      "stopPropagation": true,
-      "bodyMouseMove": true,
-      "bodyMouseUp": true,
-    };
-
-  class BaseHandler {
-      constructor (context, options = {}) {
-          this.context = context;
-          this.options = options;
-      }
-
-      // 초기화 설정 
-      initialize () {
-
-      }
-
-      // html 을 로드 할 때 
-      load () {
-
-      }
-
-      // 새로고침 할 때 
-      refresh () {
-
-      }
-      
-      // 화면에 그린 이후에 실행 되는 로직들 
-      render () {
-
-      }
-
-      getRef(id) {
-          return this.context.getRef(id);
-      }
-          
-      splitMethodByKeyword (arr, keyword) {
-          var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
-          var filterMaps = filterKeys.map(code => {
-            var [target, param] = code
-              .split(`${keyword}(`)[1]
-              .split(")")[0]
-              .trim()
-              .split(" ");
-        
-            return { target, param };
-          });
-        
-          return [filterKeys, filterMaps];
-      }    
-
-      /**
-       * property 수집하기
-       * 상위 클래스의 모든 property 를 수집해서 리턴한다.
-       */
-      collectProps() {
-
-          var context = this.context;
-          var p = context.__proto__;
-          var results = [];
-          do {
-          var isObject = p instanceof Object;
-
-          if (isObject === false) {
-              break;
-          }
-          const names = Object.getOwnPropertyNames(p).filter(name => {
-              return context && isFunction(context[name]) && !expectMethod[name];
-          });
-
-          results.push(...names);
-          p = p.__proto__;
-          } while (p);
-
-          return results;
-      }
-
-
-
-      filterProps(pattern) {
-          return this.collectProps().filter(key => {
-              return key.match(pattern);
-          });
-      }    
-
-      run () {
-
-      }
-
-      destroy() {
-
-      }
   }
 
   const scrollBlockingEvents = {
@@ -2736,6 +2736,7 @@
   exports.DRAGOVER = DRAGOVER;
   exports.DRAGSTART = DRAGSTART;
   exports.DROP = DROP;
+  exports.Dom = Dom;
   exports.END = END;
   exports.ENTER = ENTER;
   exports.ESCAPE = ESCAPE;
