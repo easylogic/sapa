@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.sapa = {}));
+  (global = global || self, factory(global.sapa = {}));
 }(this, (function (exports) { 'use strict';
 
   function debounce (callback, delay = 0) {
@@ -753,9 +753,20 @@
       return null; 
     }
 
-    static createFragment (htmlString) {
-      var div = Dom.create('div');
-      return Dom.create(div.html(htmlString).createChildrenFragment())
+    static createBySVG (svgString) {
+
+      var list = Dom.createByHTML(`<svg>${svgString}</svg>`).children();
+
+      if (list.length) {
+        return Dom.create(list[0].el);
+      }
+
+      return null; 
+    }  
+
+    static createFragment (domString, containerTag = 'div') {
+      var div = Dom.create(containerTag);
+      return Dom.create(div.html(domString).createChildrenFragment())
     }
 
     static getScrollTop() {
@@ -986,6 +997,14 @@
       return $dom;
     }
 
+    prependSVG(html) {
+      var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
+
+      this.prepend($dom.$('svg').createChildrenFragment());
+
+      return $dom;
+    }  
+
     appendHTML(html) {
       var $dom = Dom.create("div").html(html);
 
@@ -993,6 +1012,14 @@
 
       return $dom;
     }
+
+    appendSVG(html) {
+      var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
+
+      this.append($dom.$('svg').createChildrenFragment());
+
+      return $dom;
+    }  
 
     /**
      * create document fragment with children dom
