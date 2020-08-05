@@ -132,6 +132,36 @@ export class Dom {
     });
   }  
 
+  getPrev (isOnlyElement = true) {
+    return Dom.create(isOnlyElement ? this.el.previousElementSibling : this.el.previousSibling);
+  }
+
+  getNext (isOnlyElement = true) {
+    return Dom.create(isOnlyElement ? this.el.nextElementSibling : this.el.nextSibling);
+  }  
+
+  movePrev () {
+    const $parent = this.parent(); 
+    const $prev = this.getPrev();
+
+    $parent.el.insertBefore(this.el, $prev ? $prev.el : null)
+
+    return this;  
+  }
+
+  moveNext () {
+    const $parent = this.parent(); 
+    let $next = this.getNext();
+
+    if (next) {
+      $next = $next.getNext()
+    }
+
+    $parent.el.insertBefore(this.el, $next ? $next.el : null)
+
+    return this; 
+  }
+
   removeAttr(key) {
     this.el.removeAttribute(key);
 
