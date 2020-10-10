@@ -16,7 +16,7 @@ export function debounce (callback, delay = 0) {
         }, delay || 300);
     }
 }
-  
+
 
 export function throttle (callback, delay) {
 
@@ -26,7 +26,7 @@ export function throttle (callback, delay) {
         if (!t) {
             t = setTimeout(function () {
                 callback($1, $2, $3, $4, $5);
-                t = null; 
+                t = null;
             }, delay || 300);
         }
 
@@ -71,7 +71,7 @@ export function isNotString (value) {
 }
 
 export function isObject (value) {
-    return typeof value == 'object' && !isArray(value) && !isNumber(value) && !isString(value)  && value !== null; 
+    return typeof value == 'object' && !isArray(value) && !isNumber(value) && !isString(value)  && value !== null;
 }
 
 export function isFunction (value) {
@@ -94,7 +94,6 @@ const HTML_TAG = {
     'line': true,
     'circle': true,
     'rect': true,
-    'path': true, 
     'polygon': true,
     'polyline': true,
     'use': true
@@ -104,7 +103,7 @@ const HTML_TAG = {
 export const html = (strings, ...args) => {
 
     var results =  strings.map((it, index) => {
-        
+
         var results = args[index] || ''
 
         if (isFunction(results)) {
@@ -128,7 +127,7 @@ export const html = (strings, ...args) => {
         }
     })
 
-    return results; 
+    return results;
 }
 
 const UUID_REG = /[xy]/g

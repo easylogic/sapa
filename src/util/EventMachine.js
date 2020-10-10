@@ -37,13 +37,12 @@ export const splitMethodByKeyword = (arr, keyword) => {
   return [filterKeys, filterMaps];
 };
 
-// collectProps 에서 제외될 메소드 목록 
+// collectProps 에서 제외될 메소드 목록
 const expectMethod = {
   "constructor": true,
   "initState": true,
   "refresh": true,
   "updateData": true,
-  "constructor": true,
   "initializeProperty": true,
   "created": true,
   "getRealEventName": true,
@@ -68,14 +67,12 @@ const expectMethod = {
   "parseSourceName": true,
   "parseComponent": true,
   "clean": true,
-  "refresh": true,
   "loadTemplate": true,
   "load": true,
   "bindData": true,
   "template": true,
   "eachChildren": true,
   "initializeEvent": true,
-  "destroy": true,
   "collectProps": true,
   "filterProps": true,
   "self": true,
@@ -96,7 +93,7 @@ export default class EventMachine {
     this.refs = {};
     this.children = {};
     this._bindings = [];
-    this.id = uuid();    
+    this.id = uuid();
     this.handlers = this.initializeHandler()
 
     this.initializeProperty(opt, props);
@@ -135,7 +132,7 @@ export default class EventMachine {
 
   _reload(props) {
     this.props = props;
-    this.state = {}; 
+    this.state = {};
     this.setState(this.initState(), false);
     this.refresh(true);
   }
@@ -181,17 +178,17 @@ export default class EventMachine {
       }
 
       var refs = $el.$$(QUERY_PROPERTY);
-      var temp = {} 
+      var temp = {}
       refs.forEach($dom => {
 
         const name = $dom.attr(REFERENCE_PROPERTY);
         if (temp[name]) {
           console.warn(`${ref} is duplicated. - ${this.sourceName}`, this)
         } else {
-          temp[name] = true; 
+          temp[name] = true;
         }
 
-        this.refs[name] = $dom;        
+        this.refs[name] = $dom;
       });
 
 
@@ -214,17 +211,17 @@ export default class EventMachine {
 
     if (this.parent) {
       if (isFunction(this.parent.childrenIds)) {
-        return this.parent.childrenIds().indexOf(this.id) > -1 
+        return this.parent.childrenIds().indexOf(this.id) > -1
       }
     }
 
-    return true  
+    return true
   }
 
   parseProperty ($dom) {
     let props = {};
 
-    // parse properties 
+    // parse properties
     for(var t of $dom.el.attributes) {
       props[t.nodeName] = t.nodeValue;
     }
@@ -234,11 +231,11 @@ export default class EventMachine {
 
       let realValue = value || $p.text();
 
-      if (type === 'json') {            
+      if (type === 'json') {
         realValue = JSON.parse(realValue);
       }
-    
-      props[name] = realValue; 
+
+      props[name] = realValue;
     })
 
     return props;
@@ -256,23 +253,23 @@ export default class EventMachine {
   parseComponent() {
     const $el = this.$el;
 
-    let targets = [] 
+    let targets = []
     if (this.childComponentKeysString) {
       targets = $el.$$(this.childComponentKeysString);
     }
 
-    
+
     targets.forEach($dom => {
       var tagName = $dom.el.tagName.toLowerCase();
       var ComponentName = this.childComponentSet.get(tagName);
       var Component = this.childComponents[ComponentName];
       let props = this.parseProperty($dom);
 
-      // create component 
+      // create component
       let refName = $dom.attr(REFERENCE_PROPERTY);
-      var instance = null; 
+      var instance = null;
       if (this.children[refName]) {
-        instance = this.children[refName] 
+        instance = this.children[refName]
         instance._reload(props);
       } else {
         instance = new Component(this, props);
@@ -281,9 +278,9 @@ export default class EventMachine {
 
         instance.render();
       }
-      
-      $dom.replace(instance.$el);      
-  
+
+      $dom.replace(instance.$el);
+
     })
 
     keyEach(this.children, (key, obj) => {
@@ -300,23 +297,23 @@ export default class EventMachine {
         child.clean();
       })
 
-      this.destroy();  
+      this.destroy();
 
       this.$el = null;
-      return true; 
+      return true;
     }
   }
 
   /**
-   * refresh 는 load 함수들을 실행한다. 
+   * refresh 는 load 함수들을 실행한다.
    */
   refresh() {
     this.load()
   }
 
   /**
-   * 특정 load 함수를 실행한다.  문자열을 그대로 return 한다. 
-   * @param  {...any} args 
+   * 특정 load 함수를 실행한다.  문자열을 그대로 return 한다.
+   * @param  {...any} args
    */
   loadTemplate (...args) {
     return this[LOAD(args.join(''))].call(this)
@@ -330,7 +327,7 @@ export default class EventMachine {
     this._loadMethods
     .filter(callbackName => {
       const elName = callbackName.split(LOAD_SAPARATOR)[1].split(CHECK_SAPARATOR)[0];
-      if (!args.length) return true; 
+      if (!args.length) return true;
       return args.indexOf(elName) > -1
     })
     .forEach(callbackName => {
@@ -338,14 +335,14 @@ export default class EventMachine {
       var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map(it => it.trim())
 
       checker = checker.map(it => it.trim())
-      
+
       const isVdom = Boolean(checker.filter(it => VDOM.includes(it)).length);
 
       if (this.refs[elName]) {
-        
+
         var newTemplate = this[callbackName].call(this, ...args);
 
-        // create fragment 
+        // create fragment
         const fragment = this.parseTemplate(newTemplate, true);
         if (isVdom) {
           this.refs[elName].htmlDiff(fragment);
@@ -388,14 +385,14 @@ export default class EventMachine {
   rerender () {
     var $parent = this.$el.parent();
     this.destroy();
-    this.render($parent);  
+    this.render($parent);
   }
 
   /**
-   * @deprecated 
-   * render 이후에 부를려고 했는데  이미 Dom Event 는 render 이후에 자동으로 불리게 되어 있다. 
-   * 현재는 DomEvent, Bind 기준으로만 작성하도록 한다. 
-   * 나머지 라이프 사이클은 다음에 고민해보자. 
+   * @deprecated
+   * render 이후에 부를려고 했는데  이미 Dom Event 는 render 이후에 자동으로 불리게 되어 있다.
+   * 현재는 DomEvent, Bind 기준으로만 작성하도록 한다.
+   * 나머지 라이프 사이클은 다음에 고민해보자.
    * 이벤트를 초기화한다.
    */
   // initializeEvent() {
@@ -413,9 +410,9 @@ export default class EventMachine {
 
     this.runHandlers('destroy');
     this.$el.remove();
-    this.$el = null; 
-    this.refs = {} 
-    this.children = {} 
+    this.$el = null;
+    this.refs = {}
+    this.children = {}
   }
 
   /**
