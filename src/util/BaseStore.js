@@ -1,5 +1,8 @@
 import { debounce } from "./functions/func";
 
+/**
+ * @class BaseStore
+ */
 export default class BaseStore {
   constructor(opt = {}) {
     this.cachedCallback = {};
@@ -16,7 +19,7 @@ export default class BaseStore {
   }
 
   setCallbacks(event, list = []) {
-    this.callbacks[event] = list; 
+    this.callbacks[event] = list;
   }
 
   on(event, originalCallback, context, delay = 0) {
@@ -29,7 +32,7 @@ export default class BaseStore {
 
     if (arguments.length == 1) {
       this.setCallbacks(event);
-    } else if (arguments.length == 2) {      
+    } else if (arguments.length == 2) {
       this.setCallbacks(event, this.getCallbacks(event).filter(f => {
         return f.originalCallback !== originalCallback
       }));
@@ -40,7 +43,7 @@ export default class BaseStore {
 
     Object.keys(this.callbacks).forEach(event => {
       this.setCallbacks(event, this.getCallbacks(event).filter(f => {
-        return f.context !== context;  
+        return f.context !== context;
       }))
     })
   }
@@ -69,7 +72,7 @@ export default class BaseStore {
       if (list) {
         list
           .filter(f => f.originalCallback.source === source)
-          .forEach(f => {      
+          .forEach(f => {
             f.callback($2, $3, $4, $5)
           });
       } else {

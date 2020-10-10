@@ -7,7 +7,7 @@ const setBooleanProp = (el, name, value) => {
         el[name] = value;
     }
   };
-  
+
 const setProp = (el, name, value) => {
     if (typeof value === 'boolean') {
         setBooleanProp(el, name, value);
@@ -25,7 +25,7 @@ const removeBooleanProp = (node, name) => {
 const removeUndefinedProp = (node, name) => {
     node.removeAttribute(name);
 }
-  
+
 const removeProp = (node, name, value) => {
     if (typeof value === 'boolean') {
         removeBooleanProp(node, name);
@@ -33,7 +33,7 @@ const removeProp = (node, name, value) => {
         removeUndefinedProp(node, name);
     }
 };
-  
+
 
 const updateProp = (node, name, newValue, oldValue) => {
     if (!newValue) {
@@ -46,7 +46,7 @@ const updateProp = (node, name, newValue, oldValue) => {
 
 const updateProps = (node, newProps = {}, oldProps = {}) => {
     const props = {...newProps,...oldProps};
-  
+
     Object.keys(props).forEach((name) => {
       updateProp(node, name, newProps[name], oldProps[name]);
     });
@@ -54,9 +54,9 @@ const updateProps = (node, newProps = {}, oldProps = {}) => {
 
 function changed(node1, node2) {
     return (
-        (node1.nodeType === Node.TEXT_NODE && node1 !== node2) 
+        (node1.nodeType === Node.TEXT_NODE && node1 !== node2)
         || node1.nodeName !== node2.nodeName
-    ) 
+    )
 }
 
 function getProps (attributes) {
@@ -66,7 +66,7 @@ function getProps (attributes) {
     }
 
     return results;
-    
+
 }
 
 function updateElement (parentElement, oldEl, newEl, i) {
@@ -77,7 +77,7 @@ function updateElement (parentElement, oldEl, newEl, i) {
     } else if (changed(newEl, oldEl)) {
         parentElement.replaceChild(newEl.cloneNode(true), oldEl);
     } else if (newEl.nodeType !== Node.TEXT_NODE) {
-        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
+        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added
         var oldChildren = children(oldEl);
         var newChildren = children(newEl);
         var max = Math.max(oldChildren.length, newChildren.length);
@@ -90,30 +90,35 @@ function updateElement (parentElement, oldEl, newEl, i) {
 }
 
 const children = (el) => {
-    var element = el.firstChild; 
+    var element = el.firstChild;
 
     if (!element) {
-        return [] 
+        return []
     }
 
-    var results = [] 
+    var results = []
 
     do {
         results.push(element);
         element = element.nextSibling;
     } while (element);
 
-    return results; 
+    return results;
 }
 
-
+/**
+ * @function DomDiff
+ * @param A
+ * @param B
+ * @constructor
+ */
 export function DomDiff (A, B) {
 
-    A = A.el || A; 
-    B = B.el || B; 
+    A = A.el || A;
+    B = B.el || B;
 
     var childrenA = children(A);
-    var childrenB = children(B); 
+    var childrenB = children(B);
 
     var len = Math.max(childrenA.length, childrenB.length);
     for (var i = 0; i < len; i++) {

@@ -86,6 +86,9 @@ const expectMethod = {
   "bodyMouseUp": true,
 }
 
+/**
+ * @class EventMachine
+ */
 export default class EventMachine {
   constructor(opt, props) {
     this.state = {};

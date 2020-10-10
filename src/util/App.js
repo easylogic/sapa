@@ -10,13 +10,21 @@ const EMPTY_POS = { x: 0, y: 0 };
 const DEFAULT_POS = { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER };
 const MOVE_CHECK_MS = 0;
 
+/**
+ * @function start
+ * @param opt
+ * @returns {App}
+ */
 export const start = opt => {
+  /**
+   * @class App
+   */
   class App extends UIElement {
 
     initialize() {
 
       this.$store = new BaseStore();
-      this.$app = this; 
+      this.$app = this;
 
       this.$container = Dom.create(this.getContainer());
       this.$container.addClass(this.getClassName());
@@ -65,7 +73,7 @@ export const start = opt => {
     }
 
     removeBodyMoves() {
-      var {pos, bodyEvent} = this.state;       
+      var {pos, bodyEvent} = this.state;
       if (pos) {
         this.ends.forEach(v => {
           v.func.call(v.context, pos.x - v.xy.x, pos.y - v.xy.y, 'end', bodyEvent.pressure);
@@ -101,8 +109,8 @@ export const start = opt => {
     }
 
     [POINTERMOVE("document")](e) {
-      var oldPos = this.state.pos || EMPTY_POS;      
-      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return; 
+      var oldPos = this.state.pos || EMPTY_POS;
+      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return;
       var newPos = e.xy || EMPTY_POS;
 
       this.setState({bodyEvent : e, pos: newPos, oldPos}, false);
@@ -113,8 +121,8 @@ export const start = opt => {
     }
 
     [POINTEREND("document")](e) {
-      var newPos = e.xy || EMPTY_POS;      
-      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return;       
+      var newPos = e.xy || EMPTY_POS;
+      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return;
       this.setState({bodyEvent : e, pos: newPos}, false);
       this.removeBodyMoves();
       this.requestId = null;
