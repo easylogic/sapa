@@ -1,13 +1,12 @@
 import { isFunction } from "../functions/func";
 
 
-// collectProps 에서 제외될 메소드 목록 
+// collectProps 에서 제외될 메소드 목록
 const expectMethod = {
     "constructor": true,
     "initState": true,
     "refresh": true,
     "updateData": true,
-    "constructor": true,
     "initializeProperty": true,
     "created": true,
     "getRealEventName": true,
@@ -32,11 +31,9 @@ const expectMethod = {
     "parseSourceName": true,
     "parseComponent": true,
     "clean": true,
-    "refresh": true,
     "template": true,
     "eachChildren": true,
     "initializeEvent": true,
-    "destroy": true,
     "self": true,
     "isAltKey": true,
     "isCtrlKey": true,
@@ -54,22 +51,22 @@ export default class BaseHandler {
         this.options = options;
     }
 
-    // 초기화 설정 
+    // 초기화 설정
     initialize () {
 
     }
 
-    // html 을 로드 할 때 
+    // html 을 로드 할 때
     load () {
 
     }
 
-    // 새로고침 할 때 
+    // 새로고침 할 때
     refresh () {
 
     }
-    
-    // 화면에 그린 이후에 실행 되는 로직들 
+
+    // 화면에 그린 이후에 실행 되는 로직들
     render () {
 
     }
@@ -77,7 +74,7 @@ export default class BaseHandler {
     getRef(id) {
         return this.context.getRef(id);
     }
-        
+
     splitMethodByKeyword (arr, keyword) {
         var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
         var filterMaps = filterKeys.map(code => {
@@ -86,12 +83,12 @@ export default class BaseHandler {
             .split(")")[0]
             .trim()
             .split(" ");
-      
+
           return { target, param };
         });
-      
+
         return [filterKeys, filterMaps];
-    }    
+    }
 
     /**
      * property 수집하기
@@ -125,7 +122,7 @@ export default class BaseHandler {
         return this.collectProps().filter(key => {
             return key.match(pattern);
         });
-    }    
+    }
 
     run () {
 
