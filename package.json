@@ -40,7 +40,8 @@
   "scripts": {
     "build": "rollup --config",
     "dev": "rollup --config rollup.dev.config.js -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "./node_modules/.bin/jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",
