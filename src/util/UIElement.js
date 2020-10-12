@@ -14,6 +14,9 @@ export const EVENT = (...args) => {
   return MULTI_PREFIX + PIPE(...args);
 };
 
+/**
+ * @class UIElement
+ */
 export class UIElement extends EventMachine {
   constructor(opt, props = {}) {
     super(opt, props);
@@ -27,7 +30,7 @@ export class UIElement extends EventMachine {
   }
 
   /**
-   * UIElement instance 에 필요한 기본 속성 설정 
+   * UIElement instance 에 필요한 기본 속성 설정
    */
   initializeProperty (opt, props = {}) {
 
@@ -60,12 +63,12 @@ export class UIElement extends EventMachine {
     this.filterProps(REG_STORE_MULTI_PATTERN).forEach(key => {
       const events = this.getRealEventName(key, MULTI_PREFIX);
 
-      // support deboounce for store event 
+      // support deboounce for store event
       var [methods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
 
-      var debounceSecond = 0 
+      var debounceSecond = 0
       if (methods.length) {
-        debounceSecond = +params[0].target || 0 
+        debounceSecond = +params[0].target || 0
       }
 
       events
@@ -104,7 +107,7 @@ export class UIElement extends EventMachine {
 
   emit($1, $2, $3, $4, $5) {
     this.$store.source = this.source;
-    this.$store.sourceContext = this; 
+    this.$store.sourceContext = this;
     this.$store.emit($1, $2, $3, $4, $5);
   }
 

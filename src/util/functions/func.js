@@ -1,3 +1,9 @@
+/**
+ * @function debounce
+ * @param callback
+ * @param delay
+ * @returns {Function|*}
+ */
 export function debounce (callback, delay = 0) {
 
     if (delay === 0) {

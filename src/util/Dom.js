@@ -7,6 +7,9 @@ import {
 } from "./functions/func";
 import { DomDiff } from "./DomDiff";
 
+/**
+ * @class Dom
+ */
 export class Dom {
   constructor(tag, className, attr) {
     if (isNotString(tag)) {
@@ -31,7 +34,7 @@ export class Dom {
   static create (tag, className, attr) {
     return new Dom(tag, className, attr);
   }
- 
+
   static createByHTML (htmlString) {
     var div = Dom.create('div')
     var list = div.html(htmlString).children();
@@ -40,7 +43,7 @@ export class Dom {
       return Dom.create(list[0].el);
     }
 
-    return null; 
+    return null;
   }
 
   static createBySVG (svgString) {
@@ -51,8 +54,8 @@ export class Dom {
       return Dom.create(list[0].el);
     }
 
-    return null; 
-  }  
+    return null;
+  }
 
   static createFragment (domString, containerTag = 'div') {
     var div = Dom.create(containerTag)
@@ -89,15 +92,15 @@ export class Dom {
   }
 
   setAttr (obj) {
-    if (this.isFragment()) return; 
+    if (this.isFragment()) return;
     Object.keys(obj).forEach(key => {
       this.attr(key, obj[key])
     })
-    return this;  
+    return this;
   }
 
   attr(key, value) {
-    if (this.isFragment()) return; 
+    if (this.isFragment()) return;
     if (arguments.length == 1) {
       if (this.el.getAttribute) {
         return this.el.getAttribute(key);
@@ -113,7 +116,7 @@ export class Dom {
   }
 
   attrKeyValue(keyField) {
-    if (this.isFragment()) return {};     
+    if (this.isFragment()) return {};
     return {
       [this.el.getAttribute(keyField)]: this.val()
     }
@@ -130,7 +133,7 @@ export class Dom {
     return args.map(key => {
       return this.el.style[key];
     });
-  }  
+  }
 
   getPrev (isOnlyElement = true) {
     return Dom.create(isOnlyElement ? this.el.previousElementSibling : this.el.previousSibling);
@@ -138,19 +141,19 @@ export class Dom {
 
   getNext (isOnlyElement = true) {
     return Dom.create(isOnlyElement ? this.el.nextElementSibling : this.el.nextSibling);
-  }  
+  }
 
   movePrev () {
-    const $parent = this.parent(); 
+    const $parent = this.parent();
     const $prev = this.getPrev();
 
     $parent.el.insertBefore(this.el, $prev ? $prev.el : null)
 
-    return this;  
+    return this;
   }
 
   moveNext () {
-    const $parent = this.parent(); 
+    const $parent = this.parent();
     let $next = this.getNext();
 
     if (next) {
@@ -159,7 +162,7 @@ export class Dom {
 
     $parent.el.insertBefore(this.el, $next ? $next.el : null)
 
-    return this; 
+    return this;
   }
 
   removeAttr(key) {
@@ -262,7 +265,7 @@ export class Dom {
   updateSVGDiff (html, rootElement = 'div') {
 
     DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild)
-  }  
+  }
 
   find(selector) {
     return this.el.querySelector(selector);
@@ -306,7 +309,7 @@ export class Dom {
       this.el.prepend(el.el || el);
     }
 
-    return this;    
+    return this;
   }
 
   prependHTML(html) {
@@ -323,7 +326,7 @@ export class Dom {
     this.prepend($dom.$('svg').createChildrenFragment());
 
     return $dom;
-  }  
+  }
 
   appendHTML(html) {
     var $dom = Dom.create("div").html(html);
@@ -339,7 +342,7 @@ export class Dom {
     this.append($dom.$('svg').createChildrenFragment());
 
     return $dom;
-  }  
+  }
 
   /**
    * create document fragment with children dom
@@ -371,7 +374,7 @@ export class Dom {
 
   removeChild(el) {
     this.el.removeChild(el.el || el);
-    return this; 
+    return this;
   }
 
   text(value) {
@@ -404,7 +407,7 @@ export class Dom {
       Object.assign(this.el.style, {[key]: value});
     } else if (isNotUndefined(key)) {
       if (isString(key)) {
-        return getComputedStyle(this.el)[key];  
+        return getComputedStyle(this.el)[key];
       } else {
         Object.assign(this.el.style, key);
       }
@@ -421,7 +424,7 @@ export class Dom {
       obj[it] = css[it]
     })
 
-    return obj; 
+    return obj;
   }
 
   getStyleList(...list) {
@@ -448,8 +451,8 @@ export class Dom {
 
     if (value != this.el.tempCssText) {
       this.el.style.cssText = value;
-      this.el.tempCssText = value; 
-    } 
+      this.el.tempCssText = value;
+    }
 
     return this;
   }
@@ -597,7 +600,7 @@ export class Dom {
     }
 
     return null;
-}  
+}
 
 
   get value() {
@@ -610,7 +613,7 @@ export class Dom {
 
   get naturalHeight () {
     return this.el.naturalHeight
-  }  
+  }
 
   get files() {
     return this.el.files ? [...this.el.files] : [];
@@ -674,14 +677,14 @@ export class Dom {
   }
 
   addScrollLeft (dt) {
-    this.el.scrollLeft += dt; 
-    return this; 
+    this.el.scrollLeft += dt;
+    return this;
   }
 
   addScrollTop (dt) {
-    this.el.scrollTop += dt; 
-    return this; 
-  }  
+    this.el.scrollTop += dt;
+    return this;
+  }
 
   setScrollTop(scrollTop) {
     this.el.scrollTop = scrollTop;
@@ -715,7 +718,7 @@ export class Dom {
 
   scrollWidth() {
     return this.el.scrollWidth;
-  }  
+  }
 
   on(eventName, callback, opt1, opt2) {
     this.el.addEventListener(eventName, callback, opt1, opt2);
@@ -780,7 +783,7 @@ export class Dom {
     this.el.replaceChild(newElement.el || newElement, oldElement.el || oldElement);
 
     return this;
-  }  
+  }
 
   checked(isChecked = false) {
     if (arguments.length == 0) {
@@ -796,8 +799,8 @@ export class Dom {
   click () {
     this.el.click();
 
-    return this; 
-  }  
+    return this;
+  }
 
   focus() {
     this.el.focus();
@@ -862,7 +865,7 @@ export class Dom {
 
   drawImage (img, dx = 0, dy = 0) {
     var ctx = this.context()
-    var scale = window.devicePixelRatio || 1;    
+    var scale = window.devicePixelRatio || 1;
     ctx.drawImage(img, dx, dy, img.width, img.height, 0, 0, this.el.width / scale, this.el.height / scale);
   }
 
@@ -911,10 +914,10 @@ export class Dom {
     this.context().fillText(text, x, y);
   }
 
-  /* utility */ 
+  /* utility */
   fullscreen () {
-    var element = this.el; 
-    
+    var element = this.el;
+
     if (element.requestFullscreen) {
       element.requestFullscreen();
     } else if (element.wekitRequestFullscreen) {
