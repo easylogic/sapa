@@ -1,16 +1,26 @@
 import BaseHandler from "./BaseHandler";
 import Event, { CHECK_SAPARATOR, DOM_EVENT_SAPARATOR, SAPARATOR, NAME_SAPARATOR, CHECK_DOM_EVENT_PATTERN } from "../Event";
-import { debounce, throttle, isNotUndefined, isFunction } from "../functions/func";
-import { Dom } from "../Dom";
+import { debounce, throttle, isNotUndefined, isFunction, splitMethodByKeyword } from "../functions/func";
+import Dom from "../functions/Dom";
+
 
 const scrollBlockingEvents = {
     'touchstart': true,
     'touchmove': true,
     'mousedown': true,
     'mouseup': true,
-    'mousemove': true, 
-    'wheel': true,
-    'mousewheel': true
+    'mousemove': true,
+    // wheel, mousewheel 은 prevent 를 해야한다. 그래서 scroll blocking 을 막아야 한다. 
+    // 'wheel': true,   
+    // 'mousewheel': true
+}
+
+const eventConverts = {
+  'doubletab': 'touchend'
+}
+
+const customEventNames = {
+  'doubletab': true 
 }
 
 export default class DomEventHandler extends BaseHandler {
@@ -20,9 +30,9 @@ export default class DomEventHandler extends BaseHandler {
         this.destroy();
 
         if (!this._domEvents) {
-          this._domEvents = this.filterProps(CHECK_DOM_EVENT_PATTERN)
+          this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN)
         }
-        this._domEvents.forEach(key => this.parseEvent(key));
+        this._domEvents.forEach(key => this.parseDomEvent(key));
     }
 
     destroy() {
@@ -32,13 +42,13 @@ export default class DomEventHandler extends BaseHandler {
 
     removeEventAll() {
         this.getBindings().forEach(obj => {
-          this.removeEvent(obj);
+          this.removeDomEvent(obj);
         });
         this.initBindings();
     }
 
-    removeEvent({ eventName, dom, callback }) {
-        Event.removeEvent(dom, eventName, callback);
+    removeDomEvent({ eventName, dom, callback }) {
+        Event.removeDomEvent(dom, eventName, callback);
     }    
 
     getBindings() {
@@ -73,11 +83,11 @@ export default class DomEventHandler extends BaseHandler {
     }
       
     makeCallback (eventObject, callback) {
-        if (eventObject.delegate) {
-          return this.makeDelegateCallback(eventObject, callback);
-        } else {
-          return this.makeDefaultCallback(eventObject, callback);
-        }
+      if (eventObject.delegate) {
+        return this.makeDelegateCallback(eventObject, callback);
+      } else {
+        return this.makeDefaultCallback(eventObject, callback);
+      }
     }
       
     makeDefaultCallback (eventObject, callback) {
@@ -116,12 +126,12 @@ export default class DomEventHandler extends BaseHandler {
         }
       
         if (this.checkEventType(e, eventObject)) {
-          var returnValue = callback(e, e.$dt, e.xy);
+          var returnValue = callback(e, e.$dt, e.xy); 
       
           if (returnValue !== false && eventObject.afterMethods.length) {
-            eventObject.afterMethods.forEach(after =>
-              context[after.target].call(context, e, after.param)
-            );
+            eventObject.afterMethods.forEach(after => {
+              return context[after.target].call(context, e, after.param)
+            });
           }
       
           return returnValue;
@@ -175,6 +185,21 @@ export default class DomEventHandler extends BaseHandler {
         return el;
     };
       
+    getRealEventName (eventName) {
+      return eventConverts[eventName] || eventName;
+    }
+
+    getCustomEventName (eventName) {
+      return customEventNames[eventName] ? eventName:  '';
+    }
+
+    /**
+     * 
+     * doubletab -> touchend 로 바뀜 
+     * 
+     * @param {string} eventName  이벤트 이름 
+     * @param {array} checkMethodFilters 매직 필터 목록  
+     */
     getDefaultEventObject (eventName, checkMethodFilters) {
         const context = this.context;
         let arr = checkMethodFilters;
@@ -183,17 +208,19 @@ export default class DomEventHandler extends BaseHandler {
         const checkMethodList = arr.filter(code => !!context[code]);
       
         // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
-        const [afters, afterMethods] = this.splitMethodByKeyword(arr, "after");
-        const [befores, beforeMethods] = this.splitMethodByKeyword(arr, "before");
-        const [debounces, debounceMethods] = this.splitMethodByKeyword(arr, "debounce");
-        const [throttles, throttleMethods] = this.splitMethodByKeyword(arr, "throttle");
-        const [captures] = this.splitMethodByKeyword(arr, "capture");
+        const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
+        const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
+        const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
+        const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");        
+        const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
+        const [captures] = splitMethodByKeyword(arr, "capture");
       
         // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
         const filteredList = [
           ...checkMethodList,
           ...afters,
           ...befores,
+          ...delays,
           ...debounces,
           ...throttles,
           ...captures
@@ -204,11 +231,13 @@ export default class DomEventHandler extends BaseHandler {
           .map(code => code.toLowerCase());
       
         return {
-          eventName,
+          eventName: this.getRealEventName(eventName),
+          customEventName: this.getCustomEventName(eventName), 
           codes,
           captures,
           afterMethods,
           beforeMethods,
+          delayMethods,
           debounceMethods,
           throttleMethods,
           checkMethodList
@@ -216,7 +245,7 @@ export default class DomEventHandler extends BaseHandler {
     }
       
       
-    addEvent (eventObject, callback) {
+    addDomEvent (eventObject, callback) {
         eventObject.callback = this.makeCallback(eventObject, callback);
         this.addBinding(eventObject);
       
@@ -229,21 +258,49 @@ export default class DomEventHandler extends BaseHandler {
           }
         }
       
-        Event.addEvent(
+        Event.addDomEvent(
           eventObject.dom,
           eventObject.eventName,
           eventObject.callback,
           options
         );
     }
+
+    makeCustomEventCallback (eventObject, callback) {
+
+      if (eventObject.customEventName === 'doubletab') {
+        var delay = 300;
+        
+        if (eventObject.delayMethods.length) {
+          delay = +eventObject.delayMethods[0].target;
+        }
+        return (...args) => {
+
+          if (!this.doubleTab) {
+            this.doubleTab = {
+                time: performance.now(),
+            }
+          } else {
+            if (performance.now() - this.doubleTab.time < delay) {
+              callback(...args);
+            }
+
+            this.doubleTab = null;
+          }
+        }
+
+      } 
+
+      return callback; 
+    }
       
-    bindingEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
-        const context = this.context;
+    bindingDomEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
         let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
       
         eventObject.dom = this.getDefaultDomElement(dom);
         eventObject.delegate = delegate.join(SAPARATOR);
-      
+
+        
         if (eventObject.debounceMethods.length) {
           var debounceTime = +eventObject.debounceMethods[0].target;
           callback = debounce(callback, debounceTime);
@@ -251,9 +308,12 @@ export default class DomEventHandler extends BaseHandler {
           var throttleTime = +eventObject.throttleMethods[0].target;
           callback = throttle(callback, throttleTime);
         }
+
+        // custom event callback 만들기 
+        callback = this.makeCustomEventCallback(eventObject, callback)
       
-        this.addEvent(eventObject, callback);
-      };
+        this.addDomEvent(eventObject, callback);
+    };
       
     getEventNames (eventName) {
         let results = [];
@@ -261,26 +321,32 @@ export default class DomEventHandler extends BaseHandler {
         eventName.split(NAME_SAPARATOR).forEach(e => {
             var arr = e.split(NAME_SAPARATOR);
         
-            results.push(...arr);
+            results.push.apply(results, arr);
         });
         
         return results;
     }
-      
-    parseEvent (key) {
+    
+    /**
+     * 이벤트 문자열 파싱하기 
+     * 
+     * @param {string} key 
+     */
+    parseDomEvent (key) {
         const context = this.context;
-        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim());
+        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim()).filter(Boolean);
         
         var prefix = checkMethodFilters.shift()
         var eventSelectorAndBehave = prefix.split(DOM_EVENT_SAPARATOR)[1];
         
         var arr = eventSelectorAndBehave.split(SAPARATOR);
         var eventNames = this.getEventNames(arr[0]);
+
         var callback = context[key].bind(context);
         
-        eventNames.forEach(eventName => {
-            arr[0] = eventName
-            this.bindingEvent(arr, checkMethodFilters, callback);
-        });
+        for(let i = 0, len = eventNames.length; i< len; i++) {
+          arr[0] = eventNames[i];
+          this.bindingDomEvent(arr, checkMethodFilters, callback);
+        }
     }  
 }

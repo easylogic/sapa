@@ -3,19 +3,17 @@ import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import { terser } from 'rollup-plugin-terser';
-import gzipPlugin from 'rollup-plugin-gzip'
-
 
 export default [
     {
         input: 'src/index.js',
         output: [
             {
-                file: 'dist/sapa.js',
-                name: 'sapa',
-                format: 'umd',
-            },
+                dir: 'module',
+                format: 'es',
+            }
         ],
+        preserveModules: true,
         external: [/@babel\/runtime/],
         plugins: [
             // https://velog.io/@peterkimzz/rollup-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8
@@ -27,7 +25,6 @@ export default [
             nodeResolve(),
             peerDepsExternal(),
             terser(),
-            gzipPlugin()
         ],
     }
 ]

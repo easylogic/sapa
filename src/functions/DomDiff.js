@@ -7,7 +7,7 @@ const setBooleanProp = (el, name, value) => {
         el[name] = value;
     }
   };
-
+  
 const setProp = (el, name, value) => {
     if (typeof value === 'boolean') {
         setBooleanProp(el, name, value);
@@ -25,7 +25,7 @@ const removeBooleanProp = (node, name) => {
 const removeUndefinedProp = (node, name) => {
     node.removeAttribute(name);
 }
-
+  
 const removeProp = (node, name, value) => {
     if (typeof value === 'boolean') {
         removeBooleanProp(node, name);
@@ -33,7 +33,7 @@ const removeProp = (node, name, value) => {
         removeUndefinedProp(node, name);
     }
 };
-
+  
 
 const updateProp = (node, name, newValue, oldValue) => {
     if (!newValue) {
@@ -45,39 +45,86 @@ const updateProp = (node, name, newValue, oldValue) => {
 
 
 const updateProps = (node, newProps = {}, oldProps = {}) => {
-    const props = {...newProps,...oldProps};
 
-    Object.keys(props).forEach((name) => {
-      updateProp(node, name, newProps[name], oldProps[name]);
-    });
+    const keyList = [];
+    keyList.push.apply(keyList, Object.keys(newProps))
+    keyList.push.apply(keyList, Object.keys(oldProps))
+
+    const props = [...new Set(keyList)]
+  
+    for(var i = 0, len = props.length; i < len; i++) {
+        const key = props[i];
+        updateProp(node, key, newProps[key], oldProps[key]);
+    }
+    // props.forEach((name) => {
+    //   updateProp(node, name, newProps[name], oldProps[name]);
+    // });
 };
 
+/**
+ * TEXT_NODE 일 때   둘 다 공백일 때는  비교하지 않는다. 
+ * 
+ * @param {*} node1 
+ * @param {*} node2 
+ */
 function changed(node1, node2) {
     return (
-        (node1.nodeType === Node.TEXT_NODE && node1 !== node2)
+        (node1.nodeType === Node.TEXT_NODE && node1.textContent !== node2.textContent) 
         || node1.nodeName !== node2.nodeName
-    )
+    ) 
+}
+
+function hasPassed(node1) {
+    return (
+        (node1.nodeType !== Node.TEXT_NODE && node1.getAttribute('data-domdiff-pass') === 'true') 
+    ) 
+}
+
+/**
+ * refClass 속성을 가지고 있으면 기존 el 을 대체한다. 
+ * 
+ */ 
+function hasRefClass(node1) {
+    return (
+        (node1.nodeType !== Node.TEXT_NODE && (node1.getAttribute('refClass'))) 
+    ) 
 }
 
 function getProps (attributes) {
     var results = {}
-    for(var t of attributes) {
-        results[t.name] = t.value;
+    const len = attributes.length;
+    for(let i = 0; i < len; i++) {
+        const t = attributes[i];
+        results[t.name] = t.value;        
     }
 
     return results;
-
+    
 }
 
 function updateElement (parentElement, oldEl, newEl, i) {
+
     if (!oldEl) {
+        // console.log('replace');        
         parentElement.appendChild(newEl.cloneNode(true));
     } else if (!newEl) {
+        // console.log('replace');        
         parentElement.removeChild(oldEl);
-    } else if (changed(newEl, oldEl)) {
+    } else if (hasPassed(oldEl) || hasPassed(newEl)) {
+        // NOOP
+        // data-domdiff-pass="true" 일 때는 아무것도 비교하지 않고 끝낸다. 
+        // console.log(oldEl, newEl, 'passed');
+    } else if (changed(newEl, oldEl) || hasRefClass(newEl)) {
+        // node 가 같지 않으면 바꾸고, refClass 속성이 있으면 바꾸고
         parentElement.replaceChild(newEl.cloneNode(true), oldEl);
-    } else if (newEl.nodeType !== Node.TEXT_NODE) {
-        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added
+    } else if (
+        newEl.nodeType !== Node.TEXT_NODE 
+
+        && newEl.nodeType !== Node.COMMENT_NODE
+        && newEl.toString() !== "[object HTMLUnknownElement]"
+    ) {
+        // console.log(newEl);
+        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
         var oldChildren = children(oldEl);
         var newChildren = children(newEl);
         var max = Math.max(oldChildren.length, newChildren.length);
@@ -90,35 +137,30 @@ function updateElement (parentElement, oldEl, newEl, i) {
 }
 
 const children = (el) => {
-    var element = el.firstChild;
+    var element = el.firstChild; 
 
     if (!element) {
-        return []
+        return [] 
     }
 
-    var results = []
+    var results = [] 
 
     do {
         results.push(element);
         element = element.nextSibling;
     } while (element);
 
-    return results;
+    return results; 
 }
 
-/**
- * @function DomDiff
- * @param A
- * @param B
- * @constructor
- */
+
 export function DomDiff (A, B) {
 
-    A = A.el || A;
-    B = B.el || B;
+    A = A.el || A; 
+    B = B.el || B; 
 
     var childrenA = children(A);
-    var childrenB = children(B);
+    var childrenB = children(B); 
 
     var len = Math.max(childrenA.length, childrenB.length);
     for (var i = 0; i < len; i++) {

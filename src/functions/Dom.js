@@ -1,18 +1,12 @@
-
-import {
-  isString,
-  isUndefined,
-  isNotString,
-  isNotUndefined
-} from "./functions/func";
 import { DomDiff } from "./DomDiff";
 
 /**
- * @class Dom
- */
-export class Dom {
+ * Dom 유틸리티 
+ * 
+ */ 
+export default class Dom {
   constructor(tag, className, attr) {
-    if (isNotString(tag)) {
+    if (typeof tag !== 'string') {
       this.el = tag;
     } else {
       var el = document.createElement(tag);
@@ -20,7 +14,7 @@ export class Dom {
       if (className) {
         el.className = className;
       }
-
+ 
       attr = attr || {};
 
       for (var k in attr) {
@@ -34,7 +28,7 @@ export class Dom {
   static create (tag, className, attr) {
     return new Dom(tag, className, attr);
   }
-
+ 
   static createByHTML (htmlString) {
     var div = Dom.create('div')
     var list = div.html(htmlString).children();
@@ -43,23 +37,7 @@ export class Dom {
       return Dom.create(list[0].el);
     }
 
-    return null;
-  }
-
-  static createBySVG (svgString) {
-
-    var list = Dom.createByHTML(`<svg>${svgString}</svg>`).children()
-
-    if (list.length) {
-      return Dom.create(list[0].el);
-    }
-
-    return null;
-  }
-
-  static createFragment (domString, containerTag = 'div') {
-    var div = Dom.create(containerTag)
-    return Dom.create(div.html(domString).createChildrenFragment())
+    return null; 
   }
 
   static getScrollTop() {
@@ -87,43 +65,90 @@ export class Dom {
     return Dom.create(document.body)
   }
 
-  isFragment () {
-    return this.el.nodeType === 11;
-  }
-
   setAttr (obj) {
-    if (this.isFragment()) return;
     Object.keys(obj).forEach(key => {
       this.attr(key, obj[key])
     })
-    return this;
+    return this;  
   }
 
-  attr(key, value) {
-    if (this.isFragment()) return;
-    if (arguments.length == 1) {
-      if (this.el.getAttribute) {
-        return this.el.getAttribute(key);
-      } else {
-        return undefined;
-      }
+  setAttrNS (obj, namespace = 'http://www.w3.org/2000/svg') {
+    Object.keys(obj).forEach(key => {
+      this.attr(key, obj[key], namespace)
+    })
+    return this;  
+  }  
 
+  setProp (obj) {
+    Object.keys(obj).forEach(key => {
+      // 동일한 값을 갱신하지 않는다. 
+      if (this.el[key] != obj[key]) {
+        this.el[key] = obj[key];
+      }
+    })
+    return this;  
+  }
+
+  /**
+   * data-xxx 속성을 관리한다. 
+   * 
+   * @param {string} key 
+   * @param {any} value 
+   */
+  data (key, value) {
+    if (arguments.length === 1) {
+      return this.attr('data-' + key);
+    } else if (arguments.length === 2) {
+      return this.attr('data-' + key, value);
     }
 
-    this.el.setAttribute(key, value);
+    //TODO:  data 속성을 모두 {[key]: value} 형태로 리턴하기 
+
+    return this; 
+  }
+
+  /**
+   * Dom attribute 얻기 또는 설정 
+   * 
+   * get ->  Dom.create(targetElement).attr('key');
+   * set -> Dom.create(targetElement).attr('key', value);
+   * 
+   * @param {string} key 
+   * @param {[string]} value 
+   */
+  attr(key, value) {
+    if (arguments.length == 1) {
+      return this.el.getAttribute(key);
+    }
+
+    // 동일한 속성 값이 있다면 변경하지 않는다. 
+    if (this.el.getAttribute(key) != value) {
+      this.el.setAttribute(key, value);
+    }
 
     return this;
   }
 
+  attrNS(key, value, namespace = 'http://www.w3.org/2000/svg') {
+    if (arguments.length == 1) {
+      return this.el.getAttributeNS(namespace, key);
+    }
+
+    // 동일한 속성 값이 있다면 변경하지 않는다. 
+    if (this.el.getAttributeNS(namespace, key) != value) {
+      this.el.setAttributeNS(namespace, key, value);
+    }
+
+    return this;
+  }  
+
   attrKeyValue(keyField) {
-    if (this.isFragment()) return {};
     return {
       [this.el.getAttribute(keyField)]: this.val()
     }
   }
 
   attrs(...args) {
-    if (this.isFragment()) return [];
     return args.map(key => {
       return this.el.getAttribute(key);
     });
@@ -133,37 +158,7 @@ export class Dom {
     return args.map(key => {
       return this.el.style[key];
     });
-  }
-
-  getPrev (isOnlyElement = true) {
-    return Dom.create(isOnlyElement ? this.el.previousElementSibling : this.el.previousSibling);
-  }
-
-  getNext (isOnlyElement = true) {
-    return Dom.create(isOnlyElement ? this.el.nextElementSibling : this.el.nextSibling);
-  }
-
-  movePrev () {
-    const $parent = this.parent();
-    const $prev = this.getPrev();
-
-    $parent.el.insertBefore(this.el, $prev ? $prev.el : null)
-
-    return this;
-  }
-
-  moveNext () {
-    const $parent = this.parent();
-    let $next = this.getNext();
-
-    if (next) {
-      $next = $next.getNext()
-    }
-
-    $parent.el.insertBefore(this.el, $next ? $next.el : null)
-
-    return this;
-  }
+  }  
 
   removeAttr(key) {
     this.el.removeAttribute(key);
@@ -203,6 +198,21 @@ export class Dom {
     return null;
   }
 
+  path() {
+
+    if (!this.el) return [];
+
+    const $parentNode = this.parent(); 
+
+    if ($parentNode) {
+      return [...$parentNode.path(), this]
+    } else {
+      return [this]
+    }
+
+
+  }
+
   parent() {
     return Dom.create(this.el.parentNode);
   }
@@ -239,14 +249,15 @@ export class Dom {
 
   toggleClass(cls, isForce) {
     this.el.classList.toggle(cls, isForce);
+    return this; 
   }
 
   html(html) {
-    if (isUndefined(html)) {
+    if (typeof html === 'undefined') {
       return this.el.innerHTML;
     }
 
-    if (isString(html)) {
+    if (typeof html === 'string') {
       this.el.innerHTML = html;
     } else {
       this.empty().append(html);
@@ -263,9 +274,8 @@ export class Dom {
   }
 
   updateSVGDiff (html, rootElement = 'div') {
-
-    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild)
-  }
+    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild.firstChild)
+  }  
 
   find(selector) {
     return this.el.querySelector(selector);
@@ -277,14 +287,12 @@ export class Dom {
   }
 
   findAll(selector) {
-    return this.el.querySelectorAll(selector);
+    return [...this.el.querySelectorAll(selector)];
   }
 
   $$(selector) {
     var arr = this.findAll(selector);
-    return Object.keys(arr).map(key => {
-      return Dom.create(arr[key]);
-    });
+    return arr.map(node => Dom.create(node));
   }
 
   empty() {
@@ -293,7 +301,7 @@ export class Dom {
   }
 
   append(el) {
-    if (isString(el)) {
+    if (typeof el === 'string') {
       this.el.appendChild(document.createTextNode(el));
     } else {
       this.el.appendChild(el.el || el);
@@ -303,13 +311,13 @@ export class Dom {
   }
 
   prepend(el) {
-    if (isString(el)) {
+    if (typeof el === 'string') {
       this.el.prepend(document.createTextNode(el));
     } else {
       this.el.prepend(el.el || el);
     }
 
-    return this;
+    return this;    
   }
 
   prependHTML(html) {
@@ -320,26 +328,10 @@ export class Dom {
     return $dom;
   }
 
-  prependSVG(html) {
-    var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
-
-    this.prepend($dom.$('svg').createChildrenFragment());
-
-    return $dom;
-  }
-
   appendHTML(html) {
     var $dom = Dom.create("div").html(html);
 
     this.append($dom.createChildrenFragment());
-
-    return $dom;
-  }
-
-  appendSVG(html) {
-    var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
-
-    this.append($dom.$('svg').createChildrenFragment());
 
     return $dom;
   }
@@ -374,11 +366,16 @@ export class Dom {
 
   removeChild(el) {
     this.el.removeChild(el.el || el);
-    return this;
+    return this; 
   }
 
+  /**
+   * 
+   * @param {string} value 
+   * @returns {string} 파라미터가 없을 때  textContent 를 리턴한다. 
+   */
   text(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.textContent;
     } else {
       var tempText = value;
@@ -387,7 +384,11 @@ export class Dom {
         tempText = value.text();
       }
 
-      this.el.textContent = tempText;
+      // 값의 변경 사항이 없으면 업데이트 하지 않는다. 
+      if (this.el.textContent !== tempText) {
+        this.el.textContent = tempText;
+      }
+
       return this;
     }
   }
@@ -403,13 +404,23 @@ export class Dom {
    */
 
   css(key, value) {
-    if (isNotUndefined(key) && isNotUndefined(value)) {
-      Object.assign(this.el.style, {[key]: value});
-    } else if (isNotUndefined(key)) {
-      if (isString(key)) {
-        return getComputedStyle(this.el)[key];
+    if (typeof key !== 'undefined' && typeof value !== 'undefined') {
+      if (key.indexOf('--') === 0 &&  typeof value !== 'undefined' ) {
+        this.el.style.setProperty(key, value);
       } else {
-        Object.assign(this.el.style, key);
+        this.el.style[key] = value;
+      }
+    } else if (typeof key !== 'undefined') {
+      if (typeof key === 'string') {
+        return getComputedStyle(this.el)[key];  
+      } else {
+        Object.entries(key).forEach(([localKey, value]) => {
+          if (localKey.indexOf('--') === 0 && typeof value !== 'undefined' ) {
+            this.el.style.setProperty(localKey, value);
+          } else {
+            this.el.style[localKey] = value;
+          }          
+        })
       }
     }
 
@@ -424,7 +435,7 @@ export class Dom {
       obj[it] = css[it]
     })
 
-    return obj;
+    return obj; 
   }
 
   getStyleList(...list) {
@@ -445,14 +456,14 @@ export class Dom {
   }
 
   cssText(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.style.cssText;
     }
 
     if (value != this.el.tempCssText) {
       this.el.style.cssText = value;
-      this.el.tempCssText = value;
-    }
+      this.el.tempCssText = value; 
+    } 
 
     return this;
   }
@@ -476,11 +487,15 @@ export class Dom {
   }
 
   px(key, value) {
-    return this.css(key, value + 'px');
+    return this.css(key, `${value}px`);
   }
 
   rect() {
     return this.el.getBoundingClientRect();
+  }
+
+  bbox () {
+    return this.el.getBBox();
   }
 
   isSVG () {
@@ -573,9 +588,9 @@ export class Dom {
   }
 
   val(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.value;
-    } else if (isNotUndefined(value)) {
+    } else if (typeof value !== 'undefined') {
       var tempValue = value;
 
       if (value instanceof Dom) {
@@ -600,7 +615,7 @@ export class Dom {
     }
 
     return null;
-}
+}  
 
 
   get value() {
@@ -613,7 +628,7 @@ export class Dom {
 
   get naturalHeight () {
     return this.el.naturalHeight
-  }
+  }  
 
   get files() {
     return this.el.files ? [...this.el.files] : [];
@@ -634,16 +649,28 @@ export class Dom {
     return "";
   }
 
+  int() {
+    return parseInt(this.val(), 10);
+  }
+
+  float() {
+    return parseFloat(this.val());
+  }
+
   show(displayType = "block") {
-    return this.css("display", displayType != "none" ? displayType : "block");
+    this.el.style.display = displayType != "none" ? displayType : "block"
+
+    return this; 
   }
 
   hide() {
-    return this.css("display", "none");
+    this.el.style.display = 'none';
+
+    return this; 
   }
 
   isHide () {
-    return this.css("display") == "none"
+    return this.el.style.display  === "none"
   }
 
   isShow () {
@@ -677,14 +704,14 @@ export class Dom {
   }
 
   addScrollLeft (dt) {
-    this.el.scrollLeft += dt;
-    return this;
+    this.el.scrollLeft += dt; 
+    return this; 
   }
 
   addScrollTop (dt) {
-    this.el.scrollTop += dt;
-    return this;
-  }
+    this.el.scrollTop += dt; 
+    return this; 
+  }  
 
   setScrollTop(scrollTop) {
     this.el.scrollTop = scrollTop;
@@ -718,7 +745,7 @@ export class Dom {
 
   scrollWidth() {
     return this.el.scrollWidth;
-  }
+  }  
 
   on(eventName, callback, opt1, opt2) {
     this.el.addEventListener(eventName, callback, opt1, opt2);
@@ -783,7 +810,7 @@ export class Dom {
     this.el.replaceChild(newElement.el || newElement, oldElement.el || oldElement);
 
     return this;
-  }
+  }  
 
   checked(isChecked = false) {
     if (arguments.length == 0) {
@@ -799,8 +826,8 @@ export class Dom {
   click () {
     this.el.click();
 
-    return this;
-  }
+    return this; 
+  }  
 
   focus() {
     this.el.focus();
@@ -809,18 +836,22 @@ export class Dom {
   }
 
   select() {
-    this.el.select();
+    // contenteditable 의 경우 selection api 를 사용해서 select() 를 수행한다.
+    if (this.attr('contenteditable') === 'true') {
+      var range = document.createRange();
+      range.selectNodeContents(this.el);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      this.el.select();
+    }
+
     return this;
   }
 
   blur() {
     this.el.blur();
-
-    return this;
-  }
-
-  select() {
-    this.el.select();
 
     return this;
   }
@@ -865,13 +896,12 @@ export class Dom {
 
   drawImage (img, dx = 0, dy = 0) {
     var ctx = this.context()
-    var scale = window.devicePixelRatio || 1;
+    var scale = window.devicePixelRatio || 1;    
     ctx.drawImage(img, dx, dy, img.width, img.height, 0, 0, this.el.width / scale, this.el.height / scale);
   }
 
   drawOption(option = {}) {
     var ctx = this.context();
-
     Object.assign(ctx, option);
   }
 
@@ -912,16 +942,5 @@ export class Dom {
 
   drawText(x, y, text) {
     this.context().fillText(text, x, y);
-  }
-
-  /* utility */
-  fullscreen () {
-    var element = this.el;
-
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.wekitRequestFullscreen) {
-      element.wekitRequestFullscreen();
-    }
   }
 }

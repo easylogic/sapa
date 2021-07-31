@@ -1,8 +1,14 @@
 import BaseHandler from "./BaseHandler";
-import { keyEach, isUndefined, isFunction, isString, isNotString, isArray, isObject } from "../functions/func";
+import { isObject } from "../functions/func";
 import { CHECK_BIND_PATTERN, BIND_CHECK_FUNCTION, CHECK_SAPARATOR, BIND_CHECK_DEFAULT_FUNCTION, BIND_SAPARATOR } from "../Event";
+import Dom from "../functions/Dom";
 
-
+/**
+ * 
+ * @param {Dom} $element 
+ * @param {string} key 
+ * @param {any} value 
+ */
 const applyElementAttribute = ($element, key, value) => {
 
   if (key === 'cssText') {
@@ -15,7 +21,7 @@ const applyElementAttribute = ($element, key, value) => {
     /**
      * style: { key: value }
      */
-    if (isNotString(value)) {
+    if (typeof(value) !== 'string') {
       $element.css(value);
     }
 
@@ -25,18 +31,29 @@ const applyElementAttribute = ($element, key, value) => {
     //  "class" : { key: true, key: false } 
     //  "class" : 'string-class' 
 
-    if (isArray(value)) {
-      $element.addClass(...value);
+    if (Array.isArray(value)) {
+      $element.addClass(...value.filter(Boolean));
     } else if (isObject(value)) {
-      keyEach(value, (className, hasClass) => $element.toggleClass(className, hasClass));
+      const keys = Object.keys(value);
+      for(var i = 0, len = keys.length; i < len; i++) {
+        const className = keys[i];
+        const hasClass = value[className];
+
+        $element.toggleClass(className, hasClass);
+      }
     } else {
-      $element.addClass(value);
+      $element.el.className  = value;
     }
 
     return;
+  } else if (key === 'callback') {
+    if (typeof value === 'function') {
+      value ();
+      return; 
+    }
   }
 
-  if (isUndefined(value)) {
+  if (typeof value === 'undefined') {
     $element.removeAttr(key);
   } else {
     if ($element.el.nodeName === "TEXTAREA" && key === "value") {
@@ -45,6 +62,10 @@ const applyElementAttribute = ($element, key, value) => {
       $element.text(value);
     } else if (key === 'innerHTML' || key === 'html') {
       $element.html(value);
+    } else if (key === 'htmlDiff') {
+      $element.updateDiff(value);
+    } else if (key === 'svgDiff') {
+      $element.updateSVGDiff(value);
     } else if (key === 'value') {
       $element.val(value);
     } else {
@@ -63,14 +84,14 @@ export default class BindHandler extends BaseHandler {
     // this.runHandle('bind', ...);
     bindData (...args) {
       if (!this._bindMethods) {
-        this._bindMethods = this.filterProps(CHECK_BIND_PATTERN);
+        this._bindMethods = this.context.filterProps(CHECK_BIND_PATTERN);
       }
       /**
        * BIND 를 해보자.
        * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
        * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
        */
-      this._bindMethods
+      const bindList = this._bindMethods
         .filter(originalCallbackName => {
           if (!args.length) return true; 
           var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
@@ -79,16 +100,17 @@ export default class BindHandler extends BaseHandler {
   
           return args.indexOf($bind) >  -1 
         })
-        .forEach(callbackName => {
+
+        bindList.forEach(async (callbackName) => {
           const bindMethod = this.context[callbackName];
           var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
   
           const refObject = this.getRef(id);
           let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
   
-          if (refObject != '' && isString(refObject)) {
+          if (refObject != '' && typeof(refObject) === 'string') {
             refCallback = BIND_CHECK_FUNCTION(refObject);
-          } else if (isFunction(refObject)) {
+          } else if (typeof refObject === 'function') {
             refCallback = refObject;
           }
   
@@ -96,15 +118,19 @@ export default class BindHandler extends BaseHandler {
           let $element = this.context.refs[elName];
   
           // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
-          const isBindCheck = isFunction(refCallback) && refCallback.call(this.context);
+          const isBindCheck = typeof(refCallback) === 'function' && refCallback.call(this.context);
           if ($element && isBindCheck) {
-            const results = bindMethod.call(this.context, ...args);
+            const results = await bindMethod.call(this.context, ...args);
 
             if (!results) return;
   
-            keyEach(results, (key, value) => {
+            const keys = Object.keys(results);
+            for(var elementKeyIndex = 0, len = keys.length; elementKeyIndex < len; elementKeyIndex++) {
+              const key = keys[elementKeyIndex];
+              const value = results[key];
+
               applyElementAttribute($element, key, value);
-            });
+            }
           }
         });
     }    

@@ -9,14 +9,9 @@ export default [
                 name: 'sapa',
                 format: 'umd',
             },
-            {
-                file: 'dist/sapa.esm.js',
-                format: 'es',
-            }
         ],
         plugins: [
-            serve({
-                
+            serve({  
                 contentBase: ['.', 'dist'],
                 open: true,
                 host: 'localhost',

@@ -11,7 +11,7 @@ npm install @easylogic/sapa
 # How to use in es6
 
 ```js
-import {App, UIElement, EVENT, CLICK} from '@easylogic/sapa'
+import {App, UIElement, SUBSCRIBE, CLICK} from '@easylogic/sapa'
 
 ```
 
@@ -20,7 +20,7 @@ import {App, UIElement, EVENT, CLICK} from '@easylogic/sapa'
 ```html
 <script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.15/dist/sapa.js'></script>
 <script type='text/javacript'>
-    const {App, CLICK, EVENT, UIElement} = sapa;   // or window.sapa 
+    const {App, CLICK, SUBSCRIBE, UIElement} = sapa;   // or window.sapa 
 </script>
 
 ```
@@ -144,6 +144,14 @@ refresh( ) {
 }
 ```
 
+#### support async function 
+
+```js
+async [LOAD('$list')] () {
+    return await api.get('xxxx').data;
+}
+```
+
 ### BIND 
 
 `BIND` are used to change the attributes and style of a particular element. That is, it does not create the DOM itself.
@@ -162,7 +170,25 @@ template () {
         'data-length': arr.length,
         style: {
             overflow: 'hidden'
-        }
+        },
+        cssText: `
+            background-color: yellow;
+            color: white;
+            background-image: linear-gradient('xxxx')
+        `,
+        html: "<div></div>",
+        innerHTML: "<div></div>",
+        text: "blackblack",
+        textContent: "redred",        
+        class: {
+            "is-selected": true,
+            "is-focused": false,
+        },
+        class : [ 'className', 'className' ],
+        class : 'string-class',
+        htmlDiff: '<div><span></span></div>',
+        svgDiff: '<g><rect /><circle /></g>',
+        value: "input text",
     }
 }
 
@@ -390,6 +416,14 @@ checkTarget(e) {
 [CLICK() + IF('checkTarget')] (e) {}
 ```
 
+### check LeftMouseButton or RightMouseButton 
+
+```js
+[CLICK() + LEFT_BUTTON] (e) {}
+
+[CLICK() + RIGHT_BUTTON] (e) {}
+```
+
 ### DEBOUNCE 
 
 Some PIPEs can also use actual methods in other ways. A typical example is DEBOUNCE.
@@ -410,9 +444,9 @@ sapa has a simple event system for sending messages between objects.
 
 This also uses `method` string, just like specifying a DOM event.
 
-### EVENT 
+### SUBSCRIBE 
 
-EVENT allows you to receive emit messages from elsewhere. 
+SUBSCRIBE allows you to receive emit messages from elsewhere. 
 
 Provides a callback to send and receive messages even if they are not connected.
 
@@ -420,7 +454,7 @@ Provides a callback to send and receive messages even if they are not connected.
 ```js
 
 class A extends UIElement {
-    [EVENT('setLocale')] (locale) {
+    [SUBSCRIBE('setLocale')] (locale) {
         console.log(locale);
     }
 }
@@ -449,6 +483,7 @@ App.start({
 
 ```
 
+
 ### emit
 
 `emit` is a method that delivers a message to an object other than itself.
@@ -463,13 +498,13 @@ why does not it send to its element?
 
 The reason for not sending to itself is that there is a possibility that the event can run infinitely. Once I send the message, I can not come back to me.
 
-### multiple EVENT 
+### multiple SUBSCRIBE 
 
-EVENT can define several at the same time.
+SUBSCRIBE can define several at the same time.
 
 ```js
 
-[EVENT('a', 'b', 'c')] () {
+[SUBSCRIBE('a', 'b', 'c')] () {
     // 
 }
 
@@ -485,11 +520,40 @@ You can also slow down the execution time of a message.
 
 ```js
 
-[EVENT('a') + DEBOUNCE(100)] () {
+[SUBSCRIBE('a') + DEBOUNCE(100)] () {
 
 }
 
 ```
+
+### THROTTLE 
+
+You can also slow down the execution time of a message.
+
+```js
+
+[SUBSCRIBE('a') + THROTTLE(100)] () {
+
+}
+
+```
+
+
+#### IF
+
+```js
+class A extends UIElement {
+
+    checkShow(locale) {
+        return true;        // 실행 가능 
+    }
+
+    [SUBSCRIBE('setLocale') + IF("checkShow")] (locale) {
+        console.log(locale);
+    }
+}
+```
+
 
 ### trigger 
 
@@ -505,13 +569,27 @@ If you want to send a message only to the parent object, you can do the followin
 this.parent.trigger('setLocale', 'en'); 
 ```
 
+
+### SUBSCRIBE_SELF 
+
+trigger 함수로만 호출 할 수 있음.  나 자신의 이벤트를 실행하는 방법 
+
+
+```js
+class A extends UIElement {
+    [SUBSCRIBE_SELF('setLocale')] (locale) {
+        console.log(locale);
+    }
+}
+```
+
 # Simple example 
 
 This sample make a clickable element.
 
 ```js
 
-import {App, UIElement, CLICK} from 'sapa'
+import {start, UIElement, CLICK} from 'sapa'
 
 class Test extends UIElement {
     template() {
@@ -523,9 +601,8 @@ class Test extends UIElement {
     }
 }
 
-App.start({
-    components: { Test },
-    template: `<Test />`
+start(Test, {
+    container: document.getElementById('app')
 });
 
 ```

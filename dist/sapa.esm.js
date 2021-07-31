@@ -1,174 +1,34 @@
-function debounce (callback, delay = 0) {
-
-    if (delay === 0) {
-        return callback;
-    }
-
-    var t = undefined;
-
-    return function ($1, $2, $3, $4, $5) {
-        if (t) {
-            clearTimeout(t);
-        }
-
-        t = setTimeout(function () {
-            callback($1, $2, $3, $4, $5);
-        }, delay || 300);
-    }
-}
-  
-
-function throttle (callback, delay) {
-
-    var t = undefined;
-
-    return function ($1, $2, $3, $4, $5) {
-        if (!t) {
-            t = setTimeout(function () {
-                callback($1, $2, $3, $4, $5);
-                t = null; 
-            }, delay || 300);
-        }
-
-    }
-}
-
-function keyEach (obj, callback) {
-    Object.keys(obj).forEach( (key, index) => {
-        callback (key, obj[key], index);
-    });
-}
-
-function keyMap (obj, callback) {
-    return Object.keys(obj).map( (key, index) => {
-        return callback (key, obj[key], index);
-    })
-}
-
-
-function isUndefined (value) {
-    return typeof value == 'undefined' || value === null;
-}
-
-function isNotUndefined (value) {
-    return isUndefined(value) === false;
-}
-
-function isArray (value) {
-    return Array.isArray(value);
-}
-
-function isBoolean (value) {
-    return typeof value == 'boolean'
-}
-
-function isString (value) {
-    return typeof value == 'string'
-}
-
-function isNotString (value) {
-    return isString(value) === false;
-}
-
-function isObject (value) {
-    return typeof value == 'object' && !isArray(value) && !isNumber(value) && !isString(value)  && value !== null; 
-}
-
-function isFunction (value) {
-    return typeof value == 'function'
-}
-
-function isNumber (value) {
-    return typeof value == 'number';
-}
-
-function clone (obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-const HTML_TAG = {
-    'image': true,
-    'input': true,
-    'br': true,
-    'path': true,
-    'line': true,
-    'circle': true,
-    'rect': true,
-    'path': true, 
-    'polygon': true,
-    'polyline': true,
-    'use': true
-};
-
-
-const html = (strings, ...args) => {
-
-    var results =  strings.map((it, index) => {
-        
-        var results = args[index] || '';
-
-        if (isFunction(results)) {
-            results = results();
-        }
-
-        if (!isArray(results)) {
-            results = [results];
-        }
-
-        results = results.join('');
-
-        return it + results;
-    }).join('');
-
-    results = results.replace(/\<(\w*)([^\>]*)\/\>/gim, function (match, p1) {
-        if (HTML_TAG[p1.toLowerCase()]) {
-            return match;
-        } else {
-            return match.replace('/>', `></${p1}>`)
-        }
-    });
-
-    return results; 
-};
-
-const UUID_REG = /[xy]/g;
-
-function uuid(){
-    var dt = new Date().getTime();
-    var uuid = 'xxx12-xx-34xx'.replace(UUID_REG, function(c) {
-        var r = (dt + Math.random()*16)%16 | 0;
-        dt = Math.floor(dt/16);
-        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-}
-
-function uuidShort(){
-    var dt = new Date().getTime();
-    var uuid = 'idxxxxxxx'.replace(UUID_REG, function(c) {
-        var r = (dt + Math.random()*16)%16 | 0;
-        dt = Math.floor(dt/16);
-        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-}
-
 const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
   return ` ${split} ${value}`;
 };
 
 // event name regular expression
-const CHECK_DOM_EVENT_PATTERN = /^dom (.*)/gi;
+const CHECK_DOM_EVENT_PATTERN = /^domevent (.*)/gi;
 const CHECK_LOAD_PATTERN = /^load (.*)/gi;
 const CHECK_BIND_PATTERN = /^bind (.*)/gi;
+const CHECK_SUBSCRIBE_PATTERN = /^subscribe (.*)/gi;
 
+const MULTI_PREFIX$1 = "ME@";
+const SPLITTER = "|";
+
+const PIPE = (...args) => {
+  return args.join(SPLITTER);
+};
+
+const EVENT = (...args) => {
+  return MULTI_PREFIX$1 + PIPE(...args);
+};
+
+const COMMAND = EVENT;
+const ON = EVENT;
 
 
 const NAME_SAPARATOR = ":";
 const CHECK_SAPARATOR = "|";
-const DOM_EVENT_SAPARATOR = "dom ";
+const DOM_EVENT_SAPARATOR = "domevent ";
 const LOAD_SAPARATOR = "load ";
 const BIND_SAPARATOR = "bind ";
+const SUBSCRIBE_SAPARATOR = "subscribe ";
 
 const SAPARATOR = ' ';
 
@@ -181,6 +41,81 @@ const DOM_EVENT_MAKE = (...keys) => {
   };
 };
 
+const SUBSCRIBE_EVENT_MAKE = (...args) => {
+  return SUBSCRIBE_SAPARATOR + args.join(CHECK_SAPARATOR);
+};
+
+
+// Predefined CHECKER
+const CHECKER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(value, split);
+};
+
+const AFTER = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`after(${value})`, split);
+};
+
+const BEFORE = (value, split = CHECK_SAPARATOR) => {
+  return makeEventChecker(`before(${value})`, split);  
+};
+
+const IF = CHECKER;
+const KEY = CHECKER; 
+
+const ARROW_UP = CHECKER('ArrowUp');
+const ARROW_DOWN = CHECKER('ArrowDown');
+const ARROW_LEFT = CHECKER('ArrowLeft');
+const ARROW_RIGHT = CHECKER('ArrowRight');
+const ENTER = CHECKER('Enter');
+const SPACE = CHECKER('Space');
+const ESCAPE = CHECKER('Escape');
+
+const ALT = CHECKER("isAltKey");
+const SHIFT = CHECKER("isShiftKey");
+const META = CHECKER("isMetaKey");
+const CONTROL = CHECKER("isCtrlKey");
+const MOUSE = CHECKER("hasMouse");
+const TOUCH = CHECKER("hasTouch");
+const PEN = CHECKER("hasPen");
+const SELF = CHECKER("self");
+const LEFT_BUTTON = CHECKER("isMouseLeftButton");
+const RIGHT_BUTTON = CHECKER("isMouseRightButton");
+
+const FIT = CHECKER("fit");
+const PASSIVE = CHECKER("passive");
+const DOMDIFF = CHECKER('domdiff');
+
+// event config method
+const DEBOUNCE = (t = 100) => {
+  return CHECKER(`debounce(${t})`);
+};
+
+const DELAY = (t = 300) => {
+  return CHECKER(`delay(${t})`);
+};
+
+const D1000 = DEBOUNCE(1000);
+
+const THROTTLE = (t = 100) => {
+  return CHECKER(`throttle(${t})`);
+};
+const ALL_TRIGGER = CHECKER("allTrigger()");
+const SELF_TRIGGER = CHECKER("selfTrigger()");
+
+const CAPTURE = CHECKER("capture()");
+
+// event config method
+
+// before method
+
+// after method
+const PREVENT = AFTER(`preventDefault`);
+const STOP = AFTER(`stopPropagation`);
+
+const SUBSCRIBE = SUBSCRIBE_EVENT_MAKE;
+const SUBSCRIBE_ALL = (...args) => SUBSCRIBE_EVENT_MAKE(...args, ALL_TRIGGER);
+const SUBSCRIBE_SELF = (...args) => SUBSCRIBE_EVENT_MAKE(...args, SELF_TRIGGER);
+const CONFIG = (config, ...args) => SUBSCRIBE_EVENT_MAKE(`config:${config}`, ...args);
 const CUSTOM = DOM_EVENT_MAKE;
 const CLICK = DOM_EVENT_MAKE("click");
 const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
@@ -217,7 +152,17 @@ const PASTE = DOM_EVENT_MAKE("paste");
 const RESIZE = DOM_EVENT_MAKE("resize");
 const SCROLL = DOM_EVENT_MAKE("scroll");
 const SUBMIT = DOM_EVENT_MAKE("submit");
-const POINTERSTART = CUSTOM("pointerdown");
+
+// pointerstart 의 경우 drag 를 위한 시작점이기 때문에  left button 만 허용한다. 
+// context 메뉴나 wheel 은 허용하지 않는다. 
+const POINTERSTART = (...args) => {
+  return (CUSTOM("pointerdown")(...args) + LEFT_BUTTON);
+};
+// 
+
+const POINTEROVER = CUSTOM("pointerover");
+const POINTERENTER = CUSTOM("pointerenter");
+const POINTEROUT = CUSTOM("pointerout");
 const POINTERMOVE = CUSTOM("pointermove");
 const POINTEREND = CUSTOM("pointerup");
 const CHANGEINPUT = CUSTOM("change", "input");
@@ -229,80 +174,12 @@ const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
 const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
 const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
 const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
+const DOUBLETAB = CUSTOM('doubletab');
 
-// Predefined CHECKER
-const CHECKER = (value, split = CHECK_SAPARATOR) => {
-  return makeEventChecker(value, split);
-};
-
-const AFTER = (value, split = CHECK_SAPARATOR) => {
-  return makeEventChecker(`after(${value})`, split);
-};
-
-const BEFORE = (value, split = CHECK_SAPARATOR) => {
-  return makeEventChecker(`before(${value})`, split);  
-};
-
-const IF = CHECKER;
-const KEY = CHECKER; 
-
-const ARROW_UP = CHECKER('ArrowUp');
-const ARROW_DOWN = CHECKER('ArrowDown');
-const ARROW_LEFT = CHECKER('ArrowLeft');
-const ARROW_RIGHT = CHECKER('ArrowRight');
-const ENTER = CHECKER('Enter');
-const SPACE = CHECKER('Space');
-const ESCAPE = CHECKER('Escape');
-
-const ALT = CHECKER("isAltKey");
-const SHIFT = CHECKER("isShiftKey");
-const META = CHECKER("isMetaKey");
-const CONTROL = CHECKER("isCtrlKey");
-const SELF = CHECKER("self");
-
-const FIT = CHECKER("fit");
-const PASSIVE = CHECKER("passive");
-const VDOM = CHECKER('vdom');
-
-// event config method
-const DEBOUNCE = (t = 100) => {
-  return CHECKER(`debounce(${t})`);
-};
-
-const D1000 = DEBOUNCE(1000);
-
-const THROTTLE = (t = 100) => {
-  return CHECKER(`throttle(${t})`);
-};
-
-const CAPTURE = CHECKER("capture()");
-// event config method
-
-// before method
-
-// after method
-const MOVE = (method = "move") => {
-  return AFTER(`bodyMouseMove ${method}`);
-};
-const END = (method = "end") => {
-  return AFTER(`bodyMouseUp ${method}`);
-};
-
-const PREVENT = AFTER(`preventDefault`);
-const STOP = AFTER(`stopPropagation`);
 
 // Predefined LOADER
 const LOAD = (value = "$el") => {
   return LOAD_SAPARATOR + value;
-};
-
-const createRef = value => {
-  if (value === '') return '';
-
-  var id = uuid();
-  refManager[id] = value;
-
-  return id;
 };
 
 const getRef = id => {
@@ -319,22 +196,47 @@ const BIND_CHECK_DEFAULT_FUNCTION = () => {
   return true;
 };
 
-const BIND = (value = "$el", checkFieldOrCallback = '') => {
+const BIND = (value = "$el") => {
   return (
-    BIND_SAPARATOR + value + ( 
-      checkFieldOrCallback ?  CHECK_SAPARATOR + createRef(checkFieldOrCallback) : '' 
-    ) 
+    BIND_SAPARATOR + value
   );
 };
 
+function normalizeWheelEvent (e) {
+  let dx = e.deltaX;
+  let dy = e.deltaY;
+
+
+  if (dx === 0 && e.shiftKey) {
+    [dy, dx] = [dx, dy];
+  }  
+
+  if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    dy *= 8;
+  } else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    dy *= 24; 
+  }
+
+
+  return [
+    limit(dx, 24), 
+    limit(dy, 24), 
+    0
+  ]
+}
+
+function limit (delta, maxDelta) {
+  return Math.sign(delta) * Math.min( maxDelta, Math.abs(delta))
+}
+
 var Event = {
-  addEvent(dom, eventName, callback, useCapture = false) {
+  addDomEvent(dom, eventName, callback, useCapture = false) {
     if (dom) {
       dom.addEventListener(eventName, callback, useCapture);
     }
   },
 
-  removeEvent(dom, eventName, callback) {
+  removeDomEvent(dom, eventName, callback) {
     if (dom) {
       dom.removeEventListener(eventName, callback);
     }
@@ -357,236 +259,122 @@ var Event = {
   }
 };
 
-class BaseStore {
-  constructor(opt = {}) {
-    this.cachedCallback = {};
-    this.callbacks = {};
-    this.commandes = [];
-  }
-
-  getCallbacks(event) {
-    if (!this.callbacks[event]) {
-      this.callbacks[event] = [];
-    }
-
-    return this.callbacks[event]
-  }
-
-  setCallbacks(event, list = []) {
-    this.callbacks[event] = list; 
-  }
-
-  on(event, originalCallback, context, delay = 0) {
-    var callback = delay > 0 ? debounce(originalCallback, delay) : originalCallback;
-
-    this.getCallbacks(event).push({ event, callback, context, originalCallback });
-  }
-
-  off(event, originalCallback) {
-
-    if (arguments.length == 1) {
-      this.setCallbacks(event);
-    } else if (arguments.length == 2) {      
-      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
-        return f.originalCallback !== originalCallback
-      }));
-    }
-  }
-
-  offAll (context) {
-
-    Object.keys(this.callbacks).forEach(event => {
-      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
-        return f.context !== context;  
-      }));
-    });
-  }
-
-  getCachedCallbacks (event) {
-    return this.getCallbacks(event);
-  }
-
-  sendMessage(source, event, $2, $3, $4, $5) {
-    Promise.resolve().then(() => {
-      var list = this.getCachedCallbacks(event);
-      if (list) {
-        list
-        .filter(f => f.originalCallback.source !== source)
-        .forEach(f => {
-          f.callback($2, $3, $4, $5);
-        });
-      }
-
-    });
-  }
-
-  triggerMessage(source, event, $2, $3, $4, $5) {
-    Promise.resolve().then(() => {
-      var list = this.getCachedCallbacks(event);
-      if (list) {
-        list
-          .filter(f => f.originalCallback.source === source)
-          .forEach(f => {      
-            f.callback($2, $3, $4, $5);
-          });
-      } else {
-        console.warn(event, ' is not valid event');
-      }
-
-
-    });
-  }
-
-
-
-
-  emit($1, $2, $3, $4, $5) {
-    this.sendMessage(this.source, $1, $2, $3, $4, $5);
-  }
-
-  trigger($1, $2, $3, $4, $5) {
-    this.triggerMessage(this.source, $1, $2, $3, $4, $5);
-  }
-
-  execute($1, $2, $3, $4, $5){
-    this.runCommand(this.source, $1, $2, $3, $4, $5);
-  }
-}
-
-// collectProps 에서 제외될 메소드 목록 
-const expectMethod = {
-    "constructor": true,
-    "initState": true,
-    "refresh": true,
-    "updateData": true,
-    "constructor": true,
-    "initializeProperty": true,
-    "created": true,
-    "getRealEventName": true,
-    "initializeStoreEvent": true,
-    "destoryStoreEvent": true,
-    "destroy": true,
-    "emit": true,
-    "trigger": true,
-    "on": true,
-    "off": true,
-    "setState": true,
-    "_reload": true,
-    "render": true,
-    "initialize": true,
-    "afterRender": true,
-    "components": true,
-    "getRef": true,
-    "parseTemplate": true,
-    "childrenIds": true,
-    "exists": true,
-    "parseProperty": true,
-    "parseSourceName": true,
-    "parseComponent": true,
-    "clean": true,
-    "refresh": true,
-    "template": true,
-    "eachChildren": true,
-    "initializeEvent": true,
-    "destroy": true,
-    "self": true,
-    "isAltKey": true,
-    "isCtrlKey": true,
-    "isShiftKey": true,
-    "isMetaKey": true,
-    "preventDefault": true,
-    "stopPropagation": true,
-    "bodyMouseMove": true,
-    "bodyMouseUp": true,
-  };
-
-class BaseHandler {
-    constructor (context, options = {}) {
-        this.context = context;
-        this.options = options;
-    }
-
-    // 초기화 설정 
-    initialize () {
-
-    }
-
-    // html 을 로드 할 때 
-    load () {
-
-    }
-
-    // 새로고침 할 때 
-    refresh () {
-
-    }
-    
-    // 화면에 그린 이후에 실행 되는 로직들 
-    render () {
-
-    }
-
-    getRef(id) {
-        return this.context.getRef(id);
-    }
-        
-    splitMethodByKeyword (arr, keyword) {
-        var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
-        var filterMaps = filterKeys.map(code => {
-          var [target, param] = code
-            .split(`${keyword}(`)[1]
-            .split(")")[0]
-            .trim()
-            .split(" ");
-      
-          return { target, param };
-        });
-      
-        return [filterKeys, filterMaps];
-    }    
-
-    /**
-     * property 수집하기
-     * 상위 클래스의 모든 property 를 수집해서 리턴한다.
-     */
-    collectProps() {
-
-        var context = this.context;
-        var p = context.__proto__;
-        var results = [];
-        do {
-        var isObject = p instanceof Object;
-
-        if (isObject === false) {
-            break;
-        }
-        const names = Object.getOwnPropertyNames(p).filter(name => {
-            return context && isFunction(context[name]) && !expectMethod[name];
-        });
-
-        results.push(...names);
-        p = p.__proto__;
-        } while (p);
-
-        return results;
-    }
-
-
-
-    filterProps(pattern) {
-        return this.collectProps().filter(key => {
-            return key.match(pattern);
-        });
-    }    
-
-    run () {
-
-    }
-
-    destroy() {
-
-    }
-}
+var EventFunctions = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  makeEventChecker: makeEventChecker,
+  CHECK_DOM_EVENT_PATTERN: CHECK_DOM_EVENT_PATTERN,
+  CHECK_LOAD_PATTERN: CHECK_LOAD_PATTERN,
+  CHECK_BIND_PATTERN: CHECK_BIND_PATTERN,
+  CHECK_SUBSCRIBE_PATTERN: CHECK_SUBSCRIBE_PATTERN,
+  PIPE: PIPE,
+  EVENT: EVENT,
+  COMMAND: COMMAND,
+  ON: ON,
+  NAME_SAPARATOR: NAME_SAPARATOR,
+  CHECK_SAPARATOR: CHECK_SAPARATOR,
+  DOM_EVENT_SAPARATOR: DOM_EVENT_SAPARATOR,
+  LOAD_SAPARATOR: LOAD_SAPARATOR,
+  BIND_SAPARATOR: BIND_SAPARATOR,
+  SUBSCRIBE_SAPARATOR: SUBSCRIBE_SAPARATOR,
+  SAPARATOR: SAPARATOR,
+  CHECKER: CHECKER,
+  AFTER: AFTER,
+  BEFORE: BEFORE,
+  IF: IF,
+  KEY: KEY,
+  ARROW_UP: ARROW_UP,
+  ARROW_DOWN: ARROW_DOWN,
+  ARROW_LEFT: ARROW_LEFT,
+  ARROW_RIGHT: ARROW_RIGHT,
+  ENTER: ENTER,
+  SPACE: SPACE,
+  ESCAPE: ESCAPE,
+  ALT: ALT,
+  SHIFT: SHIFT,
+  META: META,
+  CONTROL: CONTROL,
+  MOUSE: MOUSE,
+  TOUCH: TOUCH,
+  PEN: PEN,
+  SELF: SELF,
+  LEFT_BUTTON: LEFT_BUTTON,
+  RIGHT_BUTTON: RIGHT_BUTTON,
+  FIT: FIT,
+  PASSIVE: PASSIVE,
+  DOMDIFF: DOMDIFF,
+  DEBOUNCE: DEBOUNCE,
+  DELAY: DELAY,
+  D1000: D1000,
+  THROTTLE: THROTTLE,
+  ALL_TRIGGER: ALL_TRIGGER,
+  SELF_TRIGGER: SELF_TRIGGER,
+  CAPTURE: CAPTURE,
+  PREVENT: PREVENT,
+  STOP: STOP,
+  SUBSCRIBE: SUBSCRIBE,
+  SUBSCRIBE_ALL: SUBSCRIBE_ALL,
+  SUBSCRIBE_SELF: SUBSCRIBE_SELF,
+  CONFIG: CONFIG,
+  CUSTOM: CUSTOM,
+  CLICK: CLICK,
+  DOUBLECLICK: DOUBLECLICK,
+  MOUSEDOWN: MOUSEDOWN,
+  MOUSEUP: MOUSEUP,
+  MOUSEMOVE: MOUSEMOVE,
+  MOUSEOVER: MOUSEOVER,
+  MOUSEOUT: MOUSEOUT,
+  MOUSEENTER: MOUSEENTER,
+  MOUSELEAVE: MOUSELEAVE,
+  TOUCHSTART: TOUCHSTART,
+  TOUCHMOVE: TOUCHMOVE,
+  TOUCHEND: TOUCHEND,
+  KEYDOWN: KEYDOWN,
+  KEYUP: KEYUP,
+  KEYPRESS: KEYPRESS,
+  DRAG: DRAG,
+  DRAGSTART: DRAGSTART,
+  DROP: DROP,
+  DRAGOVER: DRAGOVER,
+  DRAGENTER: DRAGENTER,
+  DRAGLEAVE: DRAGLEAVE,
+  DRAGEXIT: DRAGEXIT,
+  DRAGOUT: DRAGOUT,
+  DRAGEND: DRAGEND,
+  CONTEXTMENU: CONTEXTMENU,
+  CHANGE: CHANGE,
+  INPUT: INPUT,
+  FOCUS: FOCUS,
+  FOCUSIN: FOCUSIN,
+  FOCUSOUT: FOCUSOUT,
+  BLUR: BLUR,
+  PASTE: PASTE,
+  RESIZE: RESIZE,
+  SCROLL: SCROLL,
+  SUBMIT: SUBMIT,
+  POINTERSTART: POINTERSTART,
+  POINTEROVER: POINTEROVER,
+  POINTERENTER: POINTERENTER,
+  POINTEROUT: POINTEROUT,
+  POINTERMOVE: POINTERMOVE,
+  POINTEREND: POINTEREND,
+  CHANGEINPUT: CHANGEINPUT,
+  WHEEL: WHEEL,
+  ANIMATIONSTART: ANIMATIONSTART,
+  ANIMATIONEND: ANIMATIONEND,
+  ANIMATIONITERATION: ANIMATIONITERATION,
+  TRANSITIONSTART: TRANSITIONSTART,
+  TRANSITIONEND: TRANSITIONEND,
+  TRANSITIONRUN: TRANSITIONRUN,
+  TRANSITIONCANCEL: TRANSITIONCANCEL,
+  DOUBLETAB: DOUBLETAB,
+  LOAD: LOAD,
+  getRef: getRef,
+  BIND_CHECK_FUNCTION: BIND_CHECK_FUNCTION,
+  BIND_CHECK_DEFAULT_FUNCTION: BIND_CHECK_DEFAULT_FUNCTION,
+  BIND: BIND,
+  normalizeWheelEvent: normalizeWheelEvent,
+  'default': Event
+});
 
 const setBooleanProp = (el, name, value) => {
     if (value) {
@@ -635,24 +423,57 @@ const updateProp = (node, name, newValue, oldValue) => {
 
 
 const updateProps = (node, newProps = {}, oldProps = {}) => {
-    const props = {...newProps,...oldProps};
+
+    const keyList = [];
+    keyList.push.apply(keyList, Object.keys(newProps));
+    keyList.push.apply(keyList, Object.keys(oldProps));
+
+    const props = [...new Set(keyList)];
   
-    Object.keys(props).forEach((name) => {
-      updateProp(node, name, newProps[name], oldProps[name]);
-    });
+    for(var i = 0, len = props.length; i < len; i++) {
+        const key = props[i];
+        updateProp(node, key, newProps[key], oldProps[key]);
+    }
+    // props.forEach((name) => {
+    //   updateProp(node, name, newProps[name], oldProps[name]);
+    // });
 };
 
+/**
+ * TEXT_NODE 일 때   둘 다 공백일 때는  비교하지 않는다. 
+ * 
+ * @param {*} node1 
+ * @param {*} node2 
+ */
 function changed(node1, node2) {
     return (
-        (node1.nodeType === Node.TEXT_NODE && node1 !== node2) 
+        (node1.nodeType === Node.TEXT_NODE && node1.textContent !== node2.textContent) 
         || node1.nodeName !== node2.nodeName
+    ) 
+}
+
+function hasPassed(node1) {
+    return (
+        (node1.nodeType !== Node.TEXT_NODE && node1.getAttribute('data-domdiff-pass') === 'true') 
+    ) 
+}
+
+/**
+ * refClass 속성을 가지고 있으면 기존 el 을 대체한다. 
+ * 
+ */ 
+function hasRefClass(node1) {
+    return (
+        (node1.nodeType !== Node.TEXT_NODE && (node1.getAttribute('refClass'))) 
     ) 
 }
 
 function getProps (attributes) {
     var results = {};
-    for(var t of attributes) {
-        results[t.name] = t.value;
+    const len = attributes.length;
+    for(let i = 0; i < len; i++) {
+        const t = attributes[i];
+        results[t.name] = t.value;        
     }
 
     return results;
@@ -660,13 +481,23 @@ function getProps (attributes) {
 }
 
 function updateElement (parentElement, oldEl, newEl, i) {
+
     if (!oldEl) {
+        // console.log('replace');        
         parentElement.appendChild(newEl.cloneNode(true));
     } else if (!newEl) {
+        // console.log('replace');        
         parentElement.removeChild(oldEl);
-    } else if (changed(newEl, oldEl)) {
+    } else if (hasPassed(oldEl) || hasPassed(newEl)) ; else if (changed(newEl, oldEl) || hasRefClass(newEl)) {
+        // node 가 같지 않으면 바꾸고, refClass 속성이 있으면 바꾸고
         parentElement.replaceChild(newEl.cloneNode(true), oldEl);
-    } else if (newEl.nodeType !== Node.TEXT_NODE) {
+    } else if (
+        newEl.nodeType !== Node.TEXT_NODE 
+
+        && newEl.nodeType !== Node.COMMENT_NODE
+        && newEl.toString() !== "[object HTMLUnknownElement]"
+    ) {
+        // console.log(newEl);
         updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
         var oldChildren = children(oldEl);
         var newChildren = children(newEl);
@@ -711,9 +542,13 @@ function DomDiff (A, B) {
     }
 }
 
+/**
+ * Dom 유틸리티 
+ * 
+ */ 
 class Dom {
   constructor(tag, className, attr) {
-    if (isNotString(tag)) {
+    if (typeof tag !== 'string') {
       this.el = tag;
     } else {
       var el = document.createElement(tag);
@@ -721,7 +556,7 @@ class Dom {
       if (className) {
         el.className = className;
       }
-
+ 
       attr = attr || {};
 
       for (var k in attr) {
@@ -745,22 +580,6 @@ class Dom {
     }
 
     return null; 
-  }
-
-  static createBySVG (svgString) {
-
-    var list = Dom.createByHTML(`<svg>${svgString}</svg>`).children();
-
-    if (list.length) {
-      return Dom.create(list[0].el);
-    }
-
-    return null; 
-  }  
-
-  static createFragment (domString, containerTag = 'div') {
-    var div = Dom.create(containerTag);
-    return Dom.create(div.html(domString).createChildrenFragment())
   }
 
   static getScrollTop() {
@@ -788,43 +607,90 @@ class Dom {
     return Dom.create(document.body)
   }
 
-  isFragment () {
-    return this.el.nodeType === 11;
-  }
-
   setAttr (obj) {
-    if (this.isFragment()) return; 
     Object.keys(obj).forEach(key => {
       this.attr(key, obj[key]);
     });
     return this;  
   }
 
-  attr(key, value) {
-    if (this.isFragment()) return; 
-    if (arguments.length == 1) {
-      if (this.el.getAttribute) {
-        return this.el.getAttribute(key);
-      } else {
-        return undefined;
-      }
+  setAttrNS (obj, namespace = 'http://www.w3.org/2000/svg') {
+    Object.keys(obj).forEach(key => {
+      this.attr(key, obj[key], namespace);
+    });
+    return this;  
+  }  
 
+  setProp (obj) {
+    Object.keys(obj).forEach(key => {
+      // 동일한 값을 갱신하지 않는다. 
+      if (this.el[key] != obj[key]) {
+        this.el[key] = obj[key];
+      }
+    });
+    return this;  
+  }
+
+  /**
+   * data-xxx 속성을 관리한다. 
+   * 
+   * @param {string} key 
+   * @param {any} value 
+   */
+  data (key, value) {
+    if (arguments.length === 1) {
+      return this.attr('data-' + key);
+    } else if (arguments.length === 2) {
+      return this.attr('data-' + key, value);
     }
 
-    this.el.setAttribute(key, value);
+    //TODO:  data 속성을 모두 {[key]: value} 형태로 리턴하기 
+
+    return this; 
+  }
+
+  /**
+   * Dom attribute 얻기 또는 설정 
+   * 
+   * get ->  Dom.create(targetElement).attr('key');
+   * set -> Dom.create(targetElement).attr('key', value);
+   * 
+   * @param {string} key 
+   * @param {[string]} value 
+   */
+  attr(key, value) {
+    if (arguments.length == 1) {
+      return this.el.getAttribute(key);
+    }
+
+    // 동일한 속성 값이 있다면 변경하지 않는다. 
+    if (this.el.getAttribute(key) != value) {
+      this.el.setAttribute(key, value);
+    }
 
     return this;
   }
 
+  attrNS(key, value, namespace = 'http://www.w3.org/2000/svg') {
+    if (arguments.length == 1) {
+      return this.el.getAttributeNS(namespace, key);
+    }
+
+    // 동일한 속성 값이 있다면 변경하지 않는다. 
+    if (this.el.getAttributeNS(namespace, key) != value) {
+      this.el.setAttributeNS(namespace, key, value);
+    }
+
+    return this;
+  }  
+
   attrKeyValue(keyField) {
-    if (this.isFragment()) return {};     
     return {
       [this.el.getAttribute(keyField)]: this.val()
     }
   }
 
   attrs(...args) {
-    if (this.isFragment()) return [];
     return args.map(key => {
       return this.el.getAttribute(key);
     });
@@ -835,36 +701,6 @@ class Dom {
       return this.el.style[key];
     });
   }  
-
-  getPrev (isOnlyElement = true) {
-    return Dom.create(isOnlyElement ? this.el.previousElementSibling : this.el.previousSibling);
-  }
-
-  getNext (isOnlyElement = true) {
-    return Dom.create(isOnlyElement ? this.el.nextElementSibling : this.el.nextSibling);
-  }  
-
-  movePrev () {
-    const $parent = this.parent(); 
-    const $prev = this.getPrev();
-
-    $parent.el.insertBefore(this.el, $prev ? $prev.el : null);
-
-    return this;  
-  }
-
-  moveNext () {
-    const $parent = this.parent(); 
-    let $next = this.getNext();
-
-    if (next) {
-      $next = $next.getNext();
-    }
-
-    $parent.el.insertBefore(this.el, $next ? $next.el : null);
-
-    return this; 
-  }
 
   removeAttr(key) {
     this.el.removeAttribute(key);
@@ -904,6 +740,21 @@ class Dom {
     return null;
   }
 
+  path() {
+
+    if (!this.el) return [];
+
+    const $parentNode = this.parent(); 
+
+    if ($parentNode) {
+      return [...$parentNode.path(), this]
+    } else {
+      return [this]
+    }
+
+
+  }
+
   parent() {
     return Dom.create(this.el.parentNode);
   }
@@ -940,14 +791,15 @@ class Dom {
 
   toggleClass(cls, isForce) {
     this.el.classList.toggle(cls, isForce);
+    return this; 
   }
 
   html(html) {
-    if (isUndefined(html)) {
+    if (typeof html === 'undefined') {
       return this.el.innerHTML;
     }
 
-    if (isString(html)) {
+    if (typeof html === 'string') {
       this.el.innerHTML = html;
     } else {
       this.empty().append(html);
@@ -964,8 +816,7 @@ class Dom {
   }
 
   updateSVGDiff (html, rootElement = 'div') {
-
-    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild);
+    DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild.firstChild);
   }  
 
   find(selector) {
@@ -978,14 +829,12 @@ class Dom {
   }
 
   findAll(selector) {
-    return this.el.querySelectorAll(selector);
+    return [...this.el.querySelectorAll(selector)];
   }
 
   $$(selector) {
     var arr = this.findAll(selector);
-    return Object.keys(arr).map(key => {
-      return Dom.create(arr[key]);
-    });
+    return arr.map(node => Dom.create(node));
   }
 
   empty() {
@@ -994,7 +843,7 @@ class Dom {
   }
 
   append(el) {
-    if (isString(el)) {
+    if (typeof el === 'string') {
       this.el.appendChild(document.createTextNode(el));
     } else {
       this.el.appendChild(el.el || el);
@@ -1004,7 +853,7 @@ class Dom {
   }
 
   prepend(el) {
-    if (isString(el)) {
+    if (typeof el === 'string') {
       this.el.prepend(document.createTextNode(el));
     } else {
       this.el.prepend(el.el || el);
@@ -1021,14 +870,6 @@ class Dom {
     return $dom;
   }
 
-  prependSVG(html) {
-    var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
-
-    this.prepend($dom.$('svg').createChildrenFragment());
-
-    return $dom;
-  }  
-
   appendHTML(html) {
     var $dom = Dom.create("div").html(html);
 
@@ -1036,14 +877,6 @@ class Dom {
 
     return $dom;
   }
-
-  appendSVG(html) {
-    var $dom = Dom.create("div").html(`<svg>${html}</svg>`);
-
-    this.append($dom.$('svg').createChildrenFragment());
-
-    return $dom;
-  }  
 
   /**
    * create document fragment with children dom
@@ -1078,8 +911,13 @@ class Dom {
     return this; 
   }
 
+  /**
+   * 
+   * @param {string} value 
+   * @returns {string} 파라미터가 없을 때  textContent 를 리턴한다. 
+   */
   text(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.textContent;
     } else {
       var tempText = value;
@@ -1088,7 +926,11 @@ class Dom {
         tempText = value.text();
       }
 
-      this.el.textContent = tempText;
+      // 값의 변경 사항이 없으면 업데이트 하지 않는다. 
+      if (this.el.textContent !== tempText) {
+        this.el.textContent = tempText;
+      }
+
       return this;
     }
   }
@@ -1104,13 +946,23 @@ class Dom {
    */
 
   css(key, value) {
-    if (isNotUndefined(key) && isNotUndefined(value)) {
-      Object.assign(this.el.style, {[key]: value});
-    } else if (isNotUndefined(key)) {
-      if (isString(key)) {
+    if (typeof key !== 'undefined' && typeof value !== 'undefined') {
+      if (key.indexOf('--') === 0 &&  typeof value !== 'undefined' ) {
+        this.el.style.setProperty(key, value);
+      } else {
+        this.el.style[key] = value;
+      }
+    } else if (typeof key !== 'undefined') {
+      if (typeof key === 'string') {
         return getComputedStyle(this.el)[key];  
       } else {
-        Object.assign(this.el.style, key);
+        Object.entries(key).forEach(([localKey, value]) => {
+          if (localKey.indexOf('--') === 0 && typeof value !== 'undefined' ) {
+            this.el.style.setProperty(localKey, value);
+          } else {
+            this.el.style[localKey] = value;
+          }          
+        });
       }
     }
 
@@ -1146,7 +998,7 @@ class Dom {
   }
 
   cssText(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.style.cssText;
     }
 
@@ -1177,11 +1029,15 @@ class Dom {
   }
 
   px(key, value) {
-    return this.css(key, value + 'px');
+    return this.css(key, `${value}px`);
   }
 
   rect() {
     return this.el.getBoundingClientRect();
+  }
+
+  bbox () {
+    return this.el.getBBox();
   }
 
   isSVG () {
@@ -1274,9 +1130,9 @@ class Dom {
   }
 
   val(value) {
-    if (isUndefined(value)) {
+    if (typeof value === 'undefined') {
       return this.el.value;
-    } else if (isNotUndefined(value)) {
+    } else if (typeof value !== 'undefined') {
       var tempValue = value;
 
       if (value instanceof Dom) {
@@ -1335,16 +1191,28 @@ class Dom {
     return "";
   }
 
+  int() {
+    return parseInt(this.val(), 10);
+  }
+
+  float() {
+    return parseFloat(this.val());
+  }
+
   show(displayType = "block") {
-    return this.css("display", displayType != "none" ? displayType : "block");
+    this.el.style.display = displayType != "none" ? displayType : "block";
+
+    return this; 
   }
 
   hide() {
-    return this.css("display", "none");
+    this.el.style.display = 'none';
+
+    return this; 
   }
 
   isHide () {
-    return this.css("display") == "none"
+    return this.el.style.display  === "none"
   }
 
   isShow () {
@@ -1510,18 +1378,22 @@ class Dom {
   }
 
   select() {
-    this.el.select();
+    // contenteditable 의 경우 selection api 를 사용해서 select() 를 수행한다.
+    if (this.attr('contenteditable') === 'true') {
+      var range = document.createRange();
+      range.selectNodeContents(this.el);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      this.el.select();
+    }
+
     return this;
   }
 
   blur() {
     this.el.blur();
-
-    return this;
-  }
-
-  select() {
-    this.el.select();
 
     return this;
   }
@@ -1572,7 +1444,6 @@ class Dom {
 
   drawOption(option = {}) {
     var ctx = this.context();
-
     Object.assign(ctx, option);
   }
 
@@ -1614,17 +1485,229 @@ class Dom {
   drawText(x, y, text) {
     this.context().fillText(text, x, y);
   }
+}
 
-  /* utility */ 
-  fullscreen () {
-    var element = this.el; 
-    
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.wekitRequestFullscreen) {
-      element.wekitRequestFullscreen();
+/**
+ * property 수집하기
+ * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+ * 
+ * @param {Object} root  상속관계에 있는 인스턴스 
+ * @param {Object} expectMethod 제외될 필드 리스트 { [field]: true }
+ * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
+ */
+function collectProps(root, expectMethod = {}) {
+
+    let p = root;
+    let results = [];
+    do {
+        const isObject = p instanceof Object;
+
+        if (isObject === false) {
+            break;
+        }
+
+        const names = Object.getOwnPropertyNames(p).filter(name => {
+            return root && isFunction(root[name]) && !expectMethod[name];
+        });
+
+        results.push.apply(results, names);
+    } while (p = Object.getPrototypeOf(p));
+
+
+    return results;
+}
+
+function debounce(callback, delay = 0) {
+
+    if (delay === 0) {
+        return callback;
     }
-  }
+
+    var t = undefined;
+
+    return function ($1, $2, $3, $4, $5) {
+        if (t) {
+            clearTimeout(t);
+        }
+
+        t = setTimeout(function () {
+            callback($1, $2, $3, $4, $5);
+        }, delay || 300);
+    }
+}
+
+
+function throttle(callback, delay) {
+
+    var t = undefined;
+
+    return function ($1, $2, $3, $4, $5) {
+        if (!t) {
+            t = setTimeout(function () {
+                callback($1, $2, $3, $4, $5);
+                t = null;
+            }, delay || 300);
+        }
+
+    }
+}
+
+function ifCheck(callback, context, checkMethods) {
+    return (...args) => {
+        const ifResult = checkMethods.every(check => {
+            return context[check.target].apply(context, args);
+        });
+
+        if (ifResult) {
+            callback.apply(context, args);
+        }
+    }
+}
+
+function keyEach(obj, callback) {
+    Object.keys(obj).forEach((key, index) => {
+        callback(key, obj[key], index);
+    });
+}
+
+function isUndefined(value) {
+    return typeof value == 'undefined' || value === null;
+}
+
+function isNotUndefined(value) {
+    return isUndefined(value) === false;
+}
+
+function isString(value) {
+    return typeof value == 'string'
+}
+
+function isObject(value) {
+    return typeof value == 'object' && !Array.isArray(value) && !isNumber(value) && !isString(value) && value !== null;
+}
+
+function isFunction(value) {
+    return typeof value == 'function'
+}
+
+function isNumber(value) {
+    return typeof value == 'number';
+}
+
+
+
+const short_tag_regexp = /\<(\w*)([^\>]*)\/\>/gim;
+
+const HTML_TAG = {
+    'image': true,
+    'input': true,
+    'br': true,
+    'path': true,
+    'line': true,
+    'circle': true,
+    'rect': true,
+    'path': true,
+    'polygon': true,
+    'polyline': true,
+    'use': true
+};
+
+
+const html = (strings, ...args) => {
+
+    var results = strings.map((it, index) => {
+
+        var results = args[index] || '';
+
+        if (isFunction(results)) {
+            console.log(results);
+            // results = results()
+        }
+
+        if (!Array.isArray(results)) {
+            results = [results];
+        }
+
+        results = results.join('');
+
+        return it + results;
+    }).join('');
+
+    results = results.replace(short_tag_regexp, function (match, p1) {
+        if (HTML_TAG[p1.toLowerCase()]) {
+            return match;
+        } else {
+            return match.replace('/>', `></${p1}>`)
+        }
+    });
+
+    return results;
+};
+
+
+/**
+ * 전체 문자열에서 특정 키워드 함수를 사용하는 패턴을 찾아 리턴해준다. 
+ * 
+ * @param {string[]} arr 
+ * @param {string} keyword 
+ */
+const splitMethodByKeyword = (arr, keyword) => {
+    const filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
+    const filterMaps = filterKeys.map(code => {
+        const [target, param] = code
+            .split(`${keyword}(`)[1]
+            .split(")")[0]
+            .trim()
+            .split(" ");
+
+        return { target, param };
+    });
+
+    return [filterKeys, filterMaps];
+};
+
+class BaseHandler {
+    /**
+     * 
+     * @param {EventMachine} context 
+     * @param {*} options 
+     */
+    constructor (context, options = {}) {
+        this.context = context;
+        this.options = options;
+    }
+
+    // 초기화 설정 
+    initialize () {
+
+    }
+
+    // html 을 로드 할 때 
+    load () {
+
+    }
+
+    // 새로고침 할 때 
+    refresh () {
+
+    }
+    
+    // 화면에 그린 이후에 실행 되는 로직들 
+    render () {
+
+    }
+
+    getRef(id) {
+        return this.context.getRef(id);
+    }
+
+    run () {
+
+    }
+
+    destroy() {
+
+    }
 }
 
 const scrollBlockingEvents = {
@@ -1632,9 +1715,18 @@ const scrollBlockingEvents = {
     'touchmove': true,
     'mousedown': true,
     'mouseup': true,
-    'mousemove': true, 
-    'wheel': true,
-    'mousewheel': true
+    'mousemove': true,
+    // wheel, mousewheel 은 prevent 를 해야한다. 그래서 scroll blocking 을 막아야 한다. 
+    // 'wheel': true,   
+    // 'mousewheel': true
+};
+
+const eventConverts = {
+  'doubletab': 'touchend'
+};
+
+const customEventNames = {
+  'doubletab': true 
 };
 
 class DomEventHandler extends BaseHandler {
@@ -1644,9 +1736,9 @@ class DomEventHandler extends BaseHandler {
         this.destroy();
 
         if (!this._domEvents) {
-          this._domEvents = this.filterProps(CHECK_DOM_EVENT_PATTERN);
+          this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN);
         }
-        this._domEvents.forEach(key => this.parseEvent(key));
+        this._domEvents.forEach(key => this.parseDomEvent(key));
     }
 
     destroy() {
@@ -1656,13 +1748,13 @@ class DomEventHandler extends BaseHandler {
 
     removeEventAll() {
         this.getBindings().forEach(obj => {
-          this.removeEvent(obj);
+          this.removeDomEvent(obj);
         });
         this.initBindings();
     }
 
-    removeEvent({ eventName, dom, callback }) {
-        Event.removeEvent(dom, eventName, callback);
+    removeDomEvent({ eventName, dom, callback }) {
+        Event.removeDomEvent(dom, eventName, callback);
     }    
 
     getBindings() {
@@ -1697,11 +1789,11 @@ class DomEventHandler extends BaseHandler {
     }
       
     makeCallback (eventObject, callback) {
-        if (eventObject.delegate) {
-          return this.makeDelegateCallback(eventObject, callback);
-        } else {
-          return this.makeDefaultCallback(eventObject, callback);
-        }
+      if (eventObject.delegate) {
+        return this.makeDelegateCallback(eventObject, callback);
+      } else {
+        return this.makeDefaultCallback(eventObject, callback);
+      }
     }
       
     makeDefaultCallback (eventObject, callback) {
@@ -1740,12 +1832,12 @@ class DomEventHandler extends BaseHandler {
         }
       
         if (this.checkEventType(e, eventObject)) {
-          var returnValue = callback(e, e.$dt, e.xy);
+          var returnValue = callback(e, e.$dt, e.xy); 
       
           if (returnValue !== false && eventObject.afterMethods.length) {
-            eventObject.afterMethods.forEach(after =>
-              context[after.target].call(context, e, after.param)
-            );
+            eventObject.afterMethods.forEach(after => {
+              return context[after.target].call(context, e, after.param)
+            });
           }
       
           return returnValue;
@@ -1799,6 +1891,21 @@ class DomEventHandler extends BaseHandler {
         return el;
     };
       
+    getRealEventName (eventName) {
+      return eventConverts[eventName] || eventName;
+    }
+
+    getCustomEventName (eventName) {
+      return customEventNames[eventName] ? eventName:  '';
+    }
+
+    /**
+     * 
+     * doubletab -> touchend 로 바뀜 
+     * 
+     * @param {string} eventName  이벤트 이름 
+     * @param {array} checkMethodFilters 매직 필터 목록  
+     */
     getDefaultEventObject (eventName, checkMethodFilters) {
         const context = this.context;
         let arr = checkMethodFilters;
@@ -1807,17 +1914,19 @@ class DomEventHandler extends BaseHandler {
         const checkMethodList = arr.filter(code => !!context[code]);
       
         // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
-        const [afters, afterMethods] = this.splitMethodByKeyword(arr, "after");
-        const [befores, beforeMethods] = this.splitMethodByKeyword(arr, "before");
-        const [debounces, debounceMethods] = this.splitMethodByKeyword(arr, "debounce");
-        const [throttles, throttleMethods] = this.splitMethodByKeyword(arr, "throttle");
-        const [captures] = this.splitMethodByKeyword(arr, "capture");
+        const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
+        const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
+        const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
+        const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");        
+        const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
+        const [captures] = splitMethodByKeyword(arr, "capture");
       
         // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
         const filteredList = [
           ...checkMethodList,
           ...afters,
           ...befores,
+          ...delays,
           ...debounces,
           ...throttles,
           ...captures
@@ -1828,11 +1937,13 @@ class DomEventHandler extends BaseHandler {
           .map(code => code.toLowerCase());
       
         return {
-          eventName,
+          eventName: this.getRealEventName(eventName),
+          customEventName: this.getCustomEventName(eventName), 
           codes,
           captures,
           afterMethods,
           beforeMethods,
+          delayMethods,
           debounceMethods,
           throttleMethods,
           checkMethodList
@@ -1840,7 +1951,7 @@ class DomEventHandler extends BaseHandler {
     }
       
       
-    addEvent (eventObject, callback) {
+    addDomEvent (eventObject, callback) {
         eventObject.callback = this.makeCallback(eventObject, callback);
         this.addBinding(eventObject);
       
@@ -1853,21 +1964,49 @@ class DomEventHandler extends BaseHandler {
           };
         }
       
-        Event.addEvent(
+        Event.addDomEvent(
           eventObject.dom,
           eventObject.eventName,
           eventObject.callback,
           options
         );
     }
+
+    makeCustomEventCallback (eventObject, callback) {
+
+      if (eventObject.customEventName === 'doubletab') {
+        var delay = 300;
+        
+        if (eventObject.delayMethods.length) {
+          delay = +eventObject.delayMethods[0].target;
+        }
+        return (...args) => {
+
+          if (!this.doubleTab) {
+            this.doubleTab = {
+                time: performance.now(),
+            };
+          } else {
+            if (performance.now() - this.doubleTab.time < delay) {
+              callback(...args);
+            }
+
+            this.doubleTab = null;
+          }
+        }
+
+      } 
+
+      return callback; 
+    }
       
-    bindingEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
-        const context = this.context;
+    bindingDomEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
         let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
       
         eventObject.dom = this.getDefaultDomElement(dom);
         eventObject.delegate = delegate.join(SAPARATOR);
-      
+
+        
         if (eventObject.debounceMethods.length) {
           var debounceTime = +eventObject.debounceMethods[0].target;
           callback = debounce(callback, debounceTime);
@@ -1875,9 +2014,12 @@ class DomEventHandler extends BaseHandler {
           var throttleTime = +eventObject.throttleMethods[0].target;
           callback = throttle(callback, throttleTime);
         }
+
+        // custom event callback 만들기 
+        callback = this.makeCustomEventCallback(eventObject, callback);
       
-        this.addEvent(eventObject, callback);
-      };
+        this.addDomEvent(eventObject, callback);
+    };
       
     getEventNames (eventName) {
         let results = [];
@@ -1885,30 +2027,42 @@ class DomEventHandler extends BaseHandler {
         eventName.split(NAME_SAPARATOR).forEach(e => {
             var arr = e.split(NAME_SAPARATOR);
         
-            results.push(...arr);
+            results.push.apply(results, arr);
         });
         
         return results;
     }
-      
-    parseEvent (key) {
+    
+    /**
+     * 이벤트 문자열 파싱하기 
+     * 
+     * @param {string} key 
+     */
+    parseDomEvent (key) {
         const context = this.context;
-        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim());
+        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim()).filter(Boolean);
         
         var prefix = checkMethodFilters.shift();
         var eventSelectorAndBehave = prefix.split(DOM_EVENT_SAPARATOR)[1];
         
         var arr = eventSelectorAndBehave.split(SAPARATOR);
         var eventNames = this.getEventNames(arr[0]);
+
         var callback = context[key].bind(context);
         
-        eventNames.forEach(eventName => {
-            arr[0] = eventName;
-            this.bindingEvent(arr, checkMethodFilters, callback);
-        });
+        for(let i = 0, len = eventNames.length; i< len; i++) {
+          arr[0] = eventNames[i];
+          this.bindingDomEvent(arr, checkMethodFilters, callback);
+        }
     }  
 }
 
+/**
+ * 
+ * @param {Dom} $element 
+ * @param {string} key 
+ * @param {any} value 
+ */
 const applyElementAttribute = ($element, key, value) => {
 
   if (key === 'cssText') {
@@ -1921,7 +2075,7 @@ const applyElementAttribute = ($element, key, value) => {
     /**
      * style: { key: value }
      */
-    if (isNotString(value)) {
+    if (typeof(value) !== 'string') {
       $element.css(value);
     }
 
@@ -1931,18 +2085,29 @@ const applyElementAttribute = ($element, key, value) => {
     //  "class" : { key: true, key: false } 
     //  "class" : 'string-class' 
 
-    if (isArray(value)) {
-      $element.addClass(...value);
+    if (Array.isArray(value)) {
+      $element.addClass(...value.filter(Boolean));
     } else if (isObject(value)) {
-      keyEach(value, (className, hasClass) => $element.toggleClass(className, hasClass));
+      const keys = Object.keys(value);
+      for(var i = 0, len = keys.length; i < len; i++) {
+        const className = keys[i];
+        const hasClass = value[className];
+
+        $element.toggleClass(className, hasClass);
+      }
     } else {
-      $element.addClass(value);
+      $element.el.className  = value;
     }
 
     return;
+  } else if (key === 'callback') {
+    if (typeof value === 'function') {
+      value ();
+      return; 
+    }
   }
 
-  if (isUndefined(value)) {
+  if (typeof value === 'undefined') {
     $element.removeAttr(key);
   } else {
     if ($element.el.nodeName === "TEXTAREA" && key === "value") {
@@ -1951,6 +2116,10 @@ const applyElementAttribute = ($element, key, value) => {
       $element.text(value);
     } else if (key === 'innerHTML' || key === 'html') {
       $element.html(value);
+    } else if (key === 'htmlDiff') {
+      $element.updateDiff(value);
+    } else if (key === 'svgDiff') {
+      $element.updateSVGDiff(value);
     } else if (key === 'value') {
       $element.val(value);
     } else {
@@ -1969,14 +2138,14 @@ class BindHandler extends BaseHandler {
     // this.runHandle('bind', ...);
     bindData (...args) {
       if (!this._bindMethods) {
-        this._bindMethods = this.filterProps(CHECK_BIND_PATTERN);
+        this._bindMethods = this.context.filterProps(CHECK_BIND_PATTERN);
       }
       /**
        * BIND 를 해보자.
        * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
        * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
        */
-      this._bindMethods
+      const bindList = this._bindMethods
         .filter(originalCallbackName => {
           if (!args.length) return true; 
           var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
@@ -1984,17 +2153,18 @@ class BindHandler extends BaseHandler {
           var [_, $bind] = callbackName.split(' ');
   
           return args.indexOf($bind) >  -1 
-        })
-        .forEach(callbackName => {
+        });
+
+        bindList.forEach(async (callbackName) => {
           const bindMethod = this.context[callbackName];
           var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
   
           const refObject = this.getRef(id);
           let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
   
-          if (refObject != '' && isString(refObject)) {
+          if (refObject != '' && typeof(refObject) === 'string') {
             refCallback = BIND_CHECK_FUNCTION(refObject);
-          } else if (isFunction(refObject)) {
+          } else if (typeof refObject === 'function') {
             refCallback = refObject;
           }
   
@@ -2002,15 +2172,19 @@ class BindHandler extends BaseHandler {
           let $element = this.context.refs[elName];
   
           // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
-          const isBindCheck = isFunction(refCallback) && refCallback.call(this.context);
+          const isBindCheck = typeof(refCallback) === 'function' && refCallback.call(this.context);
           if ($element && isBindCheck) {
-            const results = bindMethod.call(this.context, ...args);
+            const results = await bindMethod.call(this.context, ...args);
 
             if (!results) return;
   
-            keyEach(results, (key, value) => {
+            const keys = Object.keys(results);
+            for(var elementKeyIndex = 0, len = keys.length; elementKeyIndex < len; elementKeyIndex++) {
+              const key = keys[elementKeyIndex];
+              const value = results[key];
+
               applyElementAttribute($element, key, value);
-            });
+            }
           }
         });
     }    
@@ -2022,33 +2196,59 @@ class BindHandler extends BaseHandler {
 
 }
 
-const ADD_BODY_MOUSEMOVE = 'add/body/mousemove';
-const ADD_BODY_MOUSEUP = 'add/body/mouseup';
+const map = {};
+
+
+function registElement(classes = {}) {
+
+    Object.keys(classes).forEach(key => {
+        if (map[key]) {
+            // console.warn(`${key} element is duplicated.`)
+            return;
+        } 
+
+        map[key] = classes[key];
+    });
+}
+
+function retriveElement(className) {
+    return map[className];
+}
+
+const UUID_REG = /[xy]/g;
+
+function uuid() {
+    var dt = new Date().getTime();
+    var uuid = 'xxx12-xx-34xx'.replace(UUID_REG, function (c) {
+        var r = (dt + Math.random() * 16) % 16 | 0;
+        dt = Math.floor(dt / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
+
+function uuidShort() {
+    var dt = new Date().getTime();
+    var uuid = 'idxxxxxxx'.replace(UUID_REG, function (c) {
+        var r = (dt + Math.random() * 16) % 16 | 0;
+        dt = Math.floor(dt / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
 
 const REFERENCE_PROPERTY = "ref";
 const TEMP_DIV = Dom.create("div");
 const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
+const REF_CLASS = 'refclass';
+const REF_CLASS_PROPERTY = `[${REF_CLASS}]`;
+const VARIABLE_SAPARATOR = "__ref__variable:";
 
-const splitMethodByKeyword = (arr, keyword) => {
-  var filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
-  var filterMaps = filterKeys.map(code => {
-    var [target, param] = code
-      .split(`${keyword}(`)[1]
-      .split(")")[0]
-      .trim()
-      .split(" ");
-
-    return { target, param };
-  });
-
-  return [filterKeys, filterMaps];
-};
 
 // collectProps 에서 제외될 메소드 목록 
-const expectMethod$1 = {
+const expectMethod = {
   "constructor": true,
   "initState": true,
-  "refresh": true,
   "updateData": true,
   "constructor": true,
   "initializeProperty": true,
@@ -2069,19 +2269,15 @@ const expectMethod$1 = {
   "components": true,
   "getRef": true,
   "parseTemplate": true,
-  "childrenIds": true,
-  "exists": true,
   "parseProperty": true,
   "parseSourceName": true,
   "parseComponent": true,
   "clean": true,
   "refresh": true,
-  "loadTemplate": true,
   "load": true,
   "bindData": true,
   "template": true,
   "eachChildren": true,
-  "initializeEvent": true,
   "destroy": true,
   "collectProps": true,
   "filterProps": true,
@@ -2104,6 +2300,7 @@ class EventMachine {
     this.children = {};
     this._bindings = [];
     this.id = uuid();    
+    this.__tempVariables = new Map();
     this.handlers = this.initializeHandler();
 
     this.initializeProperty(opt, props);
@@ -2111,14 +2308,24 @@ class EventMachine {
     this.initComponents();
   }
 
+
+  /**
+   * UIElement instance 에 필요한 기본 속성 설정 
+   */
+  initializeProperty (opt, props = {}) {
+
+    this.opt = opt || {};
+    this.parent = this.opt;
+    this.props = props;
+    this.source = uuid();
+    this.sourceName = this.constructor.name;  
+
+
+
+  }
+
   initComponents() {
-    this.childComponents = this.components();
-    this.childComponentKeys = Object.keys(this.childComponents);
-    this.childComponentSet = new Map();
-    this.childComponentKeys.forEach(key => {
-      this.childComponentSet.set(key.toLowerCase(), key);
-    });
-    this.childComponentKeysString = [...this.childComponentSet.keys()].join(',');
+    this.childComponents = this.components(); 
   }
 
   initializeHandler () {
@@ -2128,10 +2335,22 @@ class EventMachine {
     ]
   }
 
+  /**
+   * state 를 초기화 한것을 리턴한다. 
+   * 
+   * @protected
+   * @returns {Object} 
+   */
   initState() {
     return {};
   }
 
+  /**
+   * state 를 변경한다. 
+   * 
+   * @param {Object} state  새로운 state 
+   * @param {Boolean} isLoad  다시 로드 할 것인지 체크 , true 면 state 변경후 다시 로드 
+   */
   setState(state = {}, isLoad = true) {
     this.prevState = this.state;
     this.state = Object.assign({}, this.state, state );
@@ -2140,6 +2359,63 @@ class EventMachine {
     }
   }
 
+  /**
+   * state 에 있는 key 필드의 값을 토글한다. 
+   * Boolean 형태의 값만 동작한다. 
+   * 
+   * @param {string} key 
+   * @param {Boolean} isLoad 
+   */
+  toggleState(key, isLoad = true) {
+    this.setState({
+      [key]: !(this.state[key])
+    }, isLoad);
+  }
+
+  /**
+   * props 를 넘길 때 해당 참조를 그대로 넘기기 위한 함수 
+   * 
+   * @param {any} value
+   * @returns {string} 참조 id 생성 
+   */ 
+  variable(value) {
+    const id = `${VARIABLE_SAPARATOR}${uuidShort()}`;
+
+    this.__tempVariables.set(id, value);
+
+    return id;
+  }
+
+  /**
+   * 참조 id 를 가지고 있는 variable 을 복구한다. 
+   * 
+   * @param {string} id
+   * @returns {any}
+   */ 
+  recoverVariable(id) {
+
+    // console.log(id);
+    if (isString(id) === false) {
+      return id;
+    }
+
+    let value = id;
+
+    if (this.__tempVariables.has(id)) {
+      value = this.__tempVariables.get(id);
+
+      this.__tempVariables.delete(id);
+    }
+
+    return value;
+  }
+
+  /**
+   * 객체를 다시 그릴 때 사용한다. 
+   * 
+   * @param {*} props 
+   * @protected
+   */
   _reload(props) {
     this.props = props;
     this.state = {}; 
@@ -2147,41 +2423,83 @@ class EventMachine {
     this.refresh(true);
   }
 
+  /**
+   * template 을 렌더링 한다. 
+   * 
+   * @param {Dom|undefined} $container  컴포넌트가 그려질 대상 
+   */
   render($container) {
-    this.$el = this.parseTemplate(this.template());
+    this.$el = this.parseTemplate(
+      html`
+        ${this.template()}
+      `
+    );
     this.refs.$el = this.$el;
 
     if ($container) {
       $container.append(this.$el);
     }
 
+    // LOAD 로 정의된 것들을 수행한다. 
     this.load();
 
+    // render 이후에 실행될 콜백을 정의한다. 
     this.afterRender();
   }
 
   initialize() {
     this.state = this.initState();
   }
+
+  /**
+   * render 이후에 실행될 함수 
+   * dom 이 실제로 생성된 이후에 수행할 작업들을 정의한다. 
+   * 
+   * @protected
+   */
   afterRender() {}
+
+  /**
+   * 하위에 연결될 객체들을 정의한다 
+   * 
+   * @protected
+   * @returns {Object}
+   */
   components() {
     return {};
   }
 
+  /**
+   * ref 이름을 가진 Component 를 가지고 온다. 
+   * 
+   * @param  {any[]} args 
+   * @returns {EventMachine}
+   */
   getRef(...args) {
     const key = args.join('');
     return this.refs[key];
   }
 
-  parseTemplate(htmlString, isLoad) {
+  /**
+   * template() 함수의 결과물을 파싱해서 dom element 를 생성한다. 
+   * 
+   * @param {string} html 
+   * @param {Boolean} [isLoad=false] 
+   */
+  parseTemplate(html, isLoad) {
 
-    if (isArray(htmlString)) {
-      htmlString = htmlString.join('');
+    //FIXME: html string, element 형태 모두 array 로 받을 수 있도록 해보자. 
+    if (Array.isArray(html)) {
+      html = html.join('');
     }
 
-    const list = TEMP_DIV.html(html`${htmlString}`).children();
+    html = html.trim();
+    const list = TEMP_DIV.html(html).children();
+    /////////////////////////////////
 
-    list.forEach($el => {
+    for(var i = 0, len = list.length; i < len; i++) {
+      const $el = list[i];
+
       var ref = $el.attr(REFERENCE_PROPERTY);
       if (ref) {
         this.refs[ref] = $el;
@@ -2189,7 +2507,9 @@ class EventMachine {
 
       var refs = $el.$$(QUERY_PROPERTY);
       var temp = {}; 
-      refs.forEach($dom => {
+
+      for(var refsIndex = 0, refsLen = refs.length; refsIndex < refsLen; refsIndex++) {
+        const $dom = refs[refsIndex];
 
         const name = $dom.attr(REFERENCE_PROPERTY);
         if (temp[name]) {
@@ -2198,11 +2518,9 @@ class EventMachine {
           temp[name] = true; 
         }
 
-        this.refs[name] = $dom;        
-      });
-
-
-    });
+        this.refs[name] = $dom;             
+      }
+    }
 
     if (!isLoad) {
       return list[0];
@@ -2211,37 +2529,27 @@ class EventMachine {
     return TEMP_DIV.createChildrenFragment();
   }
 
-  childrenIds() {
-    return  keyMap(this.children, (key, obj) => {
-      return obj.id;
-    })
-  }
-
-  exists () {
-
-    if (this.parent) {
-      if (isFunction(this.parent.childrenIds)) {
-        return this.parent.childrenIds().indexOf(this.id) > -1 
-      }
-    }
-
-    return true  
-  }
-
   parseProperty ($dom) {
     let props = {};
 
     // parse properties 
     for(var t of $dom.el.attributes) {
-      props[t.nodeName] = t.nodeValue;
+      props[t.nodeName] = this.recoverVariable(t.nodeValue);
+    }
+
+    if (props['props']) {
+      props = {
+        ...props,
+        ...getRef(props['props'])
+      };
     }
 
     $dom.$$('property').forEach($p => {
-      const [name, value, type] = $p.attrs('name', 'value', 'type');
+      const [name, value, valueType] = $p.attrs('name', 'value', 'valueType');
 
       let realValue = value || $p.text();
 
-      if (type === 'json') {            
+      if (valueType === 'json') {          
         realValue = JSON.parse(realValue);
       }
     
@@ -2260,36 +2568,54 @@ class EventMachine {
     return [obj.sourceName]
   }
 
+  getEventMachineComponent (refClassName) {
+    var EventMachineComponent = retriveElement(refClassName) || this.childComponents[refClassName];
+
+    return EventMachineComponent;
+  }
+
   parseComponent() {
     const $el = this.$el;
 
-    let targets = []; 
-    if (this.childComponentKeysString) {
-      targets = $el.$$(this.childComponentKeysString);
-    }
+    let targets = $el.$$(REF_CLASS_PROPERTY);
 
-    
     targets.forEach($dom => {
-      var tagName = $dom.el.tagName.toLowerCase();
-      var ComponentName = this.childComponentSet.get(tagName);
-      var Component = this.childComponents[ComponentName];
-      let props = this.parseProperty($dom);
 
-      // create component 
-      let refName = $dom.attr(REFERENCE_PROPERTY);
-      var instance = null; 
-      if (this.children[refName]) {
-        instance = this.children[refName]; 
-        instance._reload(props);
+      const EventMachineComponent = this.getEventMachineComponent($dom.attr(REF_CLASS));
+
+      if (EventMachineComponent) {
+        let props = this.parseProperty($dom);
+  
+        // create component 
+        let refName = $dom.attr(REFERENCE_PROPERTY);
+        var instance = null; 
+  
+        // 동일한 refName 의 EventMachine 이 존재하면  해당 컴포넌트는 다시 그려진다. 
+        // 루트 element 는 변경되지 않는다. 
+        if (this.children[refName]) {
+          instance = this.children[refName]; 
+          instance._reload(props);
+        } else {
+          // 기존의 refName 이 존재하지 않으면 Component 를 생성해서 element 를 교체한다. 
+          instance = new EventMachineComponent(this, props);
+  
+          this.children[refName || instance.id] = instance;
+  
+          instance.render();
+        }
+        
+
+        if (instance.renderTarget) {
+          instance.$el?.appendTo(instance.renderTarget);
+          $dom.remove();
+        } else {
+          $dom.replace(instance.$el);     
+        }
+
       } else {
-        instance = new Component(this, props);
-
-        this.children[refName || instance.id] = instance;
-
-        instance.render();
+        $dom.remove();
       }
-      
-      $dom.replace(instance.$el);      
+ 
   
     });
 
@@ -2321,40 +2647,49 @@ class EventMachine {
     this.load();
   }
 
-  /**
-   * 특정 load 함수를 실행한다.  문자열을 그대로 return 한다. 
-   * @param  {...any} args 
-   */
-  loadTemplate (...args) {
-    return this[LOAD(args.join(''))].call(this)
+  _afterLoad () {
+
+    this.runHandlers('initialize');
+
+    this.bindData();
+
+    this.parseComponent();
   }
 
-  load(...args) {
+  async load(...args) {
     if (!this._loadMethods) {
       this._loadMethods = this.filterProps(CHECK_LOAD_PATTERN);
     }
 
-    this._loadMethods
-    .filter(callbackName => {
-      const elName = callbackName.split(LOAD_SAPARATOR)[1].split(CHECK_SAPARATOR)[0];
-      if (!args.length) return true; 
-      return args.indexOf(elName) > -1
-    })
-    .forEach(callbackName => {
+    // loop 가 비동기라 await 로 대기를 시켜줘야 나머지 html 업데이트에 대한 순서를 맞출 수 있다. 
+    const localLoadMethods = this._loadMethods.filter(callbackName => {
+        const elName = callbackName.split(LOAD_SAPARATOR)[1]
+                                  .split(CHECK_SAPARATOR)
+                                  .map(it => it.trim())[0];
+        if (!args.length) return true; 
+        return args.indexOf(elName) > -1
+      });
+
+
+
+    await localLoadMethods.forEach(async (callbackName) => {
       let methodName = callbackName.split(LOAD_SAPARATOR)[1];
       var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map(it => it.trim());
 
       checker = checker.map(it => it.trim());
       
-      const isVdom = Boolean(checker.filter(it => VDOM.includes(it)).length);
+      const isDomDiff = Boolean(checker.filter(it => DOMDIFF.includes(it)).length);
 
-      if (this.refs[elName]) {
-        
-        var newTemplate = this[callbackName].call(this, ...args);
+      if (this.refs[elName]) {        
+        var newTemplate = await this[callbackName].call(this, ...args);
+
+        if (Array.isArray(newTemplate)) {
+          newTemplate = newTemplate.join('');
+        }
 
         // create fragment 
-        const fragment = this.parseTemplate(newTemplate, true);
-        if (isVdom) {
+        const fragment = this.parseTemplate(html`${newTemplate}`, true);
+        if (isDomDiff) {
           this.refs[elName].htmlDiff(fragment);
         } else {
           this.refs[elName].html(fragment);
@@ -2363,11 +2698,7 @@ class EventMachine {
       }
     });
 
-    this.runHandlers('initialize');
-
-    this.bindData();
-
-    this.parseComponent();
+    this._afterLoad();
 
   }
 
@@ -2399,19 +2730,9 @@ class EventMachine {
   }
 
   /**
-   * @deprecated 
-   * render 이후에 부를려고 했는데  이미 Dom Event 는 render 이후에 자동으로 불리게 되어 있다. 
-   * 현재는 DomEvent, Bind 기준으로만 작성하도록 한다. 
-   * 나머지 라이프 사이클은 다음에 고민해보자. 
-   * 이벤트를 초기화한다.
-   */
-  // initializeEvent() {
-  //   this.runHandlers('initialize');
-  // }
-
-  /**
    * 자원을 해제한다.
    * 이것도 역시 자식 컴포넌트까지 제어하기 때문에 가장 최상위 부모에서 한번만 호출되도 된다.
+   * 
    */
   destroy() {
     this.eachChildren(childComponent => {
@@ -2419,7 +2740,10 @@ class EventMachine {
     });
 
     this.runHandlers('destroy');
-    this.$el.remove();
+    if (this.$el) {
+      this.$el.remove();
+    }
+
     this.$el = null; 
     this.refs = {}; 
     this.children = {}; 
@@ -2428,26 +2752,16 @@ class EventMachine {
   /**
    * property 수집하기
    * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+   * 
+   * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
    */
   collectProps() {
 
-    var p = this.__proto__;
-    var results = [];
-    do {
-      var isObject = p instanceof Object;
+    if (!this.__cachedMethodList){
+      this.__cachedMethodList = collectProps(this, expectMethod);
+    }
 
-      if (isObject === false) {
-        break;
-      }
-      const names = Object.getOwnPropertyNames(p).filter(name => {
-        return this && isFunction(this[name]) && !expectMethod$1[name];
-      });
-
-      results.push(...names);
-      p = p.__proto__;
-    } while (p);
-
-    return results;
+    return this.__cachedMethodList;
   }
 
   filterProps(pattern) {
@@ -2473,6 +2787,25 @@ class EventMachine {
   isMetaKey(e) {
     return e.metaKey || e.key == 'Meta' || e.code.indexOf('Meta') > -1 ;
   }
+  isMouseLeftButton(e) {
+    return e.buttons === 1;     // 1 is left button 
+  }
+
+  isMouseRightButton(e) {
+    return e.buttons === 2;     // 2 is right button 
+  }  
+
+  hasMouse(e) { 
+    return e.pointerType === 'mouse';
+  }
+
+  hasTouch(e) {
+    return e.pointerType === 'touch';
+  }
+
+  hasPen(e) {
+    return e.pointerType === 'pen';
+  }  
 
   /** before check method */
 
@@ -2487,37 +2820,196 @@ class EventMachine {
     e.stopPropagation();
     return true;
   }
-
-  bodyMouseMove(e, methodName) {
-    if (this[methodName]) {
-      this.emit(ADD_BODY_MOUSEMOVE, this[methodName], this, e.xy);
-    }
-  }
-
-  bodyMouseUp(e, methodName) {
-    if (this[methodName]) {
-      this.emit(ADD_BODY_MOUSEUP, this[methodName], this, e.xy);
-    }
-  }
-
 }
 
-const REG_STORE_MULTI_PATTERN = /^ME@/;
+/**
+ * @class BaseStore
+ * @description BaseStore is the base class for all stores.
+ * 
+ */ 
+class BaseStore {
+  constructor(editor) {
+    this.cachedCallback = {};
+    this.callbacks = {};
+    this.commandes = [];
+    this.editor = editor;
+  }
 
-const MULTI_PREFIX = "ME@";
-const SPLITTER = "|";
+  getCallbacks(event) {
+    if (!this.callbacks[event]) {
+      this.callbacks[event] = [];
+    }
 
-const PIPE = (...args) => {
-  return args.join(SPLITTER);
-};
+    return this.callbacks[event]
+  }
 
-const EVENT = (...args) => {
-  return MULTI_PREFIX + PIPE(...args);
-};
+  setCallbacks(event, list = []) {
+    this.callbacks[event] = list; 
+  }
 
+  debug (...args) {
+    if (this.editor && this.editor.config.get('debug')) {
+      console.debug(...args );
+    }
+
+  }
+
+  /**
+   * 메세지 등록 
+   * 
+   * @param {string} event 
+   * @param {Function} originalCallback 
+   * @param {EventMachine} context 
+   * @param {number} debounceDelay 
+   * @param {number} throttleDelay 
+   * @param {boolean} enableAllTrigger
+   * @param {boolean} enableSelfTrigger
+   * @param {string[]} [beforeMethods=[]]
+   * @returns {Function} off callback 
+   */
+  on(event, originalCallback, context, debounceDelay = 0, throttleDelay = 0, enableAllTrigger = false, enableSelfTrigger = false, beforeMethods = []) {
+    var callback = originalCallback;
+    
+    if (debounceDelay > 0)  callback = debounce(originalCallback, debounceDelay);
+    else if (throttleDelay > 0)  callback = throttle(originalCallback, throttleDelay);
+
+    if (beforeMethods.length) {
+      callback = ifCheck(callback, context, beforeMethods);
+    }
+
+    this.getCallbacks(event).push({ event, callback, context, originalCallback, enableAllTrigger, enableSelfTrigger });
+
+    this.debug('add message event', event, context.sourceName );
+
+    return () => {
+      this.off(event, originalCallback);
+    }
+  }
+
+  /**
+   * 메세지 해제
+   * 
+   * @param {string} event 
+   * @param {*} originalCallback 
+   */
+  off(event, originalCallback) {
+
+    this.debug('off message event', event );
+
+    if (arguments.length == 1) {
+      this.setCallbacks(event);
+    } else if (arguments.length == 2) {      
+      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+        return f.originalCallback !== originalCallback
+      }));
+    }
+  }
+
+  offAll (context) {
+
+    Object.keys(this.callbacks).forEach(event => {
+      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+        return f.context !== context;  
+      }));
+    });
+    this.debug('off all message', context.sourceName );
+  }
+
+  getCachedCallbacks (event) {
+    return this.getCallbacks(event);
+  }
+
+  sendMessage(source, event, ...args) {
+    Promise.resolve().then(() => {
+      var list = this.getCachedCallbacks(event);
+      if (list) {
+
+        for(var i = 0, len = list.length; i < len; i++) {
+          const f = list[i];
+          // console.log(source);
+          if (f.enableSelfTrigger) continue;
+
+          if (f.enableAllTrigger || f.originalCallback.source !== source) {
+            f.callback.apply(f.context, args);  
+          }
+        }
+      }
+
+    });
+  }
+
+  nextSendMessage(source, callback, ...args) {
+    Promise.resolve().then(() => {
+      callback(...args);
+    });
+  }
+
+  triggerMessage(source, event, ...args) {
+    Promise.resolve().then(() => {
+      var list = this.getCachedCallbacks(event);
+
+      if (list) {
+        for(var i = 0, len = list.length; i < len; i++) {
+          const f = list[i];
+          if (f.originalCallback.source === source) {
+            f.callback.apply(f.context, args);  
+          }
+        }
+      } else {
+        console.warn(event, ' is not valid event');
+      }
+
+
+    });
+  }
+
+  emit(event, ...args) {
+
+    if (isFunction(event)) {
+      event(...args);
+    } else {
+      this.sendMessage(this.source, event, ...args);
+    }
+
+  }
+
+  /**
+   * 마이크로 Task 를 실행 
+   * 
+   * @param {Function} callback  마이크로Task 형식으로 실행될 함수 
+   */
+  nextTick (callback) {
+    this.nextSendMessage(this.source, callback);
+  }
+
+  trigger(event, ...args) {
+
+    if (isFunction(event)) {
+      event(...args);
+    } else {
+      this.triggerMessage(this.source, event, ...args);
+    }
+
+  }
+}
+
+/**
+ * UI 를 만드는 기본 단위 
+ * 
+ * dom handler, 
+ * bind handler, 
+ * store handler 를 가진다. 
+ * 
+ * @property {Editor} $editor 
+ */
 class UIElement extends EventMachine {
   constructor(opt, props = {}) {
     super(opt, props);
+
+    this.__UID = new Set();
+    if (props.store) {
+      this.__storeInstance = props.store;
+    }
 
     this.created();
 
@@ -2527,21 +3019,23 @@ class UIElement extends EventMachine {
 
   }
 
-  /**
-   * UIElement instance 에 필요한 기본 속성 설정 
-   */
-  initializeProperty (opt, props = {}) {
-
-    this.opt = opt || {};
-    this.parent = this.opt;
-    this.props = props;
-    this.source = uuid();
-    this.sourceName = this.constructor.name;
-
-    if (opt && opt.$store) this.$store = opt.$store;
-    if (opt && opt.$app) this.$app = opt.$app;
+  setStore (storeInstance) {
+    this.__storeInstance = storeInstance;
   }
 
+  /**
+   * 메세징 루트를 재정의 할 수 있음. 
+   * 
+   * @override
+   */
+  get $store() {
+    return this.__storeInstance || this.parent.$store;
+  }  
+
+  /**
+   * UIElement 가 생성될 때 호출되는 메소드 
+   * @protected
+   */
   created() {}
 
   getRealEventName(e, s = MULTI_PREFIX) {
@@ -2549,51 +3043,87 @@ class UIElement extends EventMachine {
     return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
   }
 
+  splitMethod (arr, keyword, defaultValue = 0) {
+    var [methods, params] = splitMethodByKeyword(arr, keyword);
+
+    return [
+      methods.length ? +params[0].target : defaultValue,
+      methods, 
+      params
+    ]
+  }
+
+  createLocalCallback(event, callback) {
+    var newCallback = callback.bind(this);
+    newCallback.displayName = `${this.sourceName}.${event}`;
+    newCallback.source = this.source;
+
+    return newCallback;
+  }
+
   /**
    * initialize store event
    *
    * you can define '@xxx' method(event) in UIElement
    *
+   * Store Event 를 초기화 한다. 
    *
    */
   initializeStoreEvent() {
+    this.filterProps(CHECK_SUBSCRIBE_PATTERN).forEach(key => {
+      const events = this.getRealEventName(key, SUBSCRIBE_SAPARATOR);
+      // context 에 속한 변수나 메소드 리스트 체크
+      const [method, ...methodLine] = events.split(CHECK_SAPARATOR);
+      const checkMethodList = methodLine.map(it => it.trim()).filter(code => this[code]).map(target => ({target}));
 
-    this.filterProps(REG_STORE_MULTI_PATTERN).forEach(key => {
-      const events = this.getRealEventName(key, MULTI_PREFIX);
-
-      // support deboounce for store event 
-      var [methods, params] = splitMethodByKeyword(events.split(SPLITTER), 'debounce');
-
-      var debounceSecond = 0; 
-      if (methods.length) {
-        debounceSecond = +params[0].target || 0; 
-      }
+      // support deboounce for store event    
+      const [debounceSecond, debounceMethods] = this.splitMethod(methodLine, 'debounce');
+      const [throttleSecond, throttleMethods] = this.splitMethod(methodLine, 'throttle');      
+      const [allTrigger, allTriggerMethods] = this.splitMethod(methodLine, 'allTrigger');   
+      const [selfTrigger, selfTriggerMethods] = this.splitMethod(methodLine, 'selfTrigger');            
 
       events
-        .split(SPLITTER)
+        .split(CHECK_SAPARATOR)
         .filter(it => {
-          return methods.indexOf(it) === -1
+          return (
+              checkMethodList.indexOf(it) === -1 &&             
+              debounceMethods.indexOf(it) === -1 && 
+              allTriggerMethods.indexOf(it) === -1 &&               
+              selfTriggerMethods.indexOf(it) === -1 &&                             
+              throttleMethods.indexOf(it) === -1
+          )
         })
         .map(it => it.trim())
+        .filter(Boolean)
         .forEach(e => {
-          var callback = this[key].bind(this);
-          callback.displayName = `${this.sourceName}.${e}`;
-          callback.source = this.source;
-          this.$store.on(e, callback, this, debounceSecond);
+
+          if (isFunction(this[key])) {
+            var callback = this.createLocalCallback(e, this[key] );
+            this.$store.on(e, callback, this, debounceSecond, throttleSecond, allTriggerMethods.length, selfTriggerMethods.length, checkMethodList);
+          }
+
       });
     });
   }
 
-  destoryStoreEvent() {
+  /**
+   * 현재 UIElement 와 연결된 모든 메세지를 해제한다. 
+   */
+  destoryStoreSUBSCRIBE() {
     this.$store.offAll(this);
   }
 
   destroy () {
     super.destroy();
 
-    this.destoryStoreEvent();
+    this.destoryStoreSUBSCRIBE();
   }
 
+  /**
+   * UIElement 를 다시 그린다. 
+   * 
+   * template 정의 부터  메세지 이벤트 정의까지 모두 다시 한다. 
+   */
   rerender() {
     super.rerender();
 
@@ -2603,17 +3133,60 @@ class UIElement extends EventMachine {
   }
 
 
-  emit($1, $2, $3, $4, $5) {
+  /**
+   * UIElement 기반으로 메세지를 호출 한다. 
+   * 나 이외의 객체들에게 메세지를 전달한다. 
+   * 
+   * @param {string} messageName
+   * @param {any[]} args 
+   */
+  emit(messageName, ...args) {
     this.$store.source = this.source;
     this.$store.sourceContext = this; 
-    this.$store.emit($1, $2, $3, $4, $5);
+    this.$store.emit(messageName, ...args);
   }
 
-  trigger($1, $2, $3, $4, $5) {
+  /**
+   * MicroTask 를 수행한다. 
+   * 
+   * @param {Function} callback 
+   */
+  nextTick (callback) {
+    this.$store.nextTick(callback);
+  }
+
+  /**
+   * 
+   * UIElement 자신의 메세지를 수행한다. 
+   * emit 은 나외의 객체에게 메세지를 보내고 
+   * 
+   * @param {string} messageName 
+   * @param {any[]} args 
+   */
+  trigger(messageName, ...args) {
     this.$store.source = this.source;
-    this.$store.trigger($1, $2, $3, $4, $5);
+    this.$store.trigger(messageName, ...args);
   }
 
+  /**
+   * 자식 객체에게만 호출되는 메세지를 수행한다.
+   * 
+   * @param {string} messageName
+   * @param {any[]} args
+   */ 
+  broadcast(messageName, ...args) {
+    Object.keys(this.children).forEach(key => {
+      this.children[key].trigger(messageName, ...args);
+    });
+  }
+
+  /**
+   * message 이벤트에 주어진 callack 을 등록 
+   * 동일한 메세지 명으로 callback 은 list 화 되어서 관리 됩니다. 
+   * 
+   * @param {string} message 이벤트 메세지 이름 
+   * @param {Function} callback 메세지 지정시 실행될 함수
+   */ 
   on (message, callback) {
     this.$store.on(message, callback);
   }
@@ -2621,129 +3194,74 @@ class UIElement extends EventMachine {
   off (message, callback) {
     this.$store.off(message, callback);
   }
+
+  /**
+   * 동적으로 subscribe 함수를 지정합니다. 
+   * 
+   * template 안에서 동적으로 수행할 수 있습니다. 
+   * 
+   * 이렇게 생성된 subscribe 함수는 외부에서는 실행 할수가 없는 SUBSCRIBE_SELF 로 생성됩니다. 
+   * 
+   * 함수 내부에서 context 를 유지하기 때문에 this 로 instance 에 접근 할 수 있습니다. 
+   * 
+   * @example
+   * 
+   * ```js
+   * html`
+   *     <div onClick=${this.subscribe(() => { 
+   *        console.log('click is fired'); 
+   *        console.log(this.source);
+   *     })}>
+   *        눌러주세요.
+   *     </div>
+   * `
+   * ```
+   * 
+   * @param {Function} callback subscribe 함수로 지정할 callback 
+   * @param {number} [debounceSecond=0] debounce 시간(ms)
+   * @param {number} [throttleSecond=0] throttle 시간(ms)
+   * @returns {string} function id 
+   */ 
+  subscribe(callback, debounceSecond = 0, throttleSecond = 0) {
+    const id = `subscribe.${uuidShort()}`;
+
+    const newCallback = this.createLocalCallback(id, callback);
+
+    this.$store.on(id, newCallback, this, debounceSecond, throttleSecond, false, /*self trigger*/true);    
+
+    return id; 
+  }
 }
 
-const EMPTY_POS = { x: 0, y: 0 };
-const DEFAULT_POS = { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER };
-const MOVE_CHECK_MS = 0;
+/**
+ * UIElement 렌더링 하기 
+ * 
+ * @param {UIElement} ElementClass
+ * @param {Object} opt 
+ * @param {string|HTMLElement} opt.container  렌더링 될 객체 
+ * @returns {UIElement}
+ */ 
+const start = (ElementClass, opt = {}) => {
 
-const start = opt => {
-  class App extends UIElement {
+  const $container = Dom.create(opt.container || document.body);
 
-    initialize() {
+  const app = new ElementClass(opt, {
+    ...opt,
+    store: opt.store || new BaseStore()
+  });
 
-      this.$store = new BaseStore();
-      this.$app = this; 
+  app.render($container);
 
-      this.$container = Dom.create(this.getContainer());
-      this.$container.addClass(this.getClassName());
-
-      this.render(this.$container);
-
-      this.initBodyMoves();
-    }
-
-    initState () {
-      return {
-        pos: {},
-        oldPos: {}
-      }
-    }
-
-    initBodyMoves() {
-      this.moves = new Set();
-      this.ends = new Set();
-
-      this.modifyBodyMoveSecond(MOVE_CHECK_MS);
-    }
-
-    modifyBodyMoveSecond(ms = MOVE_CHECK_MS) {
-      this.funcBodyMoves = debounce(this.loopBodyMoves.bind(this), ms);
-    }
-
-    loopBodyMoves() {
-      var {bodyEvent, pos, lastPos} = this.state;
-
-      var localLastPos = lastPos || DEFAULT_POS;
-      var isNotEqualLastPos = !(localLastPos.x === pos.x && localLastPos.y === pos.y);
-
-      if (isNotEqualLastPos && this.moves.size) {
-        this.moves.forEach(v => {
-          var dx = pos.x - v.xy.x;
-          var dy = pos.y - v.xy.y;
-          if (dx != 0 || dy != 0) {
-            v.func.call(v.context, dx, dy, 'move', bodyEvent.pressure);
-          }
-        });
-
-        this.state.lastPos = pos;
-      }
-      requestAnimationFrame(this.funcBodyMoves);
-    }
-
-    removeBodyMoves() {
-      var {pos, bodyEvent} = this.state;       
-      if (pos) {
-        this.ends.forEach(v => {
-          v.func.call(v.context, pos.x - v.xy.x, pos.y - v.xy.y, 'end', bodyEvent.pressure);
-        });
-      }
-
-      this.moves.clear();
-      this.ends.clear();
-    }
-
-    [EVENT(ADD_BODY_MOUSEMOVE)](func, context, xy) {
-      this.moves.add({ func, context, xy });
-    }
-
-    [EVENT(ADD_BODY_MOUSEUP)](func, context, xy) {
-      this.ends.add({ func, context, xy });
-    }
-
-    getClassName() {
-      return opt.className || "sapa";
-    }
-
-    getContainer() {
-      return opt.container || document.body;
-    }
-
-    template() {
-      return `${opt.template}`
-    }
-
-    components() {
-      return opt.components || {};
-    }
-
-    [POINTERMOVE("document")](e) {
-      var oldPos = this.state.pos || EMPTY_POS;      
-      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return; 
-      var newPos = e.xy || EMPTY_POS;
-
-      this.setState({bodyEvent : e, pos: newPos, oldPos}, false);
-
-      if (!this.requestId) {
-        this.requestId = requestAnimationFrame(this.funcBodyMoves);
-      }
-    }
-
-    [POINTEREND("document")](e) {
-      var newPos = e.xy || EMPTY_POS;      
-      if (e.target.nodeName === 'INPUT' || e.target.nodeName === 'SELECT' || e.target.nodeName === 'TEXTAREA') return;       
-      this.setState({bodyEvent : e, pos: newPos}, false);
-      this.removeBodyMoves();
-      this.requestId = null;
-    }
-  }
-
-  return new App(opt);
+  return app; 
 };
 
-var App = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  start: start
-});
+var index = {
+  start,
+  UIElement,
+  BaseStore,
+  Dom,
+  ...EventFunctions,
+  registElement,
+};
 
-export { AFTER, ALT, ANIMATIONEND, ANIMATIONITERATION, ANIMATIONSTART, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, App, BEFORE, BIND, BIND_CHECK_DEFAULT_FUNCTION, BIND_CHECK_FUNCTION, BIND_SAPARATOR, BLUR, CAPTURE, CHANGE, CHANGEINPUT, CHECKER, CHECK_BIND_PATTERN, CHECK_DOM_EVENT_PATTERN, CHECK_LOAD_PATTERN, CHECK_SAPARATOR, CLICK, CONTEXTMENU, CONTROL, CUSTOM, D1000, DEBOUNCE, DOM_EVENT_SAPARATOR, DOUBLECLICK, DRAG, DRAGEND, DRAGENTER, DRAGEXIT, DRAGLEAVE, DRAGOUT, DRAGOVER, DRAGSTART, DROP, Dom, END, ENTER, ESCAPE, EVENT, FIT, FOCUS, FOCUSIN, FOCUSOUT, IF, INPUT, KEY, KEYDOWN, KEYPRESS, KEYUP, LOAD, LOAD_SAPARATOR, META, MOUSEDOWN, MOUSEENTER, MOUSELEAVE, MOUSEMOVE, MOUSEOUT, MOUSEOVER, MOUSEUP, MOVE, NAME_SAPARATOR, PASSIVE, PASTE, PIPE, POINTEREND, POINTERMOVE, POINTERSTART, PREVENT, RESIZE, SAPARATOR, SCROLL, SELF, SHIFT, SPACE, STOP, SUBMIT, THROTTLE, TOUCHEND, TOUCHMOVE, TOUCHSTART, TRANSITIONCANCEL, TRANSITIONEND, TRANSITIONRUN, TRANSITIONSTART, UIElement, VDOM, WHEEL, clone, createRef, debounce, getRef, html, isArray, isBoolean, isFunction, isNotString, isNotUndefined, isNumber, isObject, isString, isUndefined, keyEach, keyMap, makeEventChecker, throttle, uuid, uuidShort };
+export { index as default };

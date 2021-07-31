@@ -33,19 +33,15 @@
         </style>
 </head>
 <body>
-<script type='text/javascript' src='sapa.umd.js'></script>
+<script type='text/javascript' src='dist/sapa.js'></script>
 <script type="text/javascript">
-    
-    const {App, CLICK, EVENT, UIElement} = sapa; 
+
+    const {start, CLICK, SUBSCRIBE, UIElement} = sapa; 
 
     class Test extends UIElement {
 
-        constructor(app, props) {
-            super();
-        }
-
         template() {
-            return `
+            return /*html*/`
             <div class='test-view'>
                 <h1>Sample List</h1>
                 <p>Click an  item</p>
@@ -57,7 +53,7 @@
             `
         }
 
-        [EVENT('test')] (value) {
+        [SUBSCRIBE('test')] (value) {
             console.log('test', value)
         }
 
@@ -73,10 +69,7 @@
         }
     }
 
-    App.start({
-      components: { Test },
-      template: `<Test />`
-    });
+    start(Test);
 </script>
 
 </body>
