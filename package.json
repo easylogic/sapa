@@ -1,6 +1,6 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Simple JS Application Library",
   "main": "dist/sapa.js",
   "module": "module/index.js",
