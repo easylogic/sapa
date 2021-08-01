@@ -1,4 +1,6 @@
 
+const identity = () => true; 
+
 /**
  * property 수집하기
  * 상위 클래스의 모든 property 를 수집해서 리턴한다.
@@ -7,7 +9,7 @@
  * @param {Object} expectMethod 제외될 필드 리스트 { [field]: true }
  * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
  */
-export function collectProps(root, expectMethod = {}) {
+export function collectProps(root, checkFunction = identity) {
 
     let p = root;
     let results = [];
@@ -19,7 +21,7 @@ export function collectProps(root, expectMethod = {}) {
         }
 
         const names = Object.getOwnPropertyNames(p).filter(name => {
-            return root && isFunction(root[name]) && !expectMethod[name];
+            return root && isFunction(root[name]) && checkFunction(name);
         });
 
         results.push.apply(results, names);

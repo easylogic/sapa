@@ -1,1 +1,3223 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).sapa=t()}(this,(function(){"use strict";function e(e,t){var n=Object.keys(e);if(Object.getOwnPropertySymbols){var r=Object.getOwnPropertySymbols(e);t&&(r=r.filter((function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable}))),n.push.apply(n,r)}return n}function t(t){for(var n=1;n<arguments.length;n++){var r=null!=arguments[n]?arguments[n]:{};n%2?e(Object(r),!0).forEach((function(e){u(t,e,r[e])})):Object.getOwnPropertyDescriptors?Object.defineProperties(t,Object.getOwnPropertyDescriptors(r)):e(Object(r)).forEach((function(e){Object.defineProperty(t,e,Object.getOwnPropertyDescriptor(r,e))}))}return t}function n(e){return(n="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function r(e,t,n,r,i,o,a){try{var l=e[o](a),u=l.value}catch(e){return void n(e)}l.done?t(u):Promise.resolve(u).then(r,i)}function i(e){return function(){var t=this,n=arguments;return new Promise((function(i,o){var a=e.apply(t,n);function l(e){r(a,i,o,l,u,"next",e)}function u(e){r(a,i,o,l,u,"throw",e)}l(void 0)}))}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}function l(e,t,n){return t&&a(e.prototype,t),n&&a(e,n),e}function u(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),t&&h(e,t)}function c(e){return(c=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)})(e)}function h(e,t){return(h=Object.setPrototypeOf||function(e,t){return e.__proto__=t,e})(e,t)}function f(e,t){return!t||"object"!=typeof t&&"function"!=typeof t?function(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}(e):t}function v(e){var t=function(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(e){return!1}}();return function(){var n,r=c(e);if(t){var i=c(this).constructor;n=Reflect.construct(r,arguments,i)}else n=r.apply(this,arguments);return f(this,n)}}function d(e,t,n){return(d="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,t,n){var r=function(e,t){for(;!Object.prototype.hasOwnProperty.call(e,t)&&null!==(e=c(e)););return e}(e,t);if(r){var i=Object.getOwnPropertyDescriptor(r,t);return i.get?i.get.call(n):i.value}})(e,t,n||e)}function y(e,t){return t||(t=e.slice(0)),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(t)}}))}function p(e,t){return k(e)||function(e,t){var n=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null==n)return;var r,i,o=[],a=!0,l=!1;try{for(n=n.call(e);!(a=(r=n.next()).done)&&(o.push(r.value),!t||o.length!==t);a=!0);}catch(e){l=!0,i=e}finally{try{a||null==n.return||n.return()}finally{if(l)throw i}}return o}(e,t)||E(e,t)||C()}function g(e){return k(e)||b(e)||E(e)||C()}function m(e){return function(e){if(Array.isArray(e))return T(e)}(e)||b(e)||E(e)||function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function k(e){if(Array.isArray(e))return e}function b(e){if("undefined"!=typeof Symbol&&null!=e[Symbol.iterator]||null!=e["@@iterator"])return Array.from(e)}function E(e,t){if(e){if("string"==typeof e)return T(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?T(e,t):void 0}}function T(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,r=new Array(t);n<t;n++)r[n]=e[n];return r}function C(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var A=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:P;return" ".concat(t," ").concat(e)},O=/^domevent (.*)/gi,S=/^load (.*)/gi,w=/^bind (.*)/gi,N=/^subscribe (.*)/gi,x=function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return t.join("|")},R=function(){return"ME@"+x.apply(void 0,arguments)},M=R,_=R,D=":",P="|",L="domevent ",I="load ",j="bind ",U="subscribe ",B=" ",$={},H=function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];var r=t.join(D);return function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return L+[r].concat(t).join(B)}},F=function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return U+t.join(P)},K=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:P;return A(e,t)},V=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:P;return A("after(".concat(e,")"),t)},z=K,G=K,W=K("ArrowUp"),X=K("ArrowDown"),Y=K("ArrowLeft"),q=K("ArrowRight"),J=K("Enter"),Z=K("Space"),Q=K("Escape"),ee=K("isAltKey"),te=K("isShiftKey"),ne=K("isMetaKey"),re=K("isCtrlKey"),ie=K("hasMouse"),oe=K("hasTouch"),ae=K("hasPen"),le=K("self"),ue=K("isMouseLeftButton"),se=K("isMouseRightButton"),ce=K("fit"),he=K("passive"),fe=K("domdiff"),ve=function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:100;return K("debounce(".concat(e,")"))},de=ve(1e3),ye=K("allTrigger()"),pe=K("selfTrigger()"),ge=K("capture()"),me=V("preventDefault"),ke=V("stopPropagation"),be=F,Ee=H,Te=H("click"),Ce=H("dblclick"),Ae=H("mousedown"),Oe=H("mouseup"),Se=H("mousemove"),we=H("mouseover"),Ne=H("mouseout"),xe=H("mouseenter"),Re=H("mouseleave"),Me=H("touchstart"),_e=H("touchmove"),De=H("touchend"),Pe=H("keydown"),Le=H("keyup"),Ie=H("keypress"),je=H("drag"),Ue=H("dragstart"),Be=H("drop"),$e=H("dragover"),He=H("dragenter"),Fe=H("dragleave"),Ke=H("dragexit"),Ve=H("dragout"),ze=H("dragend"),Ge=H("contextmenu"),We=H("change"),Xe=H("input"),Ye=H("focus"),qe=H("focusin"),Je=H("focusout"),Ze=H("blur"),Qe=H("paste"),et=H("resize"),tt=H("scroll"),nt=H("submit"),rt=Ee("pointerover"),it=Ee("pointerenter"),ot=Ee("pointerout"),at=Ee("pointermove"),lt=Ee("pointerup"),ut=Ee("change","input"),st=Ee("wheel","mousewheel","DOMMouseScroll"),ct=H("animationstart"),ht=H("animationend"),ft=H("animationiteration"),vt=H("transitionstart"),dt=H("transitionend"),yt=H("transitionrun"),pt=H("transitioncancel"),gt=Ee("doubletab"),mt=function(e){return $[e]||""},kt=function(e){return function(){return this.prevState[e]!=this.state[e]}},bt=function(){return!0};function Et(e,t){return Math.sign(e)*Math.min(t,Math.abs(e))}var Tt={addDomEvent:function(e,t,n){var r=arguments.length>3&&void 0!==arguments[3]&&arguments[3];e&&e.addEventListener(t,n,r)},removeDomEvent:function(e,t,n){e&&e.removeEventListener(t,n)},pos:function(e){return e.touches&&e.touches[0]?e.touches[0]:e},posXY:function(e){var t=this.pos(e);return{x:t.pageX,y:t.pageY}}},Ct=Object.freeze({__proto__:null,makeEventChecker:A,CHECK_DOM_EVENT_PATTERN:O,CHECK_LOAD_PATTERN:S,CHECK_BIND_PATTERN:w,CHECK_SUBSCRIBE_PATTERN:N,PIPE:x,EVENT:R,COMMAND:M,ON:_,NAME_SAPARATOR:D,CHECK_SAPARATOR:P,DOM_EVENT_SAPARATOR:L,LOAD_SAPARATOR:I,BIND_SAPARATOR:j,SUBSCRIBE_SAPARATOR:U,SAPARATOR:B,CHECKER:K,AFTER:V,BEFORE:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:P;return A("before(".concat(e,")"),t)},IF:z,KEY:G,ARROW_UP:W,ARROW_DOWN:X,ARROW_LEFT:Y,ARROW_RIGHT:q,ENTER:J,SPACE:Z,ESCAPE:Q,ALT:ee,SHIFT:te,META:ne,CONTROL:re,MOUSE:ie,TOUCH:oe,PEN:ae,SELF:le,LEFT_BUTTON:ue,RIGHT_BUTTON:se,FIT:ce,PASSIVE:he,DOMDIFF:fe,DEBOUNCE:ve,DELAY:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:300;return K("delay(".concat(e,")"))},D1000:de,THROTTLE:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:100;return K("throttle(".concat(e,")"))},ALL_TRIGGER:ye,SELF_TRIGGER:pe,CAPTURE:ge,PREVENT:me,STOP:ke,SUBSCRIBE:be,SUBSCRIBE_ALL:function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return F.apply(void 0,t.concat([ye]))},SUBSCRIBE_SELF:function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return F.apply(void 0,t.concat([pe]))},CONFIG:function(e){for(var t=arguments.length,n=new Array(t>1?t-1:0),r=1;r<t;r++)n[r-1]=arguments[r];return F.apply(void 0,["config:".concat(e)].concat(n))},CUSTOM:Ee,CLICK:Te,DOUBLECLICK:Ce,MOUSEDOWN:Ae,MOUSEUP:Oe,MOUSEMOVE:Se,MOUSEOVER:we,MOUSEOUT:Ne,MOUSEENTER:xe,MOUSELEAVE:Re,TOUCHSTART:Me,TOUCHMOVE:_e,TOUCHEND:De,KEYDOWN:Pe,KEYUP:Le,KEYPRESS:Ie,DRAG:je,DRAGSTART:Ue,DROP:Be,DRAGOVER:$e,DRAGENTER:He,DRAGLEAVE:Fe,DRAGEXIT:Ke,DRAGOUT:Ve,DRAGEND:ze,CONTEXTMENU:Ge,CHANGE:We,INPUT:Xe,FOCUS:Ye,FOCUSIN:qe,FOCUSOUT:Je,BLUR:Ze,PASTE:Qe,RESIZE:et,SCROLL:tt,SUBMIT:nt,POINTERSTART:function(){return Ee("pointerdown").apply(void 0,arguments)+ue},POINTEROVER:rt,POINTERENTER:it,POINTEROUT:ot,POINTERMOVE:at,POINTEREND:lt,CHANGEINPUT:ut,WHEEL:st,ANIMATIONSTART:ct,ANIMATIONEND:ht,ANIMATIONITERATION:ft,TRANSITIONSTART:vt,TRANSITIONEND:dt,TRANSITIONRUN:yt,TRANSITIONCANCEL:pt,DOUBLETAB:gt,LOAD:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"$el";return I+e},getRef:mt,BIND_CHECK_FUNCTION:kt,BIND_CHECK_DEFAULT_FUNCTION:bt,BIND:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"$el";return j+e},normalizeWheelEvent:function(e){var t=e.deltaX,n=e.deltaY;if(0===t&&e.shiftKey){var r=[t,n];n=r[0],t=r[1]}return e.deltaMode===WheelEvent.DOM_DELTA_LINE?n*=8:e.deltaMode===WheelEvent.DOM_DELTA_PAGE&&(n*=24),[Et(t,24),Et(n,24),0]},default:Tt}),At=function(e,t,n,r){n?r&&n===r||function(e,t,n){"boolean"==typeof n?function(e,t,n){n?(e.setAttribute(t,t),e[t]=n):(e.removeAttribute(t),e[t]=n)}(e,t,n):e.setAttribute(t,n)}(e,t,n):function(e,t,n){"boolean"==typeof n?function(e,t){e.removeAttribute(t),e[t]=!1}(e,t):t&&function(e,t){e.removeAttribute(t)}(e,t)}(e,t,r)};function Ot(e){return e.nodeType!==Node.TEXT_NODE&&"true"===e.getAttribute("data-domdiff-pass")}function St(e){for(var t={},n=e.length,r=0;r<n;r++){var i=e[r];t[i.name]=i.value}return t}function wt(e,t,n,r){if(t)if(n){if(Ot(t)||Ot(n));else if(u=t,(l=n).nodeType===Node.TEXT_NODE&&l.textContent!==u.textContent||l.nodeName!==u.nodeName||function(e){return e.nodeType!==Node.TEXT_NODE&&e.getAttribute("refClass")}(n))e.replaceChild(n.cloneNode(!0),t);else if(n.nodeType!==Node.TEXT_NODE&&n.nodeType!==Node.COMMENT_NODE&&"[object HTMLUnknownElement]"!==n.toString()){!function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},r=[];r.push.apply(r,Object.keys(t)),r.push.apply(r,Object.keys(n));for(var i=m(new Set(r)),o=0,a=i.length;o<a;o++){var l=i[o];At(e,l,t[l],n[l])}}(t,St(n.attributes),St(t.attributes));var i=Nt(t),o=Nt(n),a=Math.max(i.length,o.length);for(r=0;r<a;r++)wt(t,i[r],o[r],r)}}else e.removeChild(t);else e.appendChild(n.cloneNode(!0));var l,u}var Nt=function(e){var t=e.firstChild;if(!t)return[];var n=[];do{n.push(t),t=t.nextSibling}while(t);return n};function xt(e,t){e=e.el||e,t=t.el||t;for(var n=Nt(e),r=Nt(t),i=Math.max(n.length,r.length),o=0;o<i;o++)wt(e,n[o],r[o],o)}var Rt,Mt=function(){function e(t,n,r){if(o(this,e),"string"!=typeof t)this.el=t;else{var i=document.createElement(t);for(var a in n&&(i.className=n),r=r||{})i.setAttribute(a,r[a]);this.el=i}}return l(e,[{key:"setAttr",value:function(e){var t=this;return Object.keys(e).forEach((function(n){t.attr(n,e[n])})),this}},{key:"setAttrNS",value:function(e){var t=this,n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"http://www.w3.org/2000/svg";return Object.keys(e).forEach((function(r){t.attr(r,e[r],n)})),this}},{key:"setProp",value:function(e){var t=this;return Object.keys(e).forEach((function(n){t.el[n]!=e[n]&&(t.el[n]=e[n])})),this}},{key:"data",value:function(e,t){return 1===arguments.length?this.attr("data-"+e):2===arguments.length?this.attr("data-"+e,t):this}},{key:"attr",value:function(e,t){return 1==arguments.length?this.el.getAttribute(e):(this.el.getAttribute(e)!=t&&this.el.setAttribute(e,t),this)}},{key:"attrNS",value:function(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:"http://www.w3.org/2000/svg";return 1==arguments.length?this.el.getAttributeNS(n,e):(this.el.getAttributeNS(n,e)!=t&&this.el.setAttributeNS(n,e,t),this)}},{key:"attrKeyValue",value:function(e){return u({},this.el.getAttribute(e),this.val())}},{key:"attrs",value:function(){for(var e=this,t=arguments.length,n=new Array(t),r=0;r<t;r++)n[r]=arguments[r];return n.map((function(t){return e.el.getAttribute(t)}))}},{key:"styles",value:function(){for(var e=this,t=arguments.length,n=new Array(t),r=0;r<t;r++)n[r]=arguments[r];return n.map((function(t){return e.el.style[t]}))}},{key:"removeAttr",value:function(e){return this.el.removeAttribute(e),this}},{key:"removeStyle",value:function(e){return this.el.style.removeProperty(e),this}},{key:"is",value:function(e){return this.el===(e.el||e)}},{key:"isTag",value:function(e){return this.el.tagName.toLowerCase()===e.toLowerCase()}},{key:"closest",value:function(t){for(var n=this,r=!1;!(r=n.hasClass(t));){if(!n.el.parentNode)return null;n=e.create(n.el.parentNode)}return r?n:null}},{key:"path",value:function(){if(!this.el)return[];var e=this.parent();return e?[].concat(m(e.path()),[this]):[this]}},{key:"parent",value:function(){return e.create(this.el.parentNode)}},{key:"hasParent",value:function(){return!!this.el.parentNode}},{key:"removeClass",value:function(){var e;return(e=this.el.classList).remove.apply(e,arguments),this}},{key:"hasClass",value:function(e){return!!this.el.classList&&this.el.classList.contains(e)}},{key:"addClass",value:function(){var e;return(e=this.el.classList).add.apply(e,arguments),this}},{key:"onlyOneClass",value:function(e){this.parent().children().forEach((function(t){t.removeClass(e)})),this.addClass(e)}},{key:"toggleClass",value:function(e,t){return this.el.classList.toggle(e,t),this}},{key:"html",value:function(e){return void 0===e?this.el.innerHTML:("string"==typeof e?this.el.innerHTML=e:this.empty().append(e),this)}},{key:"htmlDiff",value:function(e){xt(this,e)}},{key:"updateDiff",value:function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"div";xt(this,e.create(n).html(t))}},{key:"updateSVGDiff",value:function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"div";xt(this,e.create(n).html("<svg>".concat(t,"</svg>")).firstChild.firstChild)}},{key:"find",value:function(e){return this.el.querySelector(e)}},{key:"$",value:function(t){var n=this.find(t);return n?e.create(n):null}},{key:"findAll",value:function(e){return m(this.el.querySelectorAll(e))}},{key:"$$",value:function(t){return this.findAll(t).map((function(t){return e.create(t)}))}},{key:"empty",value:function(){for(;this.el.firstChild;)this.el.removeChild(this.el.firstChild);return this}},{key:"append",value:function(e){return"string"==typeof e?this.el.appendChild(document.createTextNode(e)):this.el.appendChild(e.el||e),this}},{key:"prepend",value:function(e){return"string"==typeof e?this.el.prepend(document.createTextNode(e)):this.el.prepend(e.el||e),this}},{key:"prependHTML",value:function(t){var n=e.create("div").html(t);return this.prepend(n.createChildrenFragment()),n}},{key:"appendHTML",value:function(t){var n=e.create("div").html(t);return this.append(n.createChildrenFragment()),n}},{key:"createChildrenFragment",value:function(){var e=this.children(),t=document.createDocumentFragment();return e.forEach((function(e){return t.appendChild(e.el)})),t}},{key:"appendTo",value:function(e){return(e.el?e.el:e).appendChild(this.el),this}},{key:"remove",value:function(){return this.el.parentNode&&this.el.parentNode.removeChild(this.el),this}},{key:"removeChild",value:function(e){return this.el.removeChild(e.el||e),this}},{key:"text",value:function(t){if(void 0===t)return this.el.textContent;var n=t;return t instanceof e&&(n=t.text()),this.el.textContent!==n&&(this.el.textContent=n),this}},{key:"css",value:function(e,t){var n=this;if(void 0!==e&&void 0!==t)0===e.indexOf("--")&&void 0!==t?this.el.style.setProperty(e,t):this.el.style[e]=t;else if(void 0!==e){if("string"==typeof e)return getComputedStyle(this.el)[e];Object.entries(e).forEach((function(e){var t=p(e,2),r=t[0],i=t[1];0===r.indexOf("--")&&void 0!==i?n.el.style.setProperty(r,i):n.el.style[r]=i}))}return this}},{key:"getComputedStyle",value:function(e){function t(){return e.apply(this,arguments)}return t.toString=function(){return e.toString()},t}((function(){for(var e=getComputedStyle(this.el),t={},n=arguments.length,r=new Array(n),i=0;i<n;i++)r[i]=arguments[i];return r.forEach((function(n){t[n]=e[n]})),t}))},{key:"getStyleList",value:function(){for(var e=this,t={},n=this.el.style.length,r=0;r<n;r++){var i=this.el.style[r];t[i]=this.el.style[i]}for(var o=arguments.length,a=new Array(o),l=0;l<o;l++)a[l]=arguments[l];return a.forEach((function(n){t[n]=e.css(n)})),t}},{key:"cssText",value:function(e){return void 0===e?this.el.style.cssText:(e!=this.el.tempCssText&&(this.el.style.cssText=e,this.el.tempCssText=e),this)}},{key:"cssArray",value:function(e){return e[0]&&(this.el.style[e[0]]=e[1]),e[2]&&(this.el.style[e[2]]=e[3]),e[4]&&(this.el.style[e[4]]=e[5]),e[6]&&(this.el.style[e[6]]=e[7]),e[8]&&(this.el.style[e[8]]=e[9]),this}},{key:"cssFloat",value:function(e){return parseFloat(this.css(e))}},{key:"cssInt",value:function(e){return parseInt(this.css(e))}},{key:"px",value:function(e,t){return this.css(e,"".concat(t,"px"))}},{key:"rect",value:function(){return this.el.getBoundingClientRect()}},{key:"bbox",value:function(){return this.el.getBBox()}},{key:"isSVG",value:function(){return"SVG"===this.el.tagName.toUpperCase()}},{key:"offsetRect",value:function(){if(this.isSVG()){var e=this.parent().rect(),t=this.rect();return{x:t.x-e.x,y:t.y-e.y,top:t.x-e.x,left:t.y-e.y,width:t.width,height:t.height}}return{x:this.el.offsetLeft,y:this.el.offsetTop,top:this.el.offsetTop,left:this.el.offsetLeft,width:this.el.offsetWidth,height:this.el.offsetHeight}}},{key:"offset",value:function(){var t=this.rect(),n=e.getScrollTop(),r=e.getScrollLeft();return{top:t.top+n,left:t.left+r}}},{key:"offsetLeft",value:function(){return this.offset().left}},{key:"offsetTop",value:function(){return this.offset().top}},{key:"position",value:function(){return this.el.style.top?{top:parseFloat(this.css("top")),left:parseFloat(this.css("left"))}:this.rect()}},{key:"size",value:function(){return[this.width(),this.height()]}},{key:"width",value:function(){return this.el.offsetWidth||this.rect().width}},{key:"contentWidth",value:function(){return this.width()-this.cssFloat("padding-left")-this.cssFloat("padding-right")}},{key:"height",value:function(){return this.el.offsetHeight||this.rect().height}},{key:"contentHeight",value:function(){return this.height()-this.cssFloat("padding-top")-this.cssFloat("padding-bottom")}},{key:"val",value:function(t){if(void 0===t)return this.el.value;if(void 0!==t){var n=t;t instanceof e&&(n=t.val()),this.el.value=n}return this}},{key:"matches",value:function(e){return this.el&&this.el.matches?this.el.matches(e)?this:this.parent().matches(e):null}},{key:"value",get:function(){return this.el.value}},{key:"naturalWidth",get:function(){return this.el.naturalWidth}},{key:"naturalHeight",get:function(){return this.el.naturalHeight}},{key:"files",get:function(){return this.el.files?m(this.el.files):[]}},{key:"realVal",value:function(){switch(this.el.nodeType){case"INPUT":var e=this.attr("type");if("checkbox"==e||"radio"==e)return this.checked();case"SELECT":case"TEXTAREA":return this.el.value}return""}},{key:"int",value:function(){return parseInt(this.val(),10)}},{key:"float",value:function(){return parseFloat(this.val())}},{key:"show",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"block";return this.el.style.display="none"!=e?e:"block",this}},{key:"hide",value:function(){return this.el.style.display="none",this}},{key:"isHide",value:function(){return"none"===this.el.style.display}},{key:"isShow",value:function(){return!this.isHide()}},{key:"toggle",value:function(e){var t=this.isHide();return 1==arguments.length?e?this.show():this.hide():t?this.show():this.hide()}},{key:"totalLength",get:function(){return this.el.getTotalLength()}},{key:"scrollIntoView",value:function(){this.el.scrollIntoView()}},{key:"addScrollLeft",value:function(e){return this.el.scrollLeft+=e,this}},{key:"addScrollTop",value:function(e){return this.el.scrollTop+=e,this}},{key:"setScrollTop",value:function(e){return this.el.scrollTop=e,this}},{key:"setScrollLeft",value:function(e){return this.el.scrollLeft=e,this}},{key:"scrollTop",value:function(){return this.el===document.body?e.getScrollTop():this.el.scrollTop}},{key:"scrollLeft",value:function(){return this.el===document.body?e.getScrollLeft():this.el.scrollLeft}},{key:"scrollHeight",value:function(){return this.el.scrollHeight}},{key:"scrollWidth",value:function(){return this.el.scrollWidth}},{key:"on",value:function(e,t,n,r){return this.el.addEventListener(e,t,n,r),this}},{key:"off",value:function(e,t){return this.el.removeEventListener(e,t),this}},{key:"getElement",value:function(){return this.el}},{key:"createChild",value:function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"",r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},i=arguments.length>3&&void 0!==arguments[3]?arguments[3]:{},o=e.create(t,n,r);return o.css(i),this.append(o),o}},{key:"firstChild",get:function(){return e.create(this.el.firstElementChild)}},{key:"children",value:function(){var t=this.el.firstElementChild;if(!t)return[];var n=[];do{n.push(e.create(t)),t=t.nextElementSibling}while(t);return n}},{key:"childLength",value:function(){return this.el.children.length}},{key:"replace",value:function(e){return this.el.parentNode&&this.el.parentNode.replaceChild(e.el||e,this.el),this}},{key:"replaceChild",value:function(e,t){return this.el.replaceChild(t.el||t,e.el||e),this}},{key:"checked",value:function(){var e=arguments.length>0&&void 0!==arguments[0]&&arguments[0];return 0==arguments.length?!!this.el.checked:(this.el.checked=!!e,this)}},{key:"click",value:function(){return this.el.click(),this}},{key:"focus",value:function(){return this.el.focus(),this}},{key:"select",value:function(){if("true"===this.attr("contenteditable")){var e=document.createRange();e.selectNodeContents(this.el);var t=window.getSelection();t.removeAllRanges(),t.addRange(e)}else this.el.select();return this}},{key:"blur",value:function(){return this.el.blur(),this}},{key:"context",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"2d";return this._initContext||(this._initContext=this.el.getContext(e)),this._initContext}},{key:"resize",value:function(e){var t=e.width,n=e.height;this._initContext=null;var r=this.context(),i=window.devicePixelRatio||1;this.px("width",+t),this.px("height",+n),this.el.width=t*i,this.el.height=n*i,r.scale(i,i)}},{key:"toDataURL",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"image/png",t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:1;return this.el.toDataURL(e,t)}},{key:"clear",value:function(){this.context().clearRect(0,0,this.el.width,this.el.height)}},{key:"update",value:function(e){this.clear(),e.call(this,this)}},{key:"drawImage",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:0,r=this.context(),i=window.devicePixelRatio||1;r.drawImage(e,t,n,e.width,e.height,0,0,this.el.width/i,this.el.height/i)}},{key:"drawOption",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},t=this.context();Object.assign(t,e)}},{key:"drawLine",value:function(e,t,n,r){var i=this.context();i.beginPath(),i.moveTo(e,t),i.lineTo(n,r),i.stroke(),i.closePath()}},{key:"drawPath",value:function(){var e=this.context();e.beginPath();for(var t=arguments.length,n=new Array(t),r=0;r<t;r++)n[r]=arguments[r];n.forEach((function(t,n){0==n?e.moveTo(t[0],t[1]):e.lineTo(t[0],t[1])})),e.stroke(),e.fill(),e.closePath()}},{key:"drawCircle",value:function(e,t,n){var r=this.context();r.beginPath(),r.arc(e,t,n,0,2*Math.PI),r.stroke(),r.fill()}},{key:"drawText",value:function(e,t,n){this.context().fillText(n,e,t)}}],[{key:"create",value:function(t,n,r){return new e(t,n,r)}},{key:"createByHTML",value:function(t){var n=e.create("div").html(t).children();return n.length?e.create(n[0].el):null}},{key:"getScrollTop",value:function(){return Math.max(window.pageYOffset,document.documentElement.scrollTop,document.body.scrollTop)}},{key:"getScrollLeft",value:function(){return Math.max(window.pageXOffset,document.documentElement.scrollLeft,document.body.scrollLeft)}},{key:"parse",value:function(e){return DOMParser().parseFromString(e,"text/htmll")}},{key:"body",value:function(){return e.create(document.body)}}]),e}();function _t(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0;if(0===t)return e;var n=void 0;return function(r,i,o,a,l){n&&clearTimeout(n),n=setTimeout((function(){e(r,i,o,a,l)}),t||300)}}function Dt(e,t){var n=void 0;return function(r,i,o,a,l){n||(n=setTimeout((function(){e(r,i,o,a,l),n=null}),t||300))}}function Pt(e,t,n){return function(){for(var r=arguments.length,i=new Array(r),o=0;o<r;o++)i[o]=arguments[o];var a=n.every((function(e){return t[e.target].apply(t,i)}));a&&e.apply(t,i)}}function Lt(e,t){Object.keys(e).forEach((function(n,r){t(n,e[n],r)}))}function It(e){return!1===function(e){return null==e}(e)}function jt(e){return"string"==typeof e}function Ut(e){return"function"==typeof e}var Bt=/\<(\w*)([^\>]*)\/\>/gim,$t=(u(Rt={image:!0,input:!0,br:!0,path:!0,line:!0,circle:!0,rect:!0},"path",!0),u(Rt,"polygon",!0),u(Rt,"polyline",!0),u(Rt,"use",!0),Rt),Ht=function(e){for(var t=arguments.length,n=new Array(t>1?t-1:0),r=1;r<t;r++)n[r-1]=arguments[r];var i=e.map((function(e,t){var r=n[t]||"";return Ut(r)&&console.log(r),Array.isArray(r)||(r=[r]),e+(r=r.join(""))})).join("");return i=i.replace(Bt,(function(e,t){return $t[t.toLowerCase()]?e:e.replace("/>","></".concat(t,">"))}))},Ft=function(e,t){var n=e.filter((function(e){return e.indexOf("".concat(t,"("))>-1})),r=n.map((function(e){var n=p(e.split("".concat(t,"("))[1].split(")")[0].trim().split(" "),2);return{target:n[0],param:n[1]}}));return[n,r]},Kt=function(){function e(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{};o(this,e),this.context=t,this.options=n}return l(e,[{key:"initialize",value:function(){}},{key:"load",value:function(){}},{key:"refresh",value:function(){}},{key:"render",value:function(){}},{key:"getRef",value:function(e){return this.context.getRef(e)}},{key:"run",value:function(){}},{key:"destroy",value:function(){}}]),e}(),Vt={touchstart:!0,touchmove:!0,mousedown:!0,mouseup:!0,mousemove:!0},zt={doubletab:"touchend"},Gt={doubletab:!0},Wt=function(e){s(n,e);var t=v(n);function n(){return o(this,n),t.apply(this,arguments)}return l(n,[{key:"initialize",value:function(){var e=this;this.destroy(),this._domEvents||(this._domEvents=this.context.filterProps(O)),this._domEvents.forEach((function(t){return e.parseDomEvent(t)}))}},{key:"destroy",value:function(){this.removeEventAll()}},{key:"removeEventAll",value:function(){var e=this;this.getBindings().forEach((function(t){e.removeDomEvent(t)})),this.initBindings()}},{key:"removeDomEvent",value:function(e){var t=e.eventName,n=e.dom,r=e.callback;Tt.removeDomEvent(n,t,r)}},{key:"getBindings",value:function(){return this._bindings||this.initBindings(),this._bindings}},{key:"addBinding",value:function(e){this.getBindings().push(e)}},{key:"initBindings",value:function(){this._bindings=[]}},{key:"matchPath",value:function(e,t){return e?e.matches(t)?e:this.matchPath(e.parentElement,t):null}},{key:"hasDelegate",value:function(e,t){return this.matchPath(e.target||e.srcElement,t.delegate)}},{key:"makeCallback",value:function(e,t){return e.delegate?this.makeDelegateCallback(e,t):this.makeDefaultCallback(e,t)}},{key:"makeDefaultCallback",value:function(e,t){var n=this;return function(r){var i=n.runEventCallback(r,e,t);if(It(i))return i}}},{key:"makeDelegateCallback",value:function(e,t){var n=this;return function(r){var i=n.hasDelegate(r,e);if(i){r.$dt=Mt.create(i);var o=n.runEventCallback(r,e,t);if(It(o))return o}}}},{key:"runEventCallback",value:function(e,t,n){var r=this.context;if(e.xy=Tt.posXY(e),t.beforeMethods.length&&t.beforeMethods.every((function(t){return r[t.target].call(r,e,t.param)})),this.checkEventType(e,t)){var i=n(e,e.$dt,e.xy);return!1!==i&&t.afterMethods.length&&t.afterMethods.forEach((function(t){return r[t.target].call(r,e,t.param)})),i}}},{key:"checkEventType",value:function(e,t){var n=this.context,r=!0;t.codes.length&&(r=!!e.code&&t.codes.indexOf(e.code.toLowerCase())>-1||!!e.key&&t.codes.indexOf(e.key.toLowerCase())>-1);var i=!0;return t.checkMethodList.length&&(i=t.checkMethodList.every((function(t){var r=n[t];return Ut(r)&&r?r.call(n,e):!It(r)||!!r}))),r&&i}},{key:"getDefaultDomElement",value:function(e){var t,n=this.context;return(t=e?n.refs[e]||n[e]||window[e]:n.el||n.$el||n.$root)instanceof Mt?t.getElement():t}},{key:"getRealEventName",value:function(e){return zt[e]||e}},{key:"getCustomEventName",value:function(e){return Gt[e]?e:""}},{key:"getDefaultEventObject",value:function(e,t){var n=this.context,r=t,i=r.filter((function(e){return!!n[e]})),o=p(Ft(r,"after"),2),a=o[0],l=o[1],u=p(Ft(r,"before"),2),s=u[0],c=u[1],h=p(Ft(r,"debounce"),2),f=h[0],v=h[1],d=p(Ft(r,"delay"),2),y=d[0],g=d[1],k=p(Ft(r,"throttle"),2),b=k[0],E=k[1],T=p(Ft(r,"capture"),1)[0],C=[].concat(m(i),m(a),m(s),m(y),m(f),m(b),m(T)),A=r.filter((function(e){return-1===C.indexOf(e)})).map((function(e){return e.toLowerCase()}));return{eventName:this.getRealEventName(e),customEventName:this.getCustomEventName(e),codes:A,captures:T,afterMethods:l,beforeMethods:c,delayMethods:g,debounceMethods:v,throttleMethods:E,checkMethodList:i}}},{key:"addDomEvent",value:function(e,t){e.callback=this.makeCallback(e,t),this.addBinding(e);var n=!!e.captures.length;Vt[e.eventName]&&(n={passive:!0,capture:n}),Tt.addDomEvent(e.dom,e.eventName,e.callback,n)}},{key:"makeCustomEventCallback",value:function(e,t){var n=this;if("doubletab"===e.customEventName){var r=300;return e.delayMethods.length&&(r=+e.delayMethods[0].target),function(){n.doubleTab?(performance.now()-n.doubleTab.time<r&&t.apply(void 0,arguments),n.doubleTab=null):n.doubleTab={time:performance.now()}}}return t}},{key:"bindingDomEvent",value:function(e,t,n){var r=g(e),i=r[0],o=r[1],a=r.slice(2),l=this.getDefaultEventObject(i,t);if(l.dom=this.getDefaultDomElement(o),l.delegate=a.join(B),l.debounceMethods.length)n=_t(n,+l.debounceMethods[0].target);else if(l.throttleMethods.length){n=Dt(n,+l.throttleMethods[0].target)}n=this.makeCustomEventCallback(l,n),this.addDomEvent(l,n)}},{key:"getEventNames",value:function(e){var t=[];return e.split(D).forEach((function(e){var n=e.split(D);t.push.apply(t,n)})),t}},{key:"parseDomEvent",value:function(e){for(var t=this.context,n=e.split(P).map((function(e){return e.trim()})).filter(Boolean),r=n.shift().split(L)[1].split(B),i=this.getEventNames(r[0]),o=t[e].bind(t),a=0,l=i.length;a<l;a++)r[0]=i[a],this.bindingDomEvent(r,n,o)}}]),n}(Kt),Xt=function(e,t,r){if("cssText"!==t)if("style"!==t)if("class"!==t)"callback"!==t||"function"!=typeof r?void 0===r?e.removeAttr(t):"TEXTAREA"===e.el.nodeName&&"value"===t||"text"===t||"textContent"===t?e.text(r):"innerHTML"===t||"html"===t?e.html(r):"htmlDiff"===t?e.updateDiff(r):"svgDiff"===t?e.updateSVGDiff(r):"value"===t?e.val(r):e.attr(t,r):r();else if(Array.isArray(r))e.addClass.apply(e,m(r.filter(Boolean)));else if(function(e){return"object"==n(e)&&!Array.isArray(e)&&!function(e){return"number"==typeof e}(e)&&!jt(e)&&null!==e}(r))for(var i=Object.keys(r),o=0,a=i.length;o<a;o++){var l=i[o],u=r[l];e.toggleClass(l,u)}else e.el.className=r;else"string"!=typeof r&&e.css(r);else e.cssText(r)},Yt=function(e){s(n,e);var t=v(n);function n(){return o(this,n),t.apply(this,arguments)}return l(n,[{key:"load",value:function(){this.bindData.apply(this,arguments)}},{key:"bindData",value:function(){for(var e=this,t=arguments.length,n=new Array(t),r=0;r<t;r++)n[r]=arguments[r];this._bindMethods||(this._bindMethods=this.context.filterProps(w));var o=this._bindMethods.filter((function(e){if(!n.length)return!0;var t=p(e.split(P),2),r=t[0];t[1];var i=p(r.split(" "),2);i[0];var o=i[1];return n.indexOf(o)>-1}));o.forEach(function(){var t=i(regeneratorRuntime.mark((function t(r){var i,o,a,l,u,s,c,h,f,v,d,y,g,m,k;return regeneratorRuntime.wrap((function(t){for(;;)switch(t.prev=t.next){case 0:if(i=e.context[r],o=r.split(P),a=p(o,2),r=a[0],l=a[1],u=e.getRef(l),s=bt,""!=u&&"string"==typeof u?s=kt(u):"function"==typeof u&&(s=u),c=r.split(j)[1],h=e.context.refs[c],f="function"==typeof s&&s.call(e.context),!h||!f){t.next=16;break}return t.next=11,i.call.apply(i,[e.context].concat(n));case 11:if(v=t.sent){t.next=14;break}return t.abrupt("return");case 14:for(d=Object.keys(v),y=0,g=d.length;y<g;y++)m=d[y],k=v[m],Xt(h,m,k);case 16:case"end":return t.stop()}}),t)})));return function(e){return t.apply(this,arguments)}}())}},{key:"destroy",value:function(){this._bindMethods=void 0}}]),n}(Kt),qt=new Map;var Jt,Zt,Qt,en=/[xy]/g;function tn(){var e=(new Date).getTime();return"xxx12-xx-34xx".replace(en,(function(t){var n=(e+16*Math.random())%16|0;return e=Math.floor(e/16),("x"==t?n:3&n|8).toString(16)}))}function nn(){var e=(new Date).getTime();return"idxxxxxxx".replace(en,(function(t){var n=(e+16*Math.random())%16|0;return e=Math.floor(e/16),("x"==t?n:3&n|8).toString(16)}))}var rn="ref",on=Mt.create("div"),an="[".concat(rn,"]"),ln="refclass",un="[".concat(ln,"]"),sn=(u(Jt={constructor:!0,initState:!0,updateData:!0},"constructor",!0),u(Jt,"initializeProperty",!0),u(Jt,"created",!0),u(Jt,"getRealEventName",!0),u(Jt,"initializeStoreEvent",!0),u(Jt,"destoryStoreEvent",!0),u(Jt,"destroy",!0),u(Jt,"emit",!0),u(Jt,"trigger",!0),u(Jt,"on",!0),u(Jt,"off",!0),u(Jt,"setState",!0),u(Jt,"_reload",!0),u(Jt,"render",!0),u(Jt,"initialize",!0),u(Jt,"afterRender",!0),u(Jt,"components",!0),u(Jt,"getRef",!0),u(Jt,"parseTemplate",!0),u(Jt,"parseProperty",!0),u(Jt,"parseSourceName",!0),u(Jt,"parseComponent",!0),u(Jt,"clean",!0),u(Jt,"refresh",!0),u(Jt,"load",!0),u(Jt,"bindData",!0),u(Jt,"template",!0),u(Jt,"eachChildren",!0),u(Jt,"destroy",!0),u(Jt,"collectProps",!0),u(Jt,"filterProps",!0),u(Jt,"self",!0),u(Jt,"isAltKey",!0),u(Jt,"isCtrlKey",!0),u(Jt,"isShiftKey",!0),u(Jt,"isMetaKey",!0),u(Jt,"preventDefault",!0),u(Jt,"stopPropagation",!0),u(Jt,"bodyMouseMove",!0),u(Jt,"bodyMouseUp",!0),Jt),cn=function(){function e(t,n){o(this,e),this.state={},this.prevState={},this.refs={},this.children={},this._bindings=[],this.id=tn(),this.__tempVariables=new Map,this.handlers=this.initializeHandler(),this.initializeProperty(t,n),this.initComponents()}var n;return l(e,[{key:"initializeProperty",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{};this.opt=e||{},this.parent=this.opt,this.props=t,this.source=tn(),this.sourceName=this.constructor.name}},{key:"initComponents",value:function(){this.childComponents=this.components()}},{key:"initializeHandler",value:function(){return[new Yt(this),new Wt(this)]}},{key:"initState",value:function(){return{}}},{key:"setState",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},t=!(arguments.length>1&&void 0!==arguments[1])||arguments[1];this.prevState=this.state,this.state=Object.assign({},this.state,e),t&&this.load()}},{key:"toggleState",value:function(e){var t=!(arguments.length>1&&void 0!==arguments[1])||arguments[1];this.setState(u({},e,!this.state[e]),t)}},{key:"variable",value:function(e){var t="".concat("__ref__variable:").concat(nn());return this.__tempVariables.set(t,e),t}},{key:"recoverVariable",value:function(e){if(!1===jt(e))return e;var t=e;return this.__tempVariables.has(e)&&(t=this.__tempVariables.get(e),this.__tempVariables.delete(e)),t}},{key:"_reload",value:function(e){this.props=e,this.state={},this.setState(this.initState(),!1),this.refresh(!0)}},{key:"render",value:function(e){this.$el=this.parseTemplate(Ht(Zt||(Zt=y(["\n        ","\n      "])),this.template())),this.refs.$el=this.$el,e&&e.append(this.$el),this.load(),this.afterRender()}},{key:"initialize",value:function(){this.state=this.initState()}},{key:"afterRender",value:function(){}},{key:"components",value:function(){return{}}},{key:"getRef",value:function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];var r=t.join("");return this.refs[r]}},{key:"parseTemplate",value:function(e,t){Array.isArray(e)&&(e=e.join("")),e=e.trim();for(var n=on.html(e).children(),r=0,i=n.length;r<i;r++){var o=n[r],a=o.attr(rn);a&&(this.refs[a]=o);for(var l=o.$$(an),u={},s=0,c=l.length;s<c;s++){var h=l[s],f=h.attr(rn);u[f]?console.warn("".concat(a," is duplicated. - ").concat(this.sourceName),this):u[f]=!0,this.refs[f]=h}}return t?on.createChildrenFragment():n[0]}},{key:"parseProperty",value:function(e){var n,r={},i=function(e,t){var n="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!n){if(Array.isArray(e)||(n=E(e))||t&&e&&"number"==typeof e.length){n&&(e=n);var r=0,i=function(){};return{s:i,n:function(){return r>=e.length?{done:!0}:{done:!1,value:e[r++]}},e:function(e){throw e},f:i}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var o,a=!0,l=!1;return{s:function(){n=n.call(e)},n:function(){var e=n.next();return a=e.done,e},e:function(e){l=!0,o=e},f:function(){try{a||null==n.return||n.return()}finally{if(l)throw o}}}}(e.el.attributes);try{for(i.s();!(n=i.n()).done;){var o=n.value;r[o.nodeName]=this.recoverVariable(o.nodeValue)}}catch(e){i.e(e)}finally{i.f()}return r.props&&(r=t(t({},r),mt(r.props))),e.$$("property").forEach((function(e){var t=p(e.attrs("name","value","valueType"),3),n=t[0],i=t[1],o=t[2],a=i||e.text();"json"===o&&(a=JSON.parse(a)),r[n]=a})),r}},{key:"parseSourceName",value:function(e){return e.parent?[e.sourceName].concat(m(this.parseSourceName(e.parent))):[e.sourceName]}},{key:"getEventMachineComponent",value:function(e){var t;return t=e,qt.get(t)||this.childComponents[e]}},{key:"parseComponent",value:function(){var e=this;this.$el.$$(un).forEach((function(t){var n=e.getEventMachineComponent(t.attr(ln));if(n){var r,i=e.parseProperty(t),o=t.attr(rn),a=null;if(e.children[o]?(a=e.children[o])._reload(i):(a=new n(e,i),e.children[o||a.id]=a,a.render()),a.renderTarget)null===(r=a.$el)||void 0===r||r.appendTo(a.renderTarget),t.remove();else t.replace(a.$el)}else t.remove()})),Lt(this.children,(function(t,n){n&&n.clean()&&delete e.children[t]}))}},{key:"clean",value:function(){if(this.$el&&!this.$el.hasParent())return Lt(this.children,(function(e,t){t.clean()})),this.destroy(),this.$el=null,!0}},{key:"refresh",value:function(){this.load()}},{key:"_afterLoad",value:function(){this.runHandlers("initialize"),this.bindData(),this.parseComponent()}},{key:"load",value:(n=i(regeneratorRuntime.mark((function e(){var t,n,r,o,a=this,l=arguments;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:for(t=l.length,n=new Array(t),r=0;r<t;r++)n[r]=l[r];return this._loadMethods||(this._loadMethods=this.filterProps(S)),o=this._loadMethods.filter((function(e){var t=e.split(I)[1].split(P).map((function(e){return e.trim()}))[0];return!n.length||n.indexOf(t)>-1})),e.next=5,o.forEach(function(){var e=i(regeneratorRuntime.mark((function e(t){var r,i,o,l,u,s,c,h,f;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:if(r=t.split(I)[1],i=r.split(P).map((function(e){return e.trim()})),o=g(i),l=o[0],u=(u=o.slice(1)).map((function(e){return e.trim()})),s=Boolean(u.filter((function(e){return fe.includes(e)})).length),!a.refs[l]){e.next=11;break}return e.next=7,(c=a[t]).call.apply(c,[a].concat(n));case 7:h=e.sent,Array.isArray(h)&&(h=h.join("")),f=a.parseTemplate(Ht(Qt||(Qt=y(["",""])),h),!0),s?a.refs[l].htmlDiff(f):a.refs[l].html(f);case 11:case"end":return e.stop()}}),e)})));return function(t){return e.apply(this,arguments)}}());case 5:this._afterLoad();case 6:case"end":return e.stop()}}),e,this)}))),function(){return n.apply(this,arguments)})},{key:"runHandlers",value:function(){for(var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"run",t=arguments.length,n=new Array(t>1?t-1:0),r=1;r<t;r++)n[r-1]=arguments[r];this.handlers.forEach((function(t){return t[e].apply(t,n)}))}},{key:"bindData",value:function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];this.runHandlers.apply(this,["load"].concat(t))}},{key:"template",value:function(){return"<div></div>"}},{key:"eachChildren",value:function(e){Ut(e)&&Lt(this.children,(function(t,n){e(n)}))}},{key:"rerender",value:function(){var e=this.$el.parent();this.destroy(),this.render(e)}},{key:"destroy",value:function(){this.eachChildren((function(e){e.destroy()})),this.runHandlers("destroy"),this.$el&&this.$el.remove(),this.$el=null,this.refs={},this.children={}}},{key:"collectProps",value:function(){return this.__cachedMethodList||(this.__cachedMethodList=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=e,r=[];do{if(!1===n instanceof Object)break;var i=Object.getOwnPropertyNames(n).filter((function(n){return e&&Ut(e[n])&&!t[n]}));r.push.apply(r,i)}while(n=Object.getPrototypeOf(n));return r}(this,sn)),this.__cachedMethodList}},{key:"filterProps",value:function(e){return this.collectProps().filter((function(t){return t.match(e)}))}},{key:"self",value:function(e){return e&&e.$dt&&e.$dt.is(e.target)}},{key:"isAltKey",value:function(e){return e.altKey}},{key:"isCtrlKey",value:function(e){return e.ctrlKey}},{key:"isShiftKey",value:function(e){return e.shiftKey}},{key:"isMetaKey",value:function(e){return e.metaKey||"Meta"==e.key||e.code.indexOf("Meta")>-1}},{key:"isMouseLeftButton",value:function(e){return 1===e.buttons}},{key:"isMouseRightButton",value:function(e){return 2===e.buttons}},{key:"hasMouse",value:function(e){return"mouse"===e.pointerType}},{key:"hasTouch",value:function(e){return"touch"===e.pointerType}},{key:"hasPen",value:function(e){return"pen"===e.pointerType}},{key:"preventDefault",value:function(e){return e.preventDefault(),!0}},{key:"stopPropagation",value:function(e){return e.stopPropagation(),!0}}]),e}(),hn=function(){function e(t){o(this,e),this.cachedCallback={},this.callbacks={},this.commandes=[],this.editor=t}return l(e,[{key:"getCallbacks",value:function(e){return this.callbacks[e]||(this.callbacks[e]=[]),this.callbacks[e]}},{key:"setCallbacks",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:[];this.callbacks[e]=t}},{key:"debug",value:function(){var e;this.editor&&this.editor.config.get("debug")&&(e=console).debug.apply(e,arguments)}},{key:"on",value:function(e,t,n){var r=this,i=arguments.length>3&&void 0!==arguments[3]?arguments[3]:0,o=arguments.length>4&&void 0!==arguments[4]?arguments[4]:0,a=arguments.length>5&&void 0!==arguments[5]&&arguments[5],l=arguments.length>6&&void 0!==arguments[6]&&arguments[6],u=arguments.length>7&&void 0!==arguments[7]?arguments[7]:[],s=t;return i>0?s=_t(t,i):o>0&&(s=Dt(t,o)),u.length&&(s=Pt(s,n,u)),this.getCallbacks(e).push({event:e,callback:s,context:n,originalCallback:t,enableAllTrigger:a,enableSelfTrigger:l}),this.debug("add message event",e,n.sourceName),function(){r.off(e,t)}}},{key:"off",value:function(e,t){this.debug("off message event",e),1==arguments.length?this.setCallbacks(e):2==arguments.length&&this.setCallbacks(e,this.getCallbacks(e).filter((function(e){return e.originalCallback!==t})))}},{key:"offAll",value:function(e){var t=this;Object.keys(this.callbacks).forEach((function(n){t.setCallbacks(n,t.getCallbacks(n).filter((function(t){return t.context!==e})))})),this.debug("off all message",e.sourceName)}},{key:"getCachedCallbacks",value:function(e){return this.getCallbacks(e)}},{key:"sendMessage",value:function(e,t){for(var n=this,r=arguments.length,i=new Array(r>2?r-2:0),o=2;o<r;o++)i[o-2]=arguments[o];Promise.resolve().then((function(){var r=n.getCachedCallbacks(t);if(r)for(var o=0,a=r.length;o<a;o++){var l=r[o];l.enableSelfTrigger||(l.enableAllTrigger||l.originalCallback.source!==e)&&l.callback.apply(l.context,i)}}))}},{key:"nextSendMessage",value:function(e,t){for(var n=arguments.length,r=new Array(n>2?n-2:0),i=2;i<n;i++)r[i-2]=arguments[i];Promise.resolve().then((function(){t.apply(void 0,r)}))}},{key:"triggerMessage",value:function(e,t){for(var n=this,r=arguments.length,i=new Array(r>2?r-2:0),o=2;o<r;o++)i[o-2]=arguments[o];Promise.resolve().then((function(){var r=n.getCachedCallbacks(t);if(r)for(var o=0,a=r.length;o<a;o++){var l=r[o];l.originalCallback.source===e&&l.callback.apply(l.context,i)}else console.warn(t," is not valid event")}))}},{key:"emit",value:function(e){for(var t=arguments.length,n=new Array(t>1?t-1:0),r=1;r<t;r++)n[r-1]=arguments[r];Ut(e)?e.apply(void 0,n):this.sendMessage.apply(this,[this.source,e].concat(n))}},{key:"nextTick",value:function(e){this.nextSendMessage(this.source,e)}},{key:"trigger",value:function(e){for(var t=arguments.length,n=new Array(t>1?t-1:0),r=1;r<t;r++)n[r-1]=arguments[r];Ut(e)?e.apply(void 0,n):this.triggerMessage.apply(this,[this.source,e].concat(n))}}]),e}();return t(t({start:function(e){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},r=Mt.create(n.container||document.body),i=new e(n,t(t({},n),{},{store:n.store||new hn}));return i.render(r),i},UIElement:function(e){s(n,e);var t=v(n);function n(e){var r,i=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{};return o(this,n),(r=t.call(this,e,i)).__UID=new Set,i.store&&(r.__storeInstance=i.store),r.created(),r.initialize(),r.initializeStoreEvent(),r}return l(n,[{key:"setStore",value:function(e){this.__storeInstance=e}},{key:"$store",get:function(){return this.__storeInstance||this.parent.$store}},{key:"created",value:function(){}},{key:"getRealEventName",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:MULTI_PREFIX,n=e.indexOf(t);return e.substr(n<0?0:n+t.length)}},{key:"splitMethod",value:function(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:0,r=Ft(e,t),i=p(r,2),o=i[0],a=i[1];return[o.length?+a[0].target:n,o,a]}},{key:"createLocalCallback",value:function(e,t){var n=t.bind(this);return n.displayName="".concat(this.sourceName,".").concat(e),n.source=this.source,n}},{key:"initializeStoreEvent",value:function(){var e=this;this.filterProps(N).forEach((function(t){var n=e.getRealEventName(t,U),r=g(n.split(P));r[0];var i=r.slice(1),o=i.map((function(e){return e.trim()})).filter((function(t){return e[t]})).map((function(e){return{target:e}})),a=p(e.splitMethod(i,"debounce"),2),l=a[0],u=a[1],s=p(e.splitMethod(i,"throttle"),2),c=s[0],h=s[1],f=p(e.splitMethod(i,"allTrigger"),2);f[0];var v=f[1],d=p(e.splitMethod(i,"selfTrigger"),2);d[0];var y=d[1];n.split(P).filter((function(e){return-1===o.indexOf(e)&&-1===u.indexOf(e)&&-1===v.indexOf(e)&&-1===y.indexOf(e)&&-1===h.indexOf(e)})).map((function(e){return e.trim()})).filter(Boolean).forEach((function(n){if(Ut(e[t])){var r=e.createLocalCallback(n,e[t]);e.$store.on(n,r,e,l,c,v.length,y.length,o)}}))}))}},{key:"destoryStoreSUBSCRIBE",value:function(){this.$store.offAll(this)}},{key:"destroy",value:function(){d(c(n.prototype),"destroy",this).call(this),this.destoryStoreSUBSCRIBE()}},{key:"rerender",value:function(){d(c(n.prototype),"rerender",this).call(this),this.initialize(),this.initializeStoreEvent()}},{key:"emit",value:function(e){var t;this.$store.source=this.source,this.$store.sourceContext=this;for(var n=arguments.length,r=new Array(n>1?n-1:0),i=1;i<n;i++)r[i-1]=arguments[i];(t=this.$store).emit.apply(t,[e].concat(r))}},{key:"nextTick",value:function(e){this.$store.nextTick(e)}},{key:"trigger",value:function(e){var t;this.$store.source=this.source;for(var n=arguments.length,r=new Array(n>1?n-1:0),i=1;i<n;i++)r[i-1]=arguments[i];(t=this.$store).trigger.apply(t,[e].concat(r))}},{key:"broadcast",value:function(e){for(var t=this,n=arguments.length,r=new Array(n>1?n-1:0),i=1;i<n;i++)r[i-1]=arguments[i];Object.keys(this.children).forEach((function(n){var i;(i=t.children[n]).trigger.apply(i,[e].concat(r))}))}},{key:"on",value:function(e,t){this.$store.on(e,t)}},{key:"off",value:function(e,t){this.$store.off(e,t)}},{key:"subscribe",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:0,r="subscribe.".concat(nn()),i=this.createLocalCallback(r,e);return this.$store.on(r,i,this,t,n,!1,!0),r}}]),n}(cn),BaseStore:hn,Dom:Mt},Ct),{},{registElement:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{};Object.keys(e).forEach((function(t){qt.has(t)||qt.set(t,e[t])}))}})}));
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.sapa = factory());
+}(this, (function () { 'use strict';
+
+  const MAGIC_METHOD = "@magic:";
+
+  const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+    return ` ${split} ${value}`;
+  };
+
+  // event name regular expression
+  const CHECK_DOM_EVENT_PATTERN = /domevent (.*)/gi;
+  const CHECK_LOAD_PATTERN = /load (.*)/gi;
+  const CHECK_BIND_PATTERN = /bind (.*)/gi;
+  const CHECK_SUBSCRIBE_PATTERN = /subscribe (.*)/gi;
+
+  const SPLITTER = "|";
+
+  const PIPE = (...args) => {
+    return args.join(SPLITTER);
+  };
+
+  const NAME_SAPARATOR = ":";
+  const CHECK_SAPARATOR = "|";
+  const DOM_EVENT_SAPARATOR = `${MAGIC_METHOD}domevent `;
+  const LOAD_SAPARATOR = `${MAGIC_METHOD}load `;
+  const BIND_SAPARATOR = `${MAGIC_METHOD}bind `;
+  const SUBSCRIBE_SAPARATOR = `${MAGIC_METHOD}subscribe `;
+
+  const SAPARATOR = ' ';
+
+  const refManager = {};
+
+  const DOM_EVENT_MAKE = (...keys) => {
+    var key = keys.join(NAME_SAPARATOR);
+    return (...args) => {
+      return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
+    };
+  };
+
+  const SUBSCRIBE_EVENT_MAKE = (...args) => {
+    return SUBSCRIBE_SAPARATOR + args.join(CHECK_SAPARATOR);
+  };
+
+
+  // Predefined CHECKER
+  const CHECKER = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(value, split);
+  };
+
+  const AFTER = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(`after(${value})`, split);
+  };
+
+  const BEFORE = (value, split = CHECK_SAPARATOR) => {
+    return makeEventChecker(`before(${value})`, split);  
+  };
+
+  const IF = CHECKER;
+  const KEY = CHECKER; 
+
+  const ARROW_UP = CHECKER('ArrowUp');
+  const ARROW_DOWN = CHECKER('ArrowDown');
+  const ARROW_LEFT = CHECKER('ArrowLeft');
+  const ARROW_RIGHT = CHECKER('ArrowRight');
+  const ENTER = CHECKER('Enter');
+  const SPACE = CHECKER('Space');
+  const ESCAPE = CHECKER('Escape');
+
+  const ALT = CHECKER("isAltKey");
+  const SHIFT = CHECKER("isShiftKey");
+  const META = CHECKER("isMetaKey");
+  const CONTROL = CHECKER("isCtrlKey");
+  const MOUSE = CHECKER("hasMouse");
+  const TOUCH = CHECKER("hasTouch");
+  const PEN = CHECKER("hasPen");
+  const SELF = CHECKER("self");
+  const LEFT_BUTTON = CHECKER("isMouseLeftButton");
+  const RIGHT_BUTTON = CHECKER("isMouseRightButton");
+
+  const FIT = CHECKER("fit");
+  const PASSIVE = CHECKER("passive");
+  const DOMDIFF = CHECKER('domdiff');
+
+  // event config method
+  const DEBOUNCE = (t = 100) => {
+    return CHECKER(`debounce(${t})`);
+  };
+
+  const DELAY = (t = 300) => {
+    return CHECKER(`delay(${t})`);
+  };
+
+  const D1000 = DEBOUNCE(1000);
+
+  const THROTTLE = (t = 100) => {
+    return CHECKER(`throttle(${t})`);
+  };
+  const ALL_TRIGGER = CHECKER("allTrigger()");
+  const SELF_TRIGGER = CHECKER("selfTrigger()");
+
+  const CAPTURE = CHECKER("capture()");
+
+  // event config method
+
+  // before method
+
+  // after method
+  const PREVENT = AFTER(`preventDefault`);
+  const STOP = AFTER(`stopPropagation`);
+
+  const SUBSCRIBE = SUBSCRIBE_EVENT_MAKE;
+  const SUBSCRIBE_ALL = (...args) => SUBSCRIBE_EVENT_MAKE(...args, ALL_TRIGGER);
+  const SUBSCRIBE_SELF = (...args) => SUBSCRIBE_EVENT_MAKE(...args, SELF_TRIGGER);
+  const CONFIG = (config, ...args) => SUBSCRIBE_EVENT_MAKE(`config:${config}`, ...args);
+  const CUSTOM = DOM_EVENT_MAKE;
+  const CLICK = DOM_EVENT_MAKE("click");
+  const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
+  const MOUSEDOWN = DOM_EVENT_MAKE("mousedown");
+  const MOUSEUP = DOM_EVENT_MAKE("mouseup");
+  const MOUSEMOVE = DOM_EVENT_MAKE("mousemove");
+  const MOUSEOVER = DOM_EVENT_MAKE("mouseover");
+  const MOUSEOUT = DOM_EVENT_MAKE("mouseout");
+  const MOUSEENTER = DOM_EVENT_MAKE("mouseenter");
+  const MOUSELEAVE = DOM_EVENT_MAKE("mouseleave");
+  const TOUCHSTART = DOM_EVENT_MAKE("touchstart");
+  const TOUCHMOVE = DOM_EVENT_MAKE("touchmove");
+  const TOUCHEND = DOM_EVENT_MAKE("touchend");
+  const KEYDOWN = DOM_EVENT_MAKE("keydown");
+  const KEYUP = DOM_EVENT_MAKE("keyup");
+  const KEYPRESS = DOM_EVENT_MAKE("keypress");
+  const DRAG = DOM_EVENT_MAKE("drag");
+  const DRAGSTART = DOM_EVENT_MAKE("dragstart");
+  const DROP = DOM_EVENT_MAKE("drop");
+  const DRAGOVER = DOM_EVENT_MAKE("dragover");
+  const DRAGENTER = DOM_EVENT_MAKE("dragenter");
+  const DRAGLEAVE = DOM_EVENT_MAKE("dragleave");
+  const DRAGEXIT = DOM_EVENT_MAKE("dragexit");
+  const DRAGOUT = DOM_EVENT_MAKE("dragout");
+  const DRAGEND = DOM_EVENT_MAKE("dragend");
+  const CONTEXTMENU = DOM_EVENT_MAKE("contextmenu");
+  const CHANGE = DOM_EVENT_MAKE("change");
+  const INPUT = DOM_EVENT_MAKE("input");
+  const FOCUS = DOM_EVENT_MAKE("focus");
+  const FOCUSIN = DOM_EVENT_MAKE("focusin");
+  const FOCUSOUT = DOM_EVENT_MAKE("focusout");
+  const BLUR = DOM_EVENT_MAKE("blur");
+  const PASTE = DOM_EVENT_MAKE("paste");
+  const RESIZE = DOM_EVENT_MAKE("resize");
+  const SCROLL = DOM_EVENT_MAKE("scroll");
+  const SUBMIT = DOM_EVENT_MAKE("submit");
+
+  // pointerstart 의 경우 drag 를 위한 시작점이기 때문에  left button 만 허용한다. 
+  // context 메뉴나 wheel 은 허용하지 않는다. 
+  const POINTERSTART = (...args) => {
+    return (CUSTOM("pointerdown")(...args) + LEFT_BUTTON);
+  };
+  // 
+
+  const POINTEROVER = CUSTOM("pointerover");
+  const POINTERENTER = CUSTOM("pointerenter");
+  const POINTEROUT = CUSTOM("pointerout");
+  const POINTERMOVE = CUSTOM("pointermove");
+  const POINTEREND = CUSTOM("pointerup");
+  const CHANGEINPUT = CUSTOM("change", "input");
+  const WHEEL = CUSTOM("wheel", "mousewheel", "DOMMouseScroll");
+  const ANIMATIONSTART = DOM_EVENT_MAKE('animationstart');
+  const ANIMATIONEND = DOM_EVENT_MAKE('animationend');
+  const ANIMATIONITERATION = DOM_EVENT_MAKE('animationiteration');
+  const TRANSITIONSTART = DOM_EVENT_MAKE('transitionstart');
+  const TRANSITIONEND = DOM_EVENT_MAKE('transitionend');
+  const TRANSITIONRUN = DOM_EVENT_MAKE('transitionrun');
+  const TRANSITIONCANCEL = DOM_EVENT_MAKE('transitioncancel');
+  const DOUBLETAB = CUSTOM('doubletab');
+
+
+  // Predefined LOADER
+  const LOAD = (value = "$el") => {
+    return LOAD_SAPARATOR + value;
+  };
+
+  const getRef = id => {
+    return refManager[id] || '';
+  };
+
+  const BIND_CHECK_FUNCTION = field => {
+    return function() {
+      return this.prevState[field] != this.state[field];
+    };
+  };
+
+  const BIND_CHECK_DEFAULT_FUNCTION = () => {
+    return true;
+  };
+
+  const BIND = (value = "$el") => {
+    return (
+      BIND_SAPARATOR + value
+    );
+  };
+
+  function normalizeWheelEvent (e) {
+    let dx = e.deltaX;
+    let dy = e.deltaY;
+
+
+    if (dx === 0 && e.shiftKey) {
+      [dy, dx] = [dx, dy];
+    }  
+
+    if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+      dy *= 8;
+    } else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+      dy *= 24; 
+    }
+
+
+    return [
+      limit(dx, 24), 
+      limit(dy, 24), 
+      0
+    ]
+  }
+
+  function limit (delta, maxDelta) {
+    return Math.sign(delta) * Math.min( maxDelta, Math.abs(delta))
+  }
+
+  var Event = {
+    addDomEvent(dom, eventName, callback, useCapture = false) {
+      if (dom) {
+        dom.addEventListener(eventName, callback, useCapture);
+      }
+    },
+
+    removeDomEvent(dom, eventName, callback) {
+      if (dom) {
+        dom.removeEventListener(eventName, callback);
+      }
+    },
+
+    pos(e) {
+      if (e.touches && e.touches[0]) {
+        return e.touches[0];
+      }
+
+      return e;
+    },
+
+    posXY(e) {
+      var pos = this.pos(e);
+      return {
+        x: pos.pageX,
+        y: pos.pageY
+      };
+    }
+  };
+
+  var EventFunctions = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    MAGIC_METHOD: MAGIC_METHOD,
+    makeEventChecker: makeEventChecker,
+    CHECK_DOM_EVENT_PATTERN: CHECK_DOM_EVENT_PATTERN,
+    CHECK_LOAD_PATTERN: CHECK_LOAD_PATTERN,
+    CHECK_BIND_PATTERN: CHECK_BIND_PATTERN,
+    CHECK_SUBSCRIBE_PATTERN: CHECK_SUBSCRIBE_PATTERN,
+    PIPE: PIPE,
+    NAME_SAPARATOR: NAME_SAPARATOR,
+    CHECK_SAPARATOR: CHECK_SAPARATOR,
+    DOM_EVENT_SAPARATOR: DOM_EVENT_SAPARATOR,
+    LOAD_SAPARATOR: LOAD_SAPARATOR,
+    BIND_SAPARATOR: BIND_SAPARATOR,
+    SUBSCRIBE_SAPARATOR: SUBSCRIBE_SAPARATOR,
+    SAPARATOR: SAPARATOR,
+    CHECKER: CHECKER,
+    AFTER: AFTER,
+    BEFORE: BEFORE,
+    IF: IF,
+    KEY: KEY,
+    ARROW_UP: ARROW_UP,
+    ARROW_DOWN: ARROW_DOWN,
+    ARROW_LEFT: ARROW_LEFT,
+    ARROW_RIGHT: ARROW_RIGHT,
+    ENTER: ENTER,
+    SPACE: SPACE,
+    ESCAPE: ESCAPE,
+    ALT: ALT,
+    SHIFT: SHIFT,
+    META: META,
+    CONTROL: CONTROL,
+    MOUSE: MOUSE,
+    TOUCH: TOUCH,
+    PEN: PEN,
+    SELF: SELF,
+    LEFT_BUTTON: LEFT_BUTTON,
+    RIGHT_BUTTON: RIGHT_BUTTON,
+    FIT: FIT,
+    PASSIVE: PASSIVE,
+    DOMDIFF: DOMDIFF,
+    DEBOUNCE: DEBOUNCE,
+    DELAY: DELAY,
+    D1000: D1000,
+    THROTTLE: THROTTLE,
+    ALL_TRIGGER: ALL_TRIGGER,
+    SELF_TRIGGER: SELF_TRIGGER,
+    CAPTURE: CAPTURE,
+    PREVENT: PREVENT,
+    STOP: STOP,
+    SUBSCRIBE: SUBSCRIBE,
+    SUBSCRIBE_ALL: SUBSCRIBE_ALL,
+    SUBSCRIBE_SELF: SUBSCRIBE_SELF,
+    CONFIG: CONFIG,
+    CUSTOM: CUSTOM,
+    CLICK: CLICK,
+    DOUBLECLICK: DOUBLECLICK,
+    MOUSEDOWN: MOUSEDOWN,
+    MOUSEUP: MOUSEUP,
+    MOUSEMOVE: MOUSEMOVE,
+    MOUSEOVER: MOUSEOVER,
+    MOUSEOUT: MOUSEOUT,
+    MOUSEENTER: MOUSEENTER,
+    MOUSELEAVE: MOUSELEAVE,
+    TOUCHSTART: TOUCHSTART,
+    TOUCHMOVE: TOUCHMOVE,
+    TOUCHEND: TOUCHEND,
+    KEYDOWN: KEYDOWN,
+    KEYUP: KEYUP,
+    KEYPRESS: KEYPRESS,
+    DRAG: DRAG,
+    DRAGSTART: DRAGSTART,
+    DROP: DROP,
+    DRAGOVER: DRAGOVER,
+    DRAGENTER: DRAGENTER,
+    DRAGLEAVE: DRAGLEAVE,
+    DRAGEXIT: DRAGEXIT,
+    DRAGOUT: DRAGOUT,
+    DRAGEND: DRAGEND,
+    CONTEXTMENU: CONTEXTMENU,
+    CHANGE: CHANGE,
+    INPUT: INPUT,
+    FOCUS: FOCUS,
+    FOCUSIN: FOCUSIN,
+    FOCUSOUT: FOCUSOUT,
+    BLUR: BLUR,
+    PASTE: PASTE,
+    RESIZE: RESIZE,
+    SCROLL: SCROLL,
+    SUBMIT: SUBMIT,
+    POINTERSTART: POINTERSTART,
+    POINTEROVER: POINTEROVER,
+    POINTERENTER: POINTERENTER,
+    POINTEROUT: POINTEROUT,
+    POINTERMOVE: POINTERMOVE,
+    POINTEREND: POINTEREND,
+    CHANGEINPUT: CHANGEINPUT,
+    WHEEL: WHEEL,
+    ANIMATIONSTART: ANIMATIONSTART,
+    ANIMATIONEND: ANIMATIONEND,
+    ANIMATIONITERATION: ANIMATIONITERATION,
+    TRANSITIONSTART: TRANSITIONSTART,
+    TRANSITIONEND: TRANSITIONEND,
+    TRANSITIONRUN: TRANSITIONRUN,
+    TRANSITIONCANCEL: TRANSITIONCANCEL,
+    DOUBLETAB: DOUBLETAB,
+    LOAD: LOAD,
+    getRef: getRef,
+    BIND_CHECK_FUNCTION: BIND_CHECK_FUNCTION,
+    BIND_CHECK_DEFAULT_FUNCTION: BIND_CHECK_DEFAULT_FUNCTION,
+    BIND: BIND,
+    normalizeWheelEvent: normalizeWheelEvent,
+    'default': Event
+  });
+
+  const setBooleanProp = (el, name, value) => {
+      if (value) {
+          el.setAttribute(name, name);
+          el[name] = value;
+      } else {
+          el.removeAttribute(name);
+          el[name] = value;
+      }
+    };
+    
+  const setProp = (el, name, value) => {
+      if (typeof value === 'boolean') {
+          setBooleanProp(el, name, value);
+      } else {
+          el.setAttribute(name, value);
+      }
+  };
+
+
+  const removeBooleanProp = (node, name) => {
+      node.removeAttribute(name);
+      node[name] = false;
+  };
+
+  const removeUndefinedProp = (node, name) => {
+      node.removeAttribute(name);
+  };
+    
+  const removeProp = (node, name, value) => {
+      if (typeof value === 'boolean') {
+          removeBooleanProp(node, name);
+      } else if (name) {
+          removeUndefinedProp(node, name);
+      }
+  };
+    
+
+  const updateProp = (node, name, newValue, oldValue) => {
+      if (!newValue) {
+        removeProp(node, name, oldValue);
+      } else if (!oldValue || newValue !== oldValue) {
+        setProp(node, name, newValue);
+      }
+    };
+
+
+  const updateProps = (node, newProps = {}, oldProps = {}) => {
+
+      const keyList = [];
+      keyList.push.apply(keyList, Object.keys(newProps));
+      keyList.push.apply(keyList, Object.keys(oldProps));
+
+      const props = [...new Set(keyList)];
+    
+      for(var i = 0, len = props.length; i < len; i++) {
+          const key = props[i];
+          updateProp(node, key, newProps[key], oldProps[key]);
+      }
+      // props.forEach((name) => {
+      //   updateProp(node, name, newProps[name], oldProps[name]);
+      // });
+  };
+
+  /**
+   * TEXT_NODE 일 때   둘 다 공백일 때는  비교하지 않는다. 
+   * 
+   * @param {*} node1 
+   * @param {*} node2 
+   */
+  function changed(node1, node2) {
+      return (
+          (node1.nodeType === Node.TEXT_NODE && node1.textContent !== node2.textContent) 
+          || node1.nodeName !== node2.nodeName
+      ) 
+  }
+
+  function hasPassed(node1) {
+      return (
+          (node1.nodeType !== Node.TEXT_NODE && node1.getAttribute('data-domdiff-pass') === 'true') 
+      ) 
+  }
+
+  /**
+   * refClass 속성을 가지고 있으면 기존 el 을 대체한다. 
+   * 
+   */ 
+  function hasRefClass(node1) {
+      return (
+          (node1.nodeType !== Node.TEXT_NODE && (node1.getAttribute('refClass'))) 
+      ) 
+  }
+
+  function getProps (attributes) {
+      var results = {};
+      const len = attributes.length;
+      for(let i = 0; i < len; i++) {
+          const t = attributes[i];
+          results[t.name] = t.value;        
+      }
+
+      return results;
+      
+  }
+
+  function updateElement (parentElement, oldEl, newEl, i) {
+
+      if (!oldEl) {
+          // console.log('replace');        
+          parentElement.appendChild(newEl.cloneNode(true));
+      } else if (!newEl) {
+          // console.log('replace');        
+          parentElement.removeChild(oldEl);
+      } else if (hasPassed(oldEl) || hasPassed(newEl)) ; else if (changed(newEl, oldEl) || hasRefClass(newEl)) {
+          // node 가 같지 않으면 바꾸고, refClass 속성이 있으면 바꾸고
+          parentElement.replaceChild(newEl.cloneNode(true), oldEl);
+      } else if (
+          newEl.nodeType !== Node.TEXT_NODE 
+
+          && newEl.nodeType !== Node.COMMENT_NODE
+          && newEl.toString() !== "[object HTMLUnknownElement]"
+      ) {
+          // console.log(newEl);
+          updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
+          var oldChildren = children(oldEl);
+          var newChildren = children(newEl);
+          var max = Math.max(oldChildren.length, newChildren.length);
+
+          for (var i = 0; i < max; i++) {
+              updateElement(oldEl, oldChildren[i], newChildren[i], i);
+          }
+      }
+
+  }
+
+  const children = (el) => {
+      var element = el.firstChild; 
+
+      if (!element) {
+          return [] 
+      }
+
+      var results = []; 
+
+      do {
+          results.push(element);
+          element = element.nextSibling;
+      } while (element);
+
+      return results; 
+  };
+
+
+  function DomDiff (A, B) {
+
+      A = A.el || A; 
+      B = B.el || B; 
+
+      var childrenA = children(A);
+      var childrenB = children(B); 
+
+      var len = Math.max(childrenA.length, childrenB.length);
+      for (var i = 0; i < len; i++) {
+          updateElement(A, childrenA[i], childrenB[i], i);
+      }
+  }
+
+  /**
+   * Dom 유틸리티 
+   * 
+   */ 
+  class Dom {
+    constructor(tag, className, attr) {
+      if (typeof tag !== 'string') {
+        this.el = tag;
+      } else {
+        var el = document.createElement(tag);
+
+        if (className) {
+          el.className = className;
+        }
+   
+        attr = attr || {};
+
+        for (var k in attr) {
+          el.setAttribute(k, attr[k]);
+        }
+
+        this.el = el;
+      }
+    }
+
+    static create (tag, className, attr) {
+      return new Dom(tag, className, attr);
+    }
+   
+    static createByHTML (htmlString) {
+      var div = Dom.create('div');
+      var list = div.html(htmlString).children();
+
+      if (list.length) {
+        return Dom.create(list[0].el);
+      }
+
+      return null; 
+    }
+
+    static getScrollTop() {
+      return Math.max(
+        window.pageYOffset,
+        document.documentElement.scrollTop,
+        document.body.scrollTop
+      );
+    }
+
+    static getScrollLeft() {
+      return Math.max(
+        window.pageXOffset,
+        document.documentElement.scrollLeft,
+        document.body.scrollLeft
+      );
+    }
+
+    static parse(html) {
+      var parser = DOMParser();
+      return parser.parseFromString(html, "text/htmll");
+    }
+
+    static body () {
+      return Dom.create(document.body)
+    }
+
+    setAttr (obj) {
+      Object.keys(obj).forEach(key => {
+        this.attr(key, obj[key]);
+      });
+      return this;  
+    }
+
+    setAttrNS (obj, namespace = 'http://www.w3.org/2000/svg') {
+      Object.keys(obj).forEach(key => {
+        this.attr(key, obj[key], namespace);
+      });
+      return this;  
+    }  
+
+    setProp (obj) {
+      Object.keys(obj).forEach(key => {
+        // 동일한 값을 갱신하지 않는다. 
+        if (this.el[key] != obj[key]) {
+          this.el[key] = obj[key];
+        }
+      });
+      return this;  
+    }
+
+    /**
+     * data-xxx 속성을 관리한다. 
+     * 
+     * @param {string} key 
+     * @param {any} value 
+     */
+    data (key, value) {
+      if (arguments.length === 1) {
+        return this.attr('data-' + key);
+      } else if (arguments.length === 2) {
+        return this.attr('data-' + key, value);
+      }
+
+      //TODO:  data 속성을 모두 {[key]: value} 형태로 리턴하기 
+
+      return this; 
+    }
+
+    /**
+     * Dom attribute 얻기 또는 설정 
+     * 
+     * get ->  Dom.create(targetElement).attr('key');
+     * set -> Dom.create(targetElement).attr('key', value);
+     * 
+     * @param {string} key 
+     * @param {[string]} value 
+     */
+    attr(key, value) {
+      if (arguments.length == 1) {
+        return this.el.getAttribute(key);
+      }
+
+      // 동일한 속성 값이 있다면 변경하지 않는다. 
+      if (this.el.getAttribute(key) != value) {
+        this.el.setAttribute(key, value);
+      }
+
+      return this;
+    }
+
+    attrNS(key, value, namespace = 'http://www.w3.org/2000/svg') {
+      if (arguments.length == 1) {
+        return this.el.getAttributeNS(namespace, key);
+      }
+
+      // 동일한 속성 값이 있다면 변경하지 않는다. 
+      if (this.el.getAttributeNS(namespace, key) != value) {
+        this.el.setAttributeNS(namespace, key, value);
+      }
+
+      return this;
+    }  
+
+    attrKeyValue(keyField) {
+      return {
+        [this.el.getAttribute(keyField)]: this.val()
+      }
+    }
+
+    attrs(...args) {
+      return args.map(key => {
+        return this.el.getAttribute(key);
+      });
+    }
+
+    styles(...args) {
+      return args.map(key => {
+        return this.el.style[key];
+      });
+    }  
+
+    removeAttr(key) {
+      this.el.removeAttribute(key);
+
+      return this;
+    }
+
+    removeStyle(key) {
+      this.el.style.removeProperty(key);
+      return this;
+    }
+
+    is(checkElement) {
+      return this.el === (checkElement.el || checkElement);
+    }
+
+    isTag(tag) {
+      return this.el.tagName.toLowerCase() === tag.toLowerCase()
+    }
+
+    closest(cls) {
+      var temp = this;
+      var checkCls = false;
+
+      while (!(checkCls = temp.hasClass(cls))) {
+        if (temp.el.parentNode) {
+          temp = Dom.create(temp.el.parentNode);
+        } else {
+          return null;
+        }
+      }
+
+      if (checkCls) {
+        return temp;
+      }
+
+      return null;
+    }
+
+    path() {
+
+      if (!this.el) return [];
+
+      const $parentNode = this.parent(); 
+
+      if ($parentNode) {
+        return [...$parentNode.path(), this]
+      } else {
+        return [this]
+      }
+
+
+    }
+
+    parent() {
+      return Dom.create(this.el.parentNode);
+    }
+
+    hasParent () {
+      return !!this.el.parentNode
+    }
+
+    removeClass(...args) {
+      this.el.classList.remove(...args);
+      return this;
+    }
+
+    hasClass(cls) {
+      if (!this.el.classList) return false;
+      return this.el.classList.contains(cls);
+    }
+
+    addClass(...args) {
+      this.el.classList.add(...args);
+
+      return this;
+    }
+
+    onlyOneClass(cls) {
+      var parent = this.parent();
+
+      parent.children().forEach(it => {
+        it.removeClass(cls);
+      });
+
+      this.addClass(cls);
+    }
+
+    toggleClass(cls, isForce) {
+      this.el.classList.toggle(cls, isForce);
+      return this; 
+    }
+
+    html(html) {
+      if (typeof html === 'undefined') {
+        return this.el.innerHTML;
+      }
+
+      if (typeof html === 'string') {
+        this.el.innerHTML = html;
+      } else {
+        this.empty().append(html);
+      }
+
+      return this;
+    }
+
+    htmlDiff(fragment) {
+      DomDiff(this, fragment);
+    }
+    updateDiff (html, rootElement = 'div') {
+      DomDiff(this, Dom.create(rootElement).html(html));
+    }
+
+    updateSVGDiff (html, rootElement = 'div') {
+      DomDiff(this, Dom.create(rootElement).html(`<svg>${html}</svg>`).firstChild.firstChild);
+    }  
+
+    find(selector) {
+      return this.el.querySelector(selector);
+    }
+
+    $(selector) {
+      var node = this.find(selector);
+      return node ? Dom.create(node) : null;
+    }
+
+    findAll(selector) {
+      return [...this.el.querySelectorAll(selector)];
+    }
+
+    $$(selector) {
+      var arr = this.findAll(selector);
+      return arr.map(node => Dom.create(node));
+    }
+
+    empty() {
+      while (this.el.firstChild) this.el.removeChild(this.el.firstChild);
+      return this;
+    }
+
+    append(el) {
+      if (typeof el === 'string') {
+        this.el.appendChild(document.createTextNode(el));
+      } else {
+        this.el.appendChild(el.el || el);
+      }
+
+      return this;
+    }
+
+    prepend(el) {
+      if (typeof el === 'string') {
+        this.el.prepend(document.createTextNode(el));
+      } else {
+        this.el.prepend(el.el || el);
+      }
+
+      return this;    
+    }
+
+    prependHTML(html) {
+      var $dom = Dom.create("div").html(html);
+
+      this.prepend($dom.createChildrenFragment());
+
+      return $dom;
+    }
+
+    appendHTML(html) {
+      var $dom = Dom.create("div").html(html);
+
+      this.append($dom.createChildrenFragment());
+
+      return $dom;
+    }
+
+    /**
+     * create document fragment with children dom
+     */
+    createChildrenFragment() {
+      const list = this.children();
+
+      var fragment = document.createDocumentFragment();
+      list.forEach($el => fragment.appendChild($el.el));
+
+      return fragment;
+    }
+
+    appendTo(target) {
+      var t = target.el ? target.el : target;
+
+      t.appendChild(this.el);
+
+      return this;
+    }
+
+    remove() {
+      if (this.el.parentNode) {
+        this.el.parentNode.removeChild(this.el);
+      }
+
+      return this;
+    }
+
+    removeChild(el) {
+      this.el.removeChild(el.el || el);
+      return this; 
+    }
+
+    /**
+     * 
+     * @param {string} value 
+     * @returns {string} 파라미터가 없을 때  textContent 를 리턴한다. 
+     */
+    text(value) {
+      if (typeof value === 'undefined') {
+        return this.el.textContent;
+      } else {
+        var tempText = value;
+
+        if (value instanceof Dom) {
+          tempText = value.text();
+        }
+
+        // 값의 변경 사항이 없으면 업데이트 하지 않는다. 
+        if (this.el.textContent !== tempText) {
+          this.el.textContent = tempText;
+        }
+
+        return this;
+      }
+    }
+
+    /**
+     *
+     * $el.css`
+     *  border-color: yellow;
+     * `
+     *
+     * @param {*} key
+     * @param {*} value
+     */
+
+    css(key, value) {
+      if (typeof key !== 'undefined' && typeof value !== 'undefined') {
+        if (key.indexOf('--') === 0 &&  typeof value !== 'undefined' ) {
+          this.el.style.setProperty(key, value);
+        } else {
+          this.el.style[key] = value;
+        }
+      } else if (typeof key !== 'undefined') {
+        if (typeof key === 'string') {
+          return getComputedStyle(this.el)[key];  
+        } else {
+          Object.entries(key).forEach(([localKey, value]) => {
+            if (localKey.indexOf('--') === 0 && typeof value !== 'undefined' ) {
+              this.el.style.setProperty(localKey, value);
+            } else {
+              this.el.style[localKey] = value;
+            }          
+          });
+        }
+      }
+
+      return this;
+    }
+
+    getComputedStyle (...list) {
+      var css = getComputedStyle(this.el);
+
+      var obj = {};
+      list.forEach(it => {
+        obj[it] = css[it];
+      });
+
+      return obj; 
+    }
+
+    getStyleList(...list) {
+      var style = {};
+
+      var len = this.el.style.length;
+      for (var i = 0; i < len; i++) {
+        var key = this.el.style[i];
+
+        style[key] = this.el.style[key];
+      }
+
+      list.forEach(key => {
+        style[key] = this.css(key);
+      });
+
+      return style;
+    }
+
+    cssText(value) {
+      if (typeof value === 'undefined') {
+        return this.el.style.cssText;
+      }
+
+      if (value != this.el.tempCssText) {
+        this.el.style.cssText = value;
+        this.el.tempCssText = value; 
+      } 
+
+      return this;
+    }
+
+    cssArray(arr) {
+      if (arr[0]) this.el.style[arr[0]] = arr[1];
+      if (arr[2]) this.el.style[arr[2]] = arr[3];
+      if (arr[4]) this.el.style[arr[4]] = arr[5];
+      if (arr[6]) this.el.style[arr[6]] = arr[7];
+      if (arr[8]) this.el.style[arr[8]] = arr[9];
+
+      return this;
+    }
+
+    cssFloat(key) {
+      return parseFloat(this.css(key));
+    }
+
+    cssInt(key) {
+      return parseInt(this.css(key));
+    }
+
+    px(key, value) {
+      return this.css(key, `${value}px`);
+    }
+
+    rect() {
+      return this.el.getBoundingClientRect();
+    }
+
+    bbox () {
+      return this.el.getBBox();
+    }
+
+    isSVG () {
+      return this.el.tagName.toUpperCase() === 'SVG';
+    }
+
+    offsetRect() {
+
+      if (this.isSVG()) {
+        const parentBox = this.parent().rect();
+        const box = this.rect();
+
+        return {
+          x: box.x - parentBox.x,
+          y: box.y - parentBox.y,
+          top: box.x - parentBox.x,
+          left: box.y - parentBox.y,
+          width: box.width,
+          height: box.height
+        }
+      }
+
+      return {
+        x: this.el.offsetLeft,
+        y: this.el.offsetTop,
+        top: this.el.offsetTop,
+        left: this.el.offsetLeft,
+        width: this.el.offsetWidth,
+        height: this.el.offsetHeight
+      };
+    }
+
+    offset() {
+      var rect = this.rect();
+
+      var scrollTop = Dom.getScrollTop();
+      var scrollLeft = Dom.getScrollLeft();
+
+      return {
+        top: rect.top + scrollTop,
+        left: rect.left + scrollLeft
+      };
+    }
+
+    offsetLeft() {
+      return this.offset().left;
+    }
+
+    offsetTop() {
+      return this.offset().top;
+    }
+
+    position() {
+      if (this.el.style.top) {
+        return {
+          top: parseFloat(this.css("top")),
+          left: parseFloat(this.css("left"))
+        };
+      } else {
+        return this.rect();
+      }
+    }
+
+    size() {
+      return [this.width(), this.height()];
+    }
+
+    width() {
+      return this.el.offsetWidth || this.rect().width;
+    }
+
+    contentWidth() {
+      return (
+        this.width() -
+        this.cssFloat("padding-left") -
+        this.cssFloat("padding-right")
+      );
+    }
+
+    height() {
+      return this.el.offsetHeight || this.rect().height;
+    }
+
+    contentHeight() {
+      return (
+        this.height() -
+        this.cssFloat("padding-top") -
+        this.cssFloat("padding-bottom")
+      );
+    }
+
+    val(value) {
+      if (typeof value === 'undefined') {
+        return this.el.value;
+      } else if (typeof value !== 'undefined') {
+        var tempValue = value;
+
+        if (value instanceof Dom) {
+          tempValue = value.val();
+        }
+
+        this.el.value = tempValue;
+      }
+
+      return this;
+    }
+
+    matches (selector) {
+      if (this.el) {
+
+        if (!this.el.matches) return null;
+
+        if (this.el.matches(selector)) {
+          return this;
+        }
+        return this.parent().matches(selector);
+      }
+
+      return null;
+  }  
+
+
+    get value() {
+      return this.el.value;
+    }
+
+    get naturalWidth () {
+      return this.el.naturalWidth
+    }
+
+    get naturalHeight () {
+      return this.el.naturalHeight
+    }  
+
+    get files() {
+      return this.el.files ? [...this.el.files] : [];
+    }
+
+    realVal() {
+      switch (this.el.nodeType) {
+        case "INPUT":
+          var type = this.attr("type");
+          if (type == "checkbox" || type == "radio") {
+            return this.checked();
+          }
+        case "SELECT":
+        case "TEXTAREA":
+          return this.el.value;
+      }
+
+      return "";
+    }
+
+    int() {
+      return parseInt(this.val(), 10);
+    }
+
+    float() {
+      return parseFloat(this.val());
+    }
+
+    show(displayType = "block") {
+      this.el.style.display = displayType != "none" ? displayType : "block";
+
+      return this; 
+    }
+
+    hide() {
+      this.el.style.display = 'none';
+
+      return this; 
+    }
+
+    isHide () {
+      return this.el.style.display  === "none"
+    }
+
+    isShow () {
+      return !this.isHide();
+    }
+
+    toggle(isForce) {
+      var currentHide = this.isHide();
+
+      if (arguments.length == 1) {
+        if (isForce) {
+          return this.show();
+        } else {
+          return this.hide();
+        }
+      } else {
+        if (currentHide) {
+          return this.show();
+        } else {
+          return this.hide();
+        }
+      }
+    }
+
+    get totalLength () {
+      return this.el.getTotalLength()
+    }
+
+    scrollIntoView () {
+      this.el.scrollIntoView();
+    }
+
+    addScrollLeft (dt) {
+      this.el.scrollLeft += dt; 
+      return this; 
+    }
+
+    addScrollTop (dt) {
+      this.el.scrollTop += dt; 
+      return this; 
+    }  
+
+    setScrollTop(scrollTop) {
+      this.el.scrollTop = scrollTop;
+      return this;
+    }
+
+    setScrollLeft(scrollLeft) {
+      this.el.scrollLeft = scrollLeft;
+      return this;
+    }
+
+    scrollTop() {
+      if (this.el === document.body) {
+        return Dom.getScrollTop();
+      }
+
+      return this.el.scrollTop;
+    }
+
+    scrollLeft() {
+      if (this.el === document.body) {
+        return Dom.getScrollLeft();
+      }
+
+      return this.el.scrollLeft;
+    }
+
+    scrollHeight() {
+      return this.el.scrollHeight;
+    }
+
+    scrollWidth() {
+      return this.el.scrollWidth;
+    }  
+
+    on(eventName, callback, opt1, opt2) {
+      this.el.addEventListener(eventName, callback, opt1, opt2);
+
+      return this;
+    }
+
+    off(eventName, callback) {
+      this.el.removeEventListener(eventName, callback);
+
+      return this;
+    }
+
+    getElement() {
+      return this.el;
+    }
+
+    createChild(tag, className = '', attrs = {}, css = {}) {
+      let $element = Dom.create(tag, className, attrs);
+      $element.css(css);
+
+      this.append($element);
+
+      return $element;
+    }
+
+    get firstChild() {
+      return Dom.create(this.el.firstElementChild);
+    }
+
+    children() {
+      var element = this.el.firstElementChild;
+
+      if (!element) {
+        return [];
+      }
+
+      var results = [];
+
+      do {
+        results.push(Dom.create(element));
+        element = element.nextElementSibling;
+      } while (element);
+
+      return results;
+    }
+
+    childLength() {
+      return this.el.children.length;
+    }
+
+    replace(newElement) {
+
+      if (this.el.parentNode) {
+        this.el.parentNode.replaceChild(newElement.el || newElement, this.el);
+      }
+
+      return this;
+    }
+
+    replaceChild(oldElement, newElement) {
+      this.el.replaceChild(newElement.el || newElement, oldElement.el || oldElement);
+
+      return this;
+    }  
+
+    checked(isChecked = false) {
+      if (arguments.length == 0) {
+        return !!this.el.checked;
+      }
+
+      this.el.checked = !!isChecked;
+
+      return this;
+    }
+
+
+    click () {
+      this.el.click();
+
+      return this; 
+    }  
+
+    focus() {
+      this.el.focus();
+
+      return this;
+    }
+
+    select() {
+      // contenteditable 의 경우 selection api 를 사용해서 select() 를 수행한다.
+      if (this.attr('contenteditable') === 'true') {
+        var range = document.createRange();
+        range.selectNodeContents(this.el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        this.el.select();
+      }
+
+      return this;
+    }
+
+    blur() {
+      this.el.blur();
+
+      return this;
+    }
+
+    // canvas functions
+
+    context(contextType = "2d") {
+      if (!this._initContext) {
+        this._initContext = this.el.getContext(contextType);
+      }
+
+      return this._initContext;
+    }
+
+    resize({ width, height }) {
+      // support hi-dpi for retina display
+      this._initContext = null;
+      var ctx = this.context();
+      var scale = window.devicePixelRatio || 1;
+
+      this.px("width", +width);
+      this.px("height", +height);
+
+      this.el.width = width * scale;
+      this.el.height = height * scale;
+
+      ctx.scale(scale, scale);
+    }
+
+    toDataURL (type = 'image/png', quality = 1) {
+      return this.el.toDataURL(type, quality)
+    }
+
+    clear() {
+      this.context().clearRect(0, 0, this.el.width, this.el.height);
+    }
+
+    update(callback) {
+      this.clear();
+      callback.call(this, this);
+    }
+
+    drawImage (img, dx = 0, dy = 0) {
+      var ctx = this.context();
+      var scale = window.devicePixelRatio || 1;    
+      ctx.drawImage(img, dx, dy, img.width, img.height, 0, 0, this.el.width / scale, this.el.height / scale);
+    }
+
+    drawOption(option = {}) {
+      var ctx = this.context();
+      Object.assign(ctx, option);
+    }
+
+    drawLine(x1, y1, x2, y2) {
+      var ctx = this.context();
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    drawPath(...path) {
+      var ctx = this.context();
+
+      ctx.beginPath();
+
+      path.forEach((p, index) => {
+        if (index == 0) {
+          ctx.moveTo(p[0], p[1]);
+        } else {
+          ctx.lineTo(p[0], p[1]);
+        }
+      });
+      ctx.stroke();
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    drawCircle(cx, cy, r) {
+      var ctx = this.context();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fill();
+    }
+
+    drawText(x, y, text) {
+      this.context().fillText(text, x, y);
+    }
+  }
+
+  const identity = () => true; 
+
+  /**
+   * property 수집하기
+   * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+   * 
+   * @param {Object} root  상속관계에 있는 인스턴스 
+   * @param {Object} expectMethod 제외될 필드 리스트 { [field]: true }
+   * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
+   */
+  function collectProps(root, checkFunction = identity) {
+
+      let p = root;
+      let results = [];
+      do {
+          const isObject = p instanceof Object;
+
+          if (isObject === false) {
+              break;
+          }
+
+          const names = Object.getOwnPropertyNames(p).filter(name => {
+              return root && isFunction(root[name]) && checkFunction(name);
+          });
+
+          results.push.apply(results, names);
+      } while (p = Object.getPrototypeOf(p));
+
+
+      return results;
+  }
+
+  function debounce(callback, delay = 0) {
+
+      if (delay === 0) {
+          return callback;
+      }
+
+      var t = undefined;
+
+      return function ($1, $2, $3, $4, $5) {
+          if (t) {
+              clearTimeout(t);
+          }
+
+          t = setTimeout(function () {
+              callback($1, $2, $3, $4, $5);
+          }, delay || 300);
+      }
+  }
+
+
+  function throttle(callback, delay) {
+
+      var t = undefined;
+
+      return function ($1, $2, $3, $4, $5) {
+          if (!t) {
+              t = setTimeout(function () {
+                  callback($1, $2, $3, $4, $5);
+                  t = null;
+              }, delay || 300);
+          }
+
+      }
+  }
+
+  function ifCheck(callback, context, checkMethods) {
+      return (...args) => {
+          const ifResult = checkMethods.every(check => {
+              return context[check.target].apply(context, args);
+          });
+
+          if (ifResult) {
+              callback.apply(context, args);
+          }
+      }
+  }
+
+  function keyEach(obj, callback) {
+      Object.keys(obj).forEach((key, index) => {
+          callback(key, obj[key], index);
+      });
+  }
+
+  function isUndefined(value) {
+      return typeof value == 'undefined' || value === null;
+  }
+
+  function isNotUndefined(value) {
+      return isUndefined(value) === false;
+  }
+
+  function isString(value) {
+      return typeof value == 'string'
+  }
+
+  function isObject(value) {
+      return typeof value == 'object' && !Array.isArray(value) && !isNumber(value) && !isString(value) && value !== null;
+  }
+
+  function isFunction(value) {
+      return typeof value == 'function'
+  }
+
+  function isNumber(value) {
+      return typeof value == 'number';
+  }
+
+
+
+  const short_tag_regexp = /\<(\w*)([^\>]*)\/\>/gim;
+
+  const HTML_TAG = {
+      'image': true,
+      'input': true,
+      'br': true,
+      'path': true,
+      'line': true,
+      'circle': true,
+      'rect': true,
+      'path': true,
+      'polygon': true,
+      'polyline': true,
+      'use': true
+  };
+
+
+  const html = (strings, ...args) => {
+
+      var results = strings.map((it, index) => {
+
+          var results = args[index] || '';
+
+          if (isFunction(results)) {
+              console.log(results);
+              // results = results()
+          }
+
+          if (!Array.isArray(results)) {
+              results = [results];
+          }
+
+          results = results.join('');
+
+          return it + results;
+      }).join('');
+
+      results = results.replace(short_tag_regexp, function (match, p1) {
+          if (HTML_TAG[p1.toLowerCase()]) {
+              return match;
+          } else {
+              return match.replace('/>', `></${p1}>`)
+          }
+      });
+
+      return results;
+  };
+
+
+  /**
+   * 전체 문자열에서 특정 키워드 함수를 사용하는 패턴을 찾아 리턴해준다. 
+   * 
+   * @param {string[]} arr 
+   * @param {string} keyword 
+   */
+  const splitMethodByKeyword = (arr, keyword) => {
+      const filterKeys = arr.filter(code => code.indexOf(`${keyword}(`) > -1);
+      const filterMaps = filterKeys.map(code => {
+          const [target, param] = code
+              .split(`${keyword}(`)[1]
+              .split(")")[0]
+              .trim()
+              .split(" ");
+
+          return { target, param };
+      });
+
+      return [filterKeys, filterMaps];
+  };
+
+  class BaseHandler {
+      /**
+       * 
+       * @param {EventMachine} context 
+       * @param {*} options 
+       */
+      constructor (context, options = {}) {
+          this.context = context;
+          this.options = options;
+      }
+
+      // 초기화 설정 
+      initialize () {
+
+      }
+
+      // html 을 로드 할 때 
+      load () {
+
+      }
+
+      // 새로고침 할 때 
+      refresh () {
+
+      }
+      
+      // 화면에 그린 이후에 실행 되는 로직들 
+      render () {
+
+      }
+
+      getRef(id) {
+          return this.context.getRef(id);
+      }
+
+      run () {
+
+      }
+
+      destroy() {
+
+      }
+  }
+
+  const scrollBlockingEvents = {
+      'touchstart': true,
+      'touchmove': true,
+      'mousedown': true,
+      'mouseup': true,
+      'mousemove': true,
+      // wheel, mousewheel 은 prevent 를 해야한다. 그래서 scroll blocking 을 막아야 한다. 
+      // 'wheel': true,   
+      // 'mousewheel': true
+  };
+
+  const eventConverts = {
+    'doubletab': 'touchend'
+  };
+
+  const customEventNames = {
+    'doubletab': true 
+  };
+
+  class DomEventHandler extends BaseHandler {
+
+
+      initialize() {
+          this.destroy();
+
+          if (!this._domEvents) {
+            this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN);
+          }
+
+          this._domEvents.forEach(key => this.parseDomEvent(key));
+      }
+
+      destroy() {
+          this.removeEventAll();
+      }
+
+
+      removeEventAll() {
+          this.getBindings().forEach(obj => {
+            this.removeDomEvent(obj);
+          });
+          this.initBindings();
+      }
+
+      removeDomEvent({ eventName, dom, callback }) {
+          Event.removeDomEvent(dom, eventName, callback);
+      }    
+
+      getBindings() {
+          if (!this._bindings) {
+            this.initBindings();
+          }
+      
+          return this._bindings;
+      }
+
+      addBinding(obj) {
+          this.getBindings().push(obj);
+      }
+
+      initBindings() {
+          this._bindings = [];
+      }    
+
+
+      matchPath (el, selector) {
+          if (el) {
+            if (el.matches(selector)) {
+              return el;
+            }
+            return this.matchPath(el.parentElement, selector);
+          }
+          return null;
+      }
+        
+      hasDelegate (e, eventObject) {
+          return this.matchPath(e.target || e.srcElement, eventObject.delegate);
+      }
+        
+      makeCallback (eventObject, callback) {
+        if (eventObject.delegate) {
+          return this.makeDelegateCallback(eventObject, callback);
+        } else {
+          return this.makeDefaultCallback(eventObject, callback);
+        }
+      }
+        
+      makeDefaultCallback (eventObject, callback) {
+          return e => {
+            var returnValue = this.runEventCallback(e, eventObject, callback);
+            if (isNotUndefined(returnValue)) {
+              return returnValue;
+            }
+          };
+      }
+        
+      makeDelegateCallback (eventObject, callback) {
+          return e => {
+            const delegateTarget = this.hasDelegate(e, eventObject);
+        
+            if (delegateTarget) {
+              // delegate target 이 있는 경우만 callback 실행
+              e.$dt = Dom.create(delegateTarget);      
+        
+              var returnValue = this.runEventCallback(e, eventObject, callback);
+              if (isNotUndefined(returnValue)) {
+                return returnValue;
+              }
+            }
+          };
+      }
+        
+      runEventCallback (e, eventObject, callback) {
+          const context = this.context;
+          e.xy = Event.posXY(e);
+        
+          if (eventObject.beforeMethods.length) {
+            eventObject.beforeMethods.every(before => {
+              return context[before.target].call(context, e, before.param);
+            });
+          }
+        
+          if (this.checkEventType(e, eventObject)) {
+            var returnValue = callback(e, e.$dt, e.xy); 
+        
+            if (returnValue !== false && eventObject.afterMethods.length) {
+              eventObject.afterMethods.forEach(after => {
+                return context[after.target].call(context, e, after.param)
+              });
+            }
+        
+            return returnValue;
+          }
+      }
+        
+      checkEventType (e, eventObject) {
+          const context = this.context;
+          // 특정 keycode 를 가지고 있는지 체크
+          var hasKeyCode = true;
+          if (eventObject.codes.length) {
+            hasKeyCode =
+              (e.code ? eventObject.codes.indexOf(e.code.toLowerCase()) > -1 : false) ||
+              (e.key ? eventObject.codes.indexOf(e.key.toLowerCase()) > -1 : false);
+          }
+        
+          // 체크 메소드들은 모든 메소드를 다 적용해야한다.
+          var isAllCheck = true;
+          if (eventObject.checkMethodList.length) {
+            isAllCheck = eventObject.checkMethodList.every(field => {
+              var fieldValue = context[field];    
+              if (isFunction(fieldValue) && fieldValue) {
+                // check method
+                return fieldValue.call(context, e);
+              } else if (isNotUndefined(fieldValue)) {
+        
+                // check field value
+                return !!fieldValue;
+              }
+              return true;
+            });
+          }
+        
+          return hasKeyCode && isAllCheck;
+      }
+        
+      getDefaultDomElement(dom) {
+          const context = this.context;
+          let el;
+        
+          if (dom) {
+            el = context.refs[dom] || context[dom] || window[dom];
+          } else {
+            el = context.el || context.$el || context.$root;
+          }
+        
+          if (el instanceof Dom) {
+            return el.getElement();
+          }
+        
+          return el;
+      };
+        
+      getRealEventName (eventName) {
+        return eventConverts[eventName] || eventName;
+      }
+
+      getCustomEventName (eventName) {
+        return customEventNames[eventName] ? eventName:  '';
+      }
+
+      /**
+       * 
+       * doubletab -> touchend 로 바뀜 
+       * 
+       * @param {string} eventName  이벤트 이름 
+       * @param {array} checkMethodFilters 매직 필터 목록  
+       */
+      getDefaultEventObject (eventName, checkMethodFilters) {
+          const context = this.context;
+          let arr = checkMethodFilters;
+        
+          // context 에 속한 변수나 메소드 리스트 체크
+          const checkMethodList = arr.filter(code => !!context[code]);
+        
+          // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
+          const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
+          const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
+          const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
+          const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");        
+          const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
+          const [captures] = splitMethodByKeyword(arr, "capture");
+        
+          // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
+          const filteredList = [
+            ...checkMethodList,
+            ...afters,
+            ...befores,
+            ...delays,
+            ...debounces,
+            ...throttles,
+            ...captures
+          ];
+        
+          var codes = arr
+            .filter(code => filteredList.indexOf(code) === -1)
+            .map(code => code.toLowerCase());
+        
+          return {
+            eventName: this.getRealEventName(eventName),
+            customEventName: this.getCustomEventName(eventName), 
+            codes,
+            captures,
+            afterMethods,
+            beforeMethods,
+            delayMethods,
+            debounceMethods,
+            throttleMethods,
+            checkMethodList
+          };
+      }
+        
+        
+      addDomEvent (eventObject, callback) {
+          eventObject.callback = this.makeCallback(eventObject, callback);
+          this.addBinding(eventObject);
+        
+          var options = !!eventObject.captures.length;
+        
+          if (scrollBlockingEvents[eventObject.eventName]) {
+            options = {
+              passive: true,
+              capture: options  
+            };
+          }
+        
+          Event.addDomEvent(
+            eventObject.dom,
+            eventObject.eventName,
+            eventObject.callback,
+            options
+          );
+      }
+
+      makeCustomEventCallback (eventObject, callback) {
+
+        if (eventObject.customEventName === 'doubletab') {
+          var delay = 300;
+          
+          if (eventObject.delayMethods.length) {
+            delay = +eventObject.delayMethods[0].target;
+          }
+          return (...args) => {
+
+            if (!this.doubleTab) {
+              this.doubleTab = {
+                  time: performance.now(),
+              };
+            } else {
+              if (performance.now() - this.doubleTab.time < delay) {
+                callback(...args);
+              }
+
+              this.doubleTab = null;
+            }
+          }
+
+        } 
+
+        return callback; 
+      }
+        
+      bindingDomEvent ( [eventName, dom, ...delegate], checkMethodFilters, callback ) {
+          let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
+        
+          eventObject.dom = this.getDefaultDomElement(dom);
+          eventObject.delegate = delegate.join(SAPARATOR);
+
+          
+          if (eventObject.debounceMethods.length) {
+            var debounceTime = +eventObject.debounceMethods[0].target;
+            callback = debounce(callback, debounceTime);
+          } else if (eventObject.throttleMethods.length) {
+            var throttleTime = +eventObject.throttleMethods[0].target;
+            callback = throttle(callback, throttleTime);
+          }
+
+          // custom event callback 만들기 
+          callback = this.makeCustomEventCallback(eventObject, callback);
+        
+          this.addDomEvent(eventObject, callback);
+      };
+        
+      getEventNames (eventName) {
+          let results = [];
+          
+          eventName.split(NAME_SAPARATOR).forEach(e => {
+              var arr = e.split(NAME_SAPARATOR);
+          
+              results.push.apply(results, arr);
+          });
+          
+          return results;
+      }
+      
+      /**
+       * 이벤트 문자열 파싱하기 
+       * 
+       * @param {string} key 
+       */
+      parseDomEvent (key) {
+          const context = this.context;
+          let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim()).filter(Boolean);
+          
+          var prefix = checkMethodFilters.shift();
+          var eventSelectorAndBehave = prefix.split(DOM_EVENT_SAPARATOR)[1];
+          
+          var arr = eventSelectorAndBehave.split(SAPARATOR);
+          var eventNames = this.getEventNames(arr[0]);
+
+          var callback = context[key].bind(context);
+          
+          for(let i = 0, len = eventNames.length; i< len; i++) {
+            arr[0] = eventNames[i];
+            this.bindingDomEvent(arr, checkMethodFilters, callback);
+          }
+      }  
+  }
+
+  /**
+   * 
+   * @param {Dom} $element 
+   * @param {string} key 
+   * @param {any} value 
+   */
+  const applyElementAttribute = ($element, key, value) => {
+
+    if (key === 'cssText') {
+      /**
+       * cssText: 'position:absolute'
+       */
+      $element.cssText(value);
+      return; 
+    } else if (key === "style") {
+      /**
+       * style: { key: value }
+       */
+      if (typeof(value) !== 'string') {
+        $element.css(value);
+      }
+
+      return;
+    } else if (key === "class") {
+      //  "class" : [ 'className', 'className' ] 
+      //  "class" : { key: true, key: false } 
+      //  "class" : 'string-class' 
+
+      if (Array.isArray(value)) {
+        $element.addClass(...value.filter(Boolean));
+      } else if (isObject(value)) {
+        const keys = Object.keys(value);
+        for(var i = 0, len = keys.length; i < len; i++) {
+          const className = keys[i];
+          const hasClass = value[className];
+
+          $element.toggleClass(className, hasClass);
+        }
+      } else {
+        $element.el.className  = value;
+      }
+
+      return;
+    } else if (key === 'callback') {
+      if (typeof value === 'function') {
+        value ();
+        return; 
+      }
+    }
+
+    if (typeof value === 'undefined') {
+      $element.removeAttr(key);
+    } else {
+      if ($element.el.nodeName === "TEXTAREA" && key === "value") {
+        $element.text(value);
+      } else if (key === 'text' || key === 'textContent') {
+        $element.text(value);
+      } else if (key === 'innerHTML' || key === 'html') {
+        $element.html(value);
+      } else if (key === 'htmlDiff') {
+        $element.updateDiff(value);
+      } else if (key === 'svgDiff') {
+        $element.updateSVGDiff(value);
+      } else if (key === 'value') {
+        $element.val(value);
+      } else {
+        $element.attr(key, value);
+      }
+    }
+  };
+
+  class BindHandler extends BaseHandler {
+
+      load (...args) {
+        this.bindData(...args);
+      }
+
+      // 어떻게 실행하는게 좋을까? 
+      // this.runHandle('bind', ...);
+      bindData (...args) {
+        if (!this._bindMethods) {
+          this._bindMethods = this.context.filterProps(CHECK_BIND_PATTERN);
+        }
+        /**
+         * BIND 를 해보자.
+         * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
+         * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
+         */
+        const bindList = this._bindMethods
+          .filter(originalCallbackName => {
+            if (!args.length) return true; 
+            var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
+    
+            var [_, $bind] = callbackName.split(' ');
+    
+            return args.indexOf($bind) >  -1 
+          });
+
+          bindList.forEach(async (callbackName) => {
+            const bindMethod = this.context[callbackName];
+            var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
+    
+            const refObject = this.getRef(id);
+            let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
+    
+            if (refObject != '' && typeof(refObject) === 'string') {
+              refCallback = BIND_CHECK_FUNCTION(refObject);
+            } else if (typeof refObject === 'function') {
+              refCallback = refObject;
+            }
+    
+            const elName = callbackName.split(BIND_SAPARATOR)[1];
+            let $element = this.context.refs[elName];
+    
+            // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
+            const isBindCheck = typeof(refCallback) === 'function' && refCallback.call(this.context);
+            if ($element && isBindCheck) {
+              const results = await bindMethod.call(this.context, ...args);
+
+              if (!results) return;
+    
+              const keys = Object.keys(results);
+              for(var elementKeyIndex = 0, len = keys.length; elementKeyIndex < len; elementKeyIndex++) {
+                const key = keys[elementKeyIndex];
+                const value = results[key];
+
+                applyElementAttribute($element, key, value);
+              }
+            }
+          });
+      }    
+
+      destroy() {
+        this._bindMethods = undefined;
+      }
+
+
+  }
+
+  const map = new Map();
+
+
+  function registElement(classes = {}) {
+
+      Object.keys(classes).forEach(key => {
+          if (map.has(key)) {
+              // console.warn(`${key} element is duplicated.`)
+              return;
+          } 
+
+          map.set(key, classes[key]);
+      });
+  }
+
+  function retriveElement(className) {
+      return map.get(className);
+  }
+
+  const UUID_REG = /[xy]/g;
+
+  function uuid() {
+      var dt = new Date().getTime();
+      var uuid = 'xxx12-xx-34xx'.replace(UUID_REG, function (c) {
+          var r = (dt + Math.random() * 16) % 16 | 0;
+          dt = Math.floor(dt / 16);
+          return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      return uuid;
+  }
+
+  function uuidShort() {
+      var dt = new Date().getTime();
+      var uuid = 'idxxxxxxx'.replace(UUID_REG, function (c) {
+          var r = (dt + Math.random() * 16) % 16 | 0;
+          dt = Math.floor(dt / 16);
+          return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      return uuid;
+  }
+
+  const REFERENCE_PROPERTY = "ref";
+  const TEMP_DIV = Dom.create("div");
+  const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
+  const REF_CLASS = 'refclass';
+  const REF_CLASS_PROPERTY = `[${REF_CLASS}]`;
+  const VARIABLE_SAPARATOR = "__ref__variable:";
+
+  class EventMachine {
+    constructor(opt, props) {
+      this.state = {};
+      this.prevState = {};
+      this.refs = {};
+      this.children = {};
+      this._bindings = [];
+      this.id = uuid();    
+      this.__tempVariables = new Map();
+      this.handlers = this.initializeHandler();
+
+      this.initializeProperty(opt, props);
+
+      this.initComponents();
+    }
+
+
+    /**
+     * UIElement instance 에 필요한 기본 속성 설정 
+     */
+    initializeProperty (opt, props = {}) {
+
+      this.opt = opt || {};
+      this.parent = this.opt;
+      this.props = props;
+      this.source = uuid();
+      this.sourceName = this.constructor.name;  
+
+
+
+    }
+
+    initComponents() {
+      this.childComponents = this.components(); 
+    }
+
+    initializeHandler () {
+      return [
+        new BindHandler(this),
+        new DomEventHandler(this)
+      ]
+    }
+
+    /**
+     * state 를 초기화 한것을 리턴한다. 
+     * 
+     * @protected
+     * @returns {Object} 
+     */
+    initState() {
+      return {};
+    }
+
+    /**
+     * state 를 변경한다. 
+     * 
+     * @param {Object} state  새로운 state 
+     * @param {Boolean} isLoad  다시 로드 할 것인지 체크 , true 면 state 변경후 다시 로드 
+     */
+    setState(state = {}, isLoad = true) {
+      this.prevState = this.state;
+      this.state = Object.assign({}, this.state, state );
+      if (isLoad) {
+        this.load();
+      }
+    }
+
+    /**
+     * state 에 있는 key 필드의 값을 토글한다. 
+     * Boolean 형태의 값만 동작한다. 
+     * 
+     * @param {string} key 
+     * @param {Boolean} isLoad 
+     */
+    toggleState(key, isLoad = true) {
+      this.setState({
+        [key]: !(this.state[key])
+      }, isLoad);
+    }
+
+    /**
+     * props 를 넘길 때 해당 참조를 그대로 넘기기 위한 함수 
+     * 
+     * @param {any} value
+     * @returns {string} 참조 id 생성 
+     */ 
+    variable(value) {
+      const id = `${VARIABLE_SAPARATOR}${uuidShort()}`;
+
+      this.__tempVariables.set(id, value);
+
+      return id;
+    }
+
+    /**
+     * 참조 id 를 가지고 있는 variable 을 복구한다. 
+     * 
+     * @param {string} id
+     * @returns {any}
+     */ 
+    recoverVariable(id) {
+
+      // console.log(id);
+      if (isString(id) === false) {
+        return id;
+      }
+
+      let value = id;
+
+      if (this.__tempVariables.has(id)) {
+        value = this.__tempVariables.get(id);
+
+        this.__tempVariables.delete(id);
+      }
+
+      return value;
+    }
+
+    /**
+     * 객체를 다시 그릴 때 사용한다. 
+     * 
+     * @param {*} props 
+     * @protected
+     */
+    _reload(props) {
+      this.props = props;
+      this.state = {}; 
+      this.setState(this.initState(), false);
+      this.refresh(true);
+    }
+
+    /**
+     * template 을 렌더링 한다. 
+     * 
+     * @param {Dom|undefined} $container  컴포넌트가 그려질 대상 
+     */
+    render($container) {
+      this.$el = this.parseTemplate(
+        html`
+        ${this.template()}
+      `
+      );
+      this.refs.$el = this.$el;
+
+      if ($container) {
+        $container.append(this.$el);
+      }
+
+      // LOAD 로 정의된 것들을 수행한다. 
+      this.load();
+
+      // render 이후에 실행될 콜백을 정의한다. 
+      this.afterRender();
+    }
+
+    initialize() {
+      this.state = this.initState();
+    }
+
+    /**
+     * render 이후에 실행될 함수 
+     * dom 이 실제로 생성된 이후에 수행할 작업들을 정의한다. 
+     * 
+     * @protected
+     */
+    afterRender() {}
+
+    /**
+     * 하위에 연결될 객체들을 정의한다 
+     * 
+     * @protected
+     * @returns {Object}
+     */
+    components() {
+      return {};
+    }
+
+    /**
+     * ref 이름을 가진 Component 를 가지고 온다. 
+     * 
+     * @param  {any[]} args 
+     * @returns {EventMachine}
+     */
+    getRef(...args) {
+      const key = args.join('');
+      return this.refs[key];
+    }
+
+    /**
+     * template() 함수의 결과물을 파싱해서 dom element 를 생성한다. 
+     * 
+     * @param {string} html 
+     * @param {Boolean} [isLoad=false] 
+     */
+    parseTemplate(html, isLoad) {
+
+      //FIXME: html string, element 형태 모두 array 로 받을 수 있도록 해보자. 
+      if (Array.isArray(html)) {
+        html = html.join('');
+      }
+
+      html = html.trim();
+      const list = TEMP_DIV.html(html).children();
+      /////////////////////////////////
+
+      for(var i = 0, len = list.length; i < len; i++) {
+        const $el = list[i];
+
+        var ref = $el.attr(REFERENCE_PROPERTY);
+        if (ref) {
+          this.refs[ref] = $el;
+        }
+
+        var refs = $el.$$(QUERY_PROPERTY);
+        var temp = {}; 
+
+        for(var refsIndex = 0, refsLen = refs.length; refsIndex < refsLen; refsIndex++) {
+          const $dom = refs[refsIndex];
+
+          const name = $dom.attr(REFERENCE_PROPERTY);
+          if (temp[name]) {
+            console.warn(`${ref} is duplicated. - ${this.sourceName}`, this);
+          } else {
+            temp[name] = true; 
+          }
+
+          this.refs[name] = $dom;             
+        }
+      }
+
+      if (!isLoad) {
+        return list[0];
+      }
+
+      return TEMP_DIV.createChildrenFragment();
+    }
+
+    parseProperty ($dom) {
+      let props = {};
+
+      // parse properties 
+      for(var t of $dom.el.attributes) {
+        props[t.nodeName] = this.recoverVariable(t.nodeValue);
+      }
+
+      if (props['props']) {
+        props = {
+          ...props,
+          ...getRef(props['props'])
+        };
+      }
+
+      $dom.$$('property').forEach($p => {
+        const [name, value, valueType] = $p.attrs('name', 'value', 'valueType');
+
+        let realValue = value || $p.text();
+
+        if (valueType === 'json') {          
+          realValue = JSON.parse(realValue);
+        }
+      
+        props[name] = realValue; 
+      });
+
+      return props;
+    }
+
+    parseSourceName(obj) {
+
+      if (obj.parent) {
+        return [obj.sourceName, ...this.parseSourceName(obj.parent)]
+      }
+
+      return [obj.sourceName]
+    }
+
+    getEventMachineComponent (refClassName) {
+      var EventMachineComponent = retriveElement(refClassName) || this.childComponents[refClassName];
+
+      return EventMachineComponent;
+    }
+
+    parseComponent() {
+      const $el = this.$el;
+
+      let targets = $el.$$(REF_CLASS_PROPERTY);
+
+      targets.forEach($dom => {
+
+        const EventMachineComponent = this.getEventMachineComponent($dom.attr(REF_CLASS));
+
+        if (EventMachineComponent) {
+          let props = this.parseProperty($dom);
+    
+          // create component 
+          let refName = $dom.attr(REFERENCE_PROPERTY);
+          var instance = null; 
+    
+          // 동일한 refName 의 EventMachine 이 존재하면  해당 컴포넌트는 다시 그려진다. 
+          // 루트 element 는 변경되지 않는다. 
+          if (this.children[refName]) {
+            instance = this.children[refName]; 
+            instance._reload(props);
+          } else {
+            // 기존의 refName 이 존재하지 않으면 Component 를 생성해서 element 를 교체한다. 
+            instance = new EventMachineComponent(this, props);
+    
+            this.children[refName || instance.id] = instance;
+    
+            instance.render();
+          }
+          
+
+          if (instance.renderTarget) {
+            instance.$el?.appendTo(instance.renderTarget);
+            $dom.remove();
+          } else {
+            $dom.replace(instance.$el);     
+          }
+
+        } else {
+          $dom.remove();
+        }
+   
+    
+      });
+
+      keyEach(this.children, (key, obj) => {
+        if (obj && obj.clean()) {
+          delete this.children[key];
+        }
+      });
+    }
+
+    clean () {
+      if (this.$el && !this.$el.hasParent()) {
+
+        keyEach(this.children, (key, child) => {
+          child.clean();
+        });
+
+        this.destroy();  
+
+        this.$el = null;
+        return true; 
+      }
+    }
+
+    /**
+     * refresh 는 load 함수들을 실행한다. 
+     */
+    refresh() {
+      this.load();
+    }
+
+    _afterLoad () {
+
+      this.runHandlers('initialize');
+
+      this.bindData();
+
+      this.parseComponent();
+    }
+
+    async load(...args) {
+      if (!this._loadMethods) {
+        this._loadMethods = this.filterProps(CHECK_LOAD_PATTERN);
+      }
+
+      // loop 가 비동기라 await 로 대기를 시켜줘야 나머지 html 업데이트에 대한 순서를 맞출 수 있다. 
+      const localLoadMethods = this._loadMethods.filter(callbackName => {
+          const elName = callbackName.split(LOAD_SAPARATOR)[1]
+                                    .split(CHECK_SAPARATOR)
+                                    .map(it => it.trim())[0];
+          if (!args.length) return true; 
+          return args.indexOf(elName) > -1
+        });
+
+
+
+      await localLoadMethods.forEach(async (callbackName) => {
+        let methodName = callbackName.split(LOAD_SAPARATOR)[1];
+        var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map(it => it.trim());
+
+        checker = checker.map(it => it.trim());
+        
+        const isDomDiff = Boolean(checker.filter(it => DOMDIFF.includes(it)).length);
+
+        if (this.refs[elName]) {        
+          var newTemplate = await this[callbackName].call(this, ...args);
+
+          if (Array.isArray(newTemplate)) {
+            newTemplate = newTemplate.join('');
+          }
+
+          // create fragment 
+          const fragment = this.parseTemplate(html`${newTemplate}`, true);
+          if (isDomDiff) {
+            this.refs[elName].htmlDiff(fragment);
+          } else {
+            this.refs[elName].html(fragment);
+          }
+
+        }
+      });
+
+      this._afterLoad();
+
+    }
+
+    runHandlers(func = 'run', ...args) {
+      this.handlers.forEach(h => h[func](...args));
+    }
+
+    bindData (...args) {
+      this.runHandlers('load', ...args);
+    }
+
+    // 기본 템플릿 지정
+    template() {
+      return `<div></div>`;
+    }
+
+    eachChildren(callback) {
+      if (!isFunction(callback)) return;
+
+      keyEach(this.children, (_, Component) => {
+        callback(Component);
+      });
+    }
+
+    rerender () {
+      var $parent = this.$el.parent();
+      this.destroy();
+      this.render($parent);  
+    }
+
+    /**
+     * 자원을 해제한다.
+     * 이것도 역시 자식 컴포넌트까지 제어하기 때문에 가장 최상위 부모에서 한번만 호출되도 된다.
+     * 
+     */
+    destroy() {
+      this.eachChildren(childComponent => {
+        childComponent.destroy();
+      });
+
+      this.runHandlers('destroy');
+      if (this.$el) {
+        this.$el.remove();
+      }
+
+      this.$el = null; 
+      this.refs = {}; 
+      this.children = {}; 
+    }
+
+    /**
+     * property 수집하기
+     * 상위 클래스의 모든 property 를 수집해서 리턴한다.
+     * 
+     * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
+     */
+    collectProps() {
+
+      if (!this.__cachedMethodList){
+        this.__cachedMethodList = collectProps(this, (name) => {
+          return name.indexOf(MAGIC_METHOD) === 0; 
+        });
+      }
+
+      return this.__cachedMethodList;
+    }
+
+    filterProps(pattern) {
+      return this.collectProps().filter(key => {
+        return key.match(pattern);
+      });
+    }
+
+    /* magic check method  */
+
+    self(e) {
+      return e && e.$dt && e.$dt.is(e.target);
+    }
+    isAltKey(e) {
+      return e.altKey;
+    }
+    isCtrlKey(e) {
+      return e.ctrlKey;
+    }
+    isShiftKey(e) {
+      return e.shiftKey;
+    }
+    isMetaKey(e) {
+      return e.metaKey || e.key == 'Meta' || e.code.indexOf('Meta') > -1 ;
+    }
+    isMouseLeftButton(e) {
+      return e.buttons === 1;     // 1 is left button 
+    }
+
+    isMouseRightButton(e) {
+      return e.buttons === 2;     // 2 is right button 
+    }  
+
+    hasMouse(e) { 
+      return e.pointerType === 'mouse';
+    }
+
+    hasTouch(e) {
+      return e.pointerType === 'touch';
+    }
+
+    hasPen(e) {
+      return e.pointerType === 'pen';
+    }  
+
+    /** before check method */
+
+    /* after check method */
+
+    preventDefault(e) {
+      e.preventDefault();
+      return true;
+    }
+
+    stopPropagation(e) {
+      e.stopPropagation();
+      return true;
+    }
+  }
+
+  /**
+   * @class BaseStore
+   * @description BaseStore is the base class for all stores.
+   * 
+   */ 
+  class BaseStore {
+    constructor(editor) {
+      this.cachedCallback = {};
+      this.callbacks = {};
+      this.commandes = [];
+      this.editor = editor;
+    }
+
+    getCallbacks(event) {
+      if (!this.callbacks[event]) {
+        this.callbacks[event] = [];
+      }
+
+      return this.callbacks[event]
+    }
+
+    setCallbacks(event, list = []) {
+      this.callbacks[event] = list; 
+    }
+
+    debug (...args) {
+      if (this.editor && this.editor.config.get('debug')) {
+        console.debug(...args );
+      }
+
+    }
+
+    /**
+     * 메세지 등록 
+     * 
+     * @param {string} event 
+     * @param {Function} originalCallback 
+     * @param {EventMachine} context 
+     * @param {number} debounceDelay 
+     * @param {number} throttleDelay 
+     * @param {boolean} enableAllTrigger
+     * @param {boolean} enableSelfTrigger
+     * @param {string[]} [beforeMethods=[]]
+     * @returns {Function} off callback 
+     */
+    on(event, originalCallback, context, debounceDelay = 0, throttleDelay = 0, enableAllTrigger = false, enableSelfTrigger = false, beforeMethods = []) {
+      var callback = originalCallback;
+      
+      if (debounceDelay > 0)  callback = debounce(originalCallback, debounceDelay);
+      else if (throttleDelay > 0)  callback = throttle(originalCallback, throttleDelay);
+
+      if (beforeMethods.length) {
+        callback = ifCheck(callback, context, beforeMethods);
+      }
+
+      this.getCallbacks(event).push({ event, callback, context, originalCallback, enableAllTrigger, enableSelfTrigger });
+
+      this.debug('add message event', event, context.sourceName );
+
+      return () => {
+        this.off(event, originalCallback);
+      }
+    }
+
+    /**
+     * 메세지 해제
+     * 
+     * @param {string} event 
+     * @param {*} originalCallback 
+     */
+    off(event, originalCallback) {
+
+      this.debug('off message event', event );
+
+      if (arguments.length == 1) {
+        this.setCallbacks(event);
+      } else if (arguments.length == 2) {      
+        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+          return f.originalCallback !== originalCallback
+        }));
+      }
+    }
+
+    offAll (context) {
+
+      Object.keys(this.callbacks).forEach(event => {
+        this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+          return f.context !== context;  
+        }));
+      });
+      this.debug('off all message', context.sourceName );
+    }
+
+    getCachedCallbacks (event) {
+      return this.getCallbacks(event);
+    }
+
+    sendMessage(source, event, ...args) {
+      Promise.resolve().then(() => {
+        var list = this.getCachedCallbacks(event);
+        if (list) {
+
+          for(var i = 0, len = list.length; i < len; i++) {
+            const f = list[i];
+            // console.log(source);
+            if (f.enableSelfTrigger) continue;
+
+            if (f.enableAllTrigger || f.originalCallback.source !== source) {
+              f.callback.apply(f.context, args);  
+            }
+          }
+        }
+
+      });
+    }
+
+    nextSendMessage(source, callback, ...args) {
+      Promise.resolve().then(() => {
+        callback(...args);
+      });
+    }
+
+    triggerMessage(source, event, ...args) {
+      Promise.resolve().then(() => {
+        var list = this.getCachedCallbacks(event);
+
+        if (list) {
+          for(var i = 0, len = list.length; i < len; i++) {
+            const f = list[i];
+            if (f.originalCallback.source === source) {
+              f.callback.apply(f.context, args);  
+            }
+          }
+        } else {
+          console.warn(event, ' is not valid event');
+        }
+
+
+      });
+    }
+
+    emit(event, ...args) {
+
+      if (isFunction(event)) {
+        event(...args);
+      } else {
+        this.sendMessage(this.source, event, ...args);
+      }
+
+    }
+
+    /**
+     * 마이크로 Task 를 실행 
+     * 
+     * @param {Function} callback  마이크로Task 형식으로 실행될 함수 
+     */
+    nextTick (callback) {
+      this.nextSendMessage(this.source, callback);
+    }
+
+    trigger(event, ...args) {
+
+      if (isFunction(event)) {
+        event(...args);
+      } else {
+        this.triggerMessage(this.source, event, ...args);
+      }
+
+    }
+  }
+
+  /**
+   * UI 를 만드는 기본 단위 
+   * 
+   * dom handler, 
+   * bind handler, 
+   * store handler 를 가진다. 
+   * 
+   * @property {Editor} $editor 
+   */
+  class UIElement extends EventMachine {
+    constructor(opt, props = {}) {
+      super(opt, props);
+
+      this.__UID = new Set();
+      if (props.store) {
+        this.__storeInstance = props.store;
+      }
+
+      this.created();
+
+      this.initialize();
+
+      this.initializeStoreEvent();
+
+    }
+
+    setStore (storeInstance) {
+      this.__storeInstance = storeInstance;
+    }
+
+    /**
+     * 메세징 루트를 재정의 할 수 있음. 
+     * 
+     * @override
+     */
+    get $store() {
+      return this.__storeInstance || this.parent.$store;
+    }  
+
+    /**
+     * UIElement 가 생성될 때 호출되는 메소드 
+     * @protected
+     */
+    created() {}
+
+    getRealEventName(e, s = MULTI_PREFIX) {
+      var startIndex = e.indexOf(s);
+      return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
+    }
+
+    splitMethod (arr, keyword, defaultValue = 0) {
+      var [methods, params] = splitMethodByKeyword(arr, keyword);
+
+      return [
+        methods.length ? +params[0].target : defaultValue,
+        methods, 
+        params
+      ]
+    }
+
+    createLocalCallback(event, callback) {
+      var newCallback = callback.bind(this);
+      newCallback.displayName = `${this.sourceName}.${event}`;
+      newCallback.source = this.source;
+
+      return newCallback;
+    }
+
+    /**
+     * initialize store event
+     *
+     * you can define '@xxx' method(event) in UIElement
+     *
+     * Store Event 를 초기화 한다. 
+     *
+     */
+    initializeStoreEvent() {
+      this.filterProps(CHECK_SUBSCRIBE_PATTERN).forEach(key => {
+        const events = this.getRealEventName(key, SUBSCRIBE_SAPARATOR);
+        // context 에 속한 변수나 메소드 리스트 체크
+        const [method, ...methodLine] = events.split(CHECK_SAPARATOR);
+        const checkMethodList = methodLine.map(it => it.trim()).filter(code => this[code]).map(target => ({target}));
+
+        // support deboounce for store event    
+        const [debounceSecond, debounceMethods] = this.splitMethod(methodLine, 'debounce');
+        const [throttleSecond, throttleMethods] = this.splitMethod(methodLine, 'throttle');      
+        const [allTrigger, allTriggerMethods] = this.splitMethod(methodLine, 'allTrigger');   
+        const [selfTrigger, selfTriggerMethods] = this.splitMethod(methodLine, 'selfTrigger');            
+
+        events
+          .split(CHECK_SAPARATOR)
+          .filter(it => {
+            return (
+                checkMethodList.indexOf(it) === -1 &&             
+                debounceMethods.indexOf(it) === -1 && 
+                allTriggerMethods.indexOf(it) === -1 &&               
+                selfTriggerMethods.indexOf(it) === -1 &&                             
+                throttleMethods.indexOf(it) === -1
+            )
+          })
+          .map(it => it.trim())
+          .filter(Boolean)
+          .forEach(e => {
+
+            if (isFunction(this[key])) {
+              var callback = this.createLocalCallback(e, this[key] );
+              this.$store.on(e, callback, this, debounceSecond, throttleSecond, allTriggerMethods.length, selfTriggerMethods.length, checkMethodList);
+            }
+
+        });
+      });
+    }
+
+    /**
+     * 현재 UIElement 와 연결된 모든 메세지를 해제한다. 
+     */
+    destoryStoreSUBSCRIBE() {
+      this.$store.offAll(this);
+    }
+
+    destroy () {
+      super.destroy();
+
+      this.destoryStoreSUBSCRIBE();
+    }
+
+    /**
+     * UIElement 를 다시 그린다. 
+     * 
+     * template 정의 부터  메세지 이벤트 정의까지 모두 다시 한다. 
+     */
+    rerender() {
+      super.rerender();
+
+      this.initialize();
+
+      this.initializeStoreEvent();
+    }
+
+
+    /**
+     * UIElement 기반으로 메세지를 호출 한다. 
+     * 나 이외의 객체들에게 메세지를 전달한다. 
+     * 
+     * @param {string} messageName
+     * @param {any[]} args 
+     */
+    emit(messageName, ...args) {
+      this.$store.source = this.source;
+      this.$store.sourceContext = this; 
+      this.$store.emit(messageName, ...args);
+    }
+
+    /**
+     * MicroTask 를 수행한다. 
+     * 
+     * @param {Function} callback 
+     */
+    nextTick (callback) {
+      this.$store.nextTick(callback);
+    }
+
+    /**
+     * 
+     * UIElement 자신의 메세지를 수행한다. 
+     * emit 은 나외의 객체에게 메세지를 보내고 
+     * 
+     * @param {string} messageName 
+     * @param {any[]} args 
+     */
+    trigger(messageName, ...args) {
+      this.$store.source = this.source;
+      this.$store.trigger(messageName, ...args);
+    }
+
+    /**
+     * 자식 객체에게만 호출되는 메세지를 수행한다.
+     * 
+     * @param {string} messageName
+     * @param {any[]} args
+     */ 
+    broadcast(messageName, ...args) {
+      Object.keys(this.children).forEach(key => {
+        this.children[key].trigger(messageName, ...args);
+      });
+    }
+
+    /**
+     * message 이벤트에 주어진 callack 을 등록 
+     * 동일한 메세지 명으로 callback 은 list 화 되어서 관리 됩니다. 
+     * 
+     * @param {string} message 이벤트 메세지 이름 
+     * @param {Function} callback 메세지 지정시 실행될 함수
+     */ 
+    on (message, callback) {
+      this.$store.on(message, callback);
+    }
+
+    off (message, callback) {
+      this.$store.off(message, callback);
+    }
+
+    /**
+     * 동적으로 subscribe 함수를 지정합니다. 
+     * 
+     * template 안에서 동적으로 수행할 수 있습니다. 
+     * 
+     * 이렇게 생성된 subscribe 함수는 외부에서는 실행 할수가 없는 SUBSCRIBE_SELF 로 생성됩니다. 
+     * 
+     * 함수 내부에서 context 를 유지하기 때문에 this 로 instance 에 접근 할 수 있습니다. 
+     * 
+     * @example
+     * 
+     * ```js
+     * html`
+     *     <div onClick=${this.subscribe(() => { 
+     *        console.log('click is fired'); 
+     *        console.log(this.source);
+     *     })}>
+     *        눌러주세요.
+     *     </div>
+     * `
+     * ```
+     * 
+     * @param {Function} callback subscribe 함수로 지정할 callback 
+     * @param {number} [debounceSecond=0] debounce 시간(ms)
+     * @param {number} [throttleSecond=0] throttle 시간(ms)
+     * @returns {string} function id 
+     */ 
+    subscribe(callback, debounceSecond = 0, throttleSecond = 0) {
+      const id = `subscribe.${uuidShort()}`;
+
+      const newCallback = this.createLocalCallback(id, callback);
+
+      this.$store.on(id, newCallback, this, debounceSecond, throttleSecond, false, /*self trigger*/true);    
+
+      return id; 
+    }
+  }
+
+  /**
+   * UIElement 렌더링 하기 
+   * 
+   * @param {UIElement} ElementClass
+   * @param {Object} opt 
+   * @param {string|HTMLElement} opt.container  렌더링 될 객체 
+   * @returns {UIElement}
+   */ 
+  const start = (ElementClass, opt = {}) => {
+
+    const $container = Dom.create(opt.container || document.body);
+
+    const app = new ElementClass(opt, {
+      ...opt,
+      store: opt.store || new BaseStore()
+    });
+
+    app.render($container);
+
+    return app; 
+  };
+
+  var index = {
+    start,
+    UIElement,
+    BaseStore,
+    Dom,
+    ...EventFunctions,
+    registElement,
+  };
+
+  return index;
+
+})));

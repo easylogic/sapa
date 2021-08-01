@@ -32,6 +32,7 @@ export default class DomEventHandler extends BaseHandler {
         if (!this._domEvents) {
           this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN)
         }
+
         this._domEvents.forEach(key => this.parseDomEvent(key));
     }
 
