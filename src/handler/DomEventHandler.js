@@ -1,7 +1,8 @@
-import BaseHandler from "./BaseHandler";
+
 import Event, { CHECK_SAPARATOR, DOM_EVENT_SAPARATOR, SAPARATOR, NAME_SAPARATOR, CHECK_DOM_EVENT_PATTERN } from "../Event";
+import { Dom } from "../functions/Dom";
 import { debounce, throttle, isNotUndefined, isFunction, splitMethodByKeyword } from "../functions/func";
-import Dom from "../functions/Dom";
+import { BaseHandler } from "./BaseHandler";
 
 
 const scrollBlockingEvents = {
@@ -23,7 +24,7 @@ const customEventNames = {
   'doubletab': true 
 }
 
-export default class DomEventHandler extends BaseHandler {
+export class DomEventHandler extends BaseHandler {
 
 
     initialize() {

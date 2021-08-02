@@ -4,7 +4,7 @@ import { DomDiff } from "./DomDiff";
  * Dom 유틸리티 
  * 
  */ 
-export default class Dom {
+export class Dom {
   constructor(tag, className, attr) {
     if (typeof tag !== 'string') {
       this.el = tag;

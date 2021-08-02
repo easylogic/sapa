@@ -1,7 +1,8 @@
-import BaseHandler from "./BaseHandler";
+
 import { isObject } from "../functions/func";
 import { CHECK_BIND_PATTERN, BIND_CHECK_FUNCTION, CHECK_SAPARATOR, BIND_CHECK_DEFAULT_FUNCTION, BIND_SAPARATOR } from "../Event";
-import Dom from "../functions/Dom";
+import { Dom } from "../functions/Dom";
+import { BaseHandler } from "./BaseHandler";
 
 /**
  * 
@@ -74,7 +75,7 @@ const applyElementAttribute = ($element, key, value) => {
   }
 };
 
-export default class BindHandler extends BaseHandler {
+export class BindHandler extends BaseHandler {
 
     load (...args) {
       this.bindData(...args);

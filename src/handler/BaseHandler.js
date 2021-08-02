@@ -1,4 +1,4 @@
-export default class BaseHandler {
+export class BaseHandler {
     /**
      * 
      * @param {EventMachine} context 

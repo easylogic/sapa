@@ -1,6 +1,6 @@
-import BaseStore from "./BaseStore";
-import Dom from "./functions/Dom";
-import UIElement from "./UIElement";
+import { BaseStore } from "./BaseStore";
+import { Dom } from "./functions/Dom";
+
 
 /**
  * UIElement 렌더링 하기 

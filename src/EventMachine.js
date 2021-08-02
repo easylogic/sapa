@@ -6,7 +6,7 @@ import {
   getRef,
   MAGIC_METHOD,
 } from "./Event";
-import Dom from "./functions/Dom";
+
 import {
   isFunction,
   // Array.isArray,
@@ -16,10 +16,12 @@ import {
   isString
 } from "./functions/func";
 
-import DomEventHandler from "./handler/DomEventHandler";
-import BindHandler from "./handler/BindHandler";
+import {DomEventHandler} from "./handler/DomEventHandler";
+import {BindHandler} from "./handler/BindHandler";
 import { retriveElement } from "./functions/registElement";
 import { uuid, uuidShort } from "./functions/uuid";
+import { Dom } from "./functions/Dom";
+
 
 const REFERENCE_PROPERTY = "ref";
 const TEMP_DIV = Dom.create("div");
@@ -28,7 +30,8 @@ const REF_CLASS = 'refclass';
 const REF_CLASS_PROPERTY = `[${REF_CLASS}]`
 const VARIABLE_SAPARATOR = "__ref__variable:";
 
-export default class EventMachine {
+
+export class EventMachine {
   constructor(opt, props) {
     this.state = {};
     this.prevState = {};

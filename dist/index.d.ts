@@ -1,7 +1,6 @@
+export { start } from "./App";
+export { BaseStore } from "./BaseStore";
+export { Dom } from "./functions/Dom";
+export { UIElement } from "./UIElement";
+export * from "./functions/registElement";
 export * from "./Event";
-import { start } from "./App";
-import UIElement from "./UIElement";
-import BaseStore from "./BaseStore";
-import Dom from "./functions/Dom";
-import { registElement } from "./functions/registElement";
-export { start, UIElement, BaseStore, Dom, registElement };

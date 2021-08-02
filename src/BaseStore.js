@@ -6,7 +6,7 @@ import { debounce, ifCheck, isFunction, throttle } from "./functions/func";
  * @description BaseStore is the base class for all stores.
  * 
  */ 
-export default class BaseStore {
+export class BaseStore {
   constructor(editor) {
     this.cachedCallback = {};
     this.callbacks = {};

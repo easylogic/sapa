@@ -1,5 +1,5 @@
 import { CHECK_SAPARATOR, CHECK_SUBSCRIBE_PATTERN, SUBSCRIBE_SAPARATOR } from "./Event";
-import EventMachine from "./EventMachine";
+import { EventMachine } from "./EventMachine";
 import { isFunction, splitMethodByKeyword } from "./functions/func";
 import { uuidShort } from "./functions/uuid";
 
@@ -12,7 +12,7 @@ import { uuidShort } from "./functions/uuid";
  * 
  * @property {Editor} $editor 
  */
-class UIElement extends EventMachine {
+export class UIElement extends EventMachine {
   constructor(opt, props = {}) {
     super(opt, props);
 
@@ -242,5 +242,3 @@ class UIElement extends EventMachine {
     return id; 
   }
 }
-
-export default UIElement;
