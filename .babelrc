@@ -1,16 +1,20 @@
 {
-  "env": {
-    "test": {
-      "presets": ["@babel/preset-env"],
-      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
-    },
-    "development": {
-      "presets": ["@babel/preset-env"],
-      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
-    },
-    "production": {
-      "presets": ["@babel/preset-env"],
-      "plugins": ["@babel/plugin-proposal-export-namespace-from"]
-    }
-  }
+    "presets": [
+        "@babel/preset-env"
+    ],
+    "plugins": [
+        ["@babel/plugin-syntax-object-rest-spread"],
+        [
+            "@babel/plugin-transform-runtime",
+            {
+                "helpers": false
+            }
+        ],
+        [
+            "@babel/plugin-transform-spread",
+            {
+                "loose": true
+            }
+        ]
+    ]
 }

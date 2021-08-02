@@ -129,8 +129,6 @@ export default class EventMachine {
    * @returns {any}
    */ 
   recoverVariable(id) {
-
-    // console.log(id);
     if (isString(id) === false) {
       return id;
     }
@@ -223,7 +221,6 @@ export default class EventMachine {
    * @param {Boolean} [isLoad=false] 
    */
   parseTemplate(html, isLoad) {
-
     //FIXME: html string, element 형태 모두 array 로 받을 수 있도록 해보자. 
     if (Array.isArray(html)) {
       html = html.join('');
@@ -258,11 +255,11 @@ export default class EventMachine {
       }
     }
 
-    if (!isLoad) {
+    if (!isLoad && list.length) {
       return list[0];
     }
 
-    return TEMP_DIV.createChildrenFragment();
+    return Dom.create(TEMP_DIV.createChildrenFragment());
   }
 
   parseProperty ($dom) {
@@ -446,9 +443,15 @@ export default class EventMachine {
     this.runHandlers('load', ...args);
   }
 
-  // 기본 템플릿 지정
+  /**
+   * 템플릿 지정 
+   * 
+   * 템플릿을 null 로 지정하면 자동으로 DocumentFragment 을 생성한다.
+   * 화면에는 보이지 않지만 document, window 처럼 다른 영역의 이벤트로 정의하거나 subscribe 형태로 가져올 수 있다.
+   * 
+   */ 
   template() {
-    return `<div></div>`;
+    return null;
   }
 
   eachChildren(callback) {

@@ -33,7 +33,7 @@
         </style>
 </head>
 <body>
-<script type='text/javascript' src='dist/sapa.js'></script>
+<script type='text/javascript' src='dist/sapa.umd.js'></script>
 <script type="text/javascript">
 
     const {start, CLICK, SUBSCRIBE, BIND, UIElement} = sapa; 
@@ -42,14 +42,16 @@
 
         template() {
             return /*html*/`
-            <div class='test-view'>
-                <h1>Sample List</h1>
-                <p>Click an  item</p>
-                <div ref='$list'  class='test-list'>
-                    <div class='item selected'>Selected Item</div>
-                    <div class='item'>Not selected Item</div>
+            <template>
+                <div class='test-view'>
+                    <h1>Sample List</h1>
+                    <p>Click an  item</p>
+                    <div ref='$list'  class='test-list'>
+                        <div class='item selected'>Selected Item</div>
+                        <div class='item'>Not selected Item</div>
+                    </div>
                 </div>
-            </div>
+            </template>
             `
         }
 
@@ -74,6 +76,10 @@
         [CLICK('$list .item:not(.selected)')] (e) {
             alert('click an item  that is not selected')
             this.trigger('test', 'click a unselected item');            
+        }
+
+        [CLICK('document')] (e) {
+            console.log('click document', e)
         }
     }
 

@@ -1,1 +1,0 @@
-var n=new Map;function t(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{};Object.keys(t).forEach((function(e){n.has(e)||n.set(e,t[e])}))}function e(t){return n.get(t)}export{t as registElement,e as retriveElement};
