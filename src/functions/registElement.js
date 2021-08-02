@@ -1,6 +1,10 @@
 const map = new Map();
 
-
+/**
+ * Element 등록
+ * 
+ * @param {object} classes 클래스명 리스트 
+ */ 
 export function registElement(classes = {}) {
 
     Object.keys(classes).forEach(key => {
