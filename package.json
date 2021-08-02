@@ -5,9 +5,8 @@
   "type": "module",
   "source": "src/index.js",
   "exports": "./dist/sapa.modern.js",
-  "main": "./dist/sapa.js",
+  "main": "./dist/sapa.umd.js",
   "module": "./dist/sapa.module.js",
-  "umd:main": "./dist/sapa.umd.js",
   "types": "dist/sapa.d.ts",
   "publishConfig": {
     "source": "src/index.js",
