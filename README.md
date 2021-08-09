@@ -93,6 +93,24 @@ class SecondElement extends UIElement {
 
 It creates MyElement internally when SecondElement is created. At this time, the parent property of MyElement becomes the instance of SecondElement.
 
+
+### `refClass` attribute
+
+To create an instance of a newly defined Element, use the `refClass` property.
+
+```js
+<object refClass="MyElement" />
+```
+
+Using the tag object has no special meaning and is used only as a name meaning creating an object.
+
+It is free to define it in the form below.
+
+
+```js
+<span refClass="MyElement" />
+```
+
 ### Pass props 
 
 sapa can create props as it is to create html.
