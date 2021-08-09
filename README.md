@@ -1,7 +1,6 @@
 # sapa
 
-sapa is an event system that makes creating js applications simple and easy.
-
+sapa is a library that creates a UI with a simple event system.
 # Basic concept
 
 sapa helps you to create applications naturally in html without compiling.
@@ -48,11 +47,12 @@ open localhost:8080/examples/first.html
 ## Start a application 
 
 ```js
-App.start({
-    components: {A},
-    template: `
-        <A />
-    `,
+
+import {start, UIElement} from '@easylogic/sapa';
+
+class SampleElement extends UIElement { }
+
+start(SampleElement, {
     container: document.getElementById('sample') // default value is document.body
 })
 ```
@@ -60,8 +60,7 @@ App.start({
 The `start` method defines the point in time of the first run. Apply the template to the location specified by container.
 
 
-
-## DOM Based Class 
+## DOM Based Class System
 
 ```js
 class MyElement extends UIElement {
@@ -84,7 +83,7 @@ class SecondElement extends UIElement {
     template () {
         return `
         <div>
-            <MyElement />
+            <object refClass='MyElement' />
         </div>
         `
     }
@@ -93,6 +92,61 @@ class SecondElement extends UIElement {
 ```
 
 It creates MyElement internally when SecondElement is created. At this time, the parent property of MyElement becomes the instance of SecondElement.
+
+### Pass props 
+
+sapa can create props as it is to create html.
+
+```js
+
+class SecondElement extends UIElement {
+    components () {
+        return { MyElement }
+    }
+    template () {
+        return `
+            <div>
+                <object refClass='MyElement' title="my element title" />
+            </div>
+        `
+    }
+}
+
+
+```
+
+
+
+
+### Passing variables as props
+
+sapa uses html strings.
+
+So, when passing a certain variable as props, it must be converted into a string.
+
+In this case, it provides a way to keep the reference as it is without converting the variable to a string.
+
+
+
+```js
+
+class SecondElement extends UIElement {
+    components () {
+        return { MyElement }
+    }
+    template () {
+        return `
+            <div>
+                <object refClass='MyElement' title=${this.variable({
+                    title: 'my element title'
+                })} />
+            </div>
+        `
+    }
+}
+
+
+```
 
 
 ### Access DOM 
@@ -229,12 +283,11 @@ UIElement ->
     created()
     initialize() -> 
         initState()
-    load()
     render -> 
         template() 
-        get `ref` attribute 
         parseComponent() -> 
             create child component -> 
+    load()            
     initializeEvent()
     afterRender()
 ```
@@ -629,7 +682,7 @@ npm run build
 
 # Projects 
 
-* https://editor.easylogic.studio - CSS Editor
+* https://editor.easylogic.studio - Web Design Editor
 `
 
 
