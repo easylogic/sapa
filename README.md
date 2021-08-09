@@ -148,6 +148,55 @@ class SecondElement extends UIElement {
 
 ```
 
+### Using props 
+
+It can be used by referencing the value of props through `this.props`.
+
+```js
+
+class MyElement extends UIElement {
+
+    template () {
+        const titleObject = this.props.title;
+        return `
+            <div>
+                ${titleObject.title}
+            </div>
+        `
+    }
+}
+
+```
+
+### Local State 
+
+UIElement provides a state that is simple to use.
+
+```js
+
+class MyElement extends UIElement {
+
+    // initialize local state 
+    initState() {
+        return {
+            title: this.props.title
+        }
+
+    }
+
+    template () {
+        const {title} = this.state; 
+        return `
+            <div>
+                ${title}
+            </div>
+        `
+    }
+}
+
+
+```
+
 
 ### Access DOM 
 
