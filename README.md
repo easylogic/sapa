@@ -1,6 +1,12 @@
 # sapa
 
-sapa is a simple library to make JS Application. 
+sapa is an event system that makes creating js applications simple and easy.
+
+# Basic concept
+
+* No compile.
+* No dependencies.
+* Simple dom event system
 
 # Install 
 
@@ -18,7 +24,7 @@ import {App, UIElement, SUBSCRIBE, CLICK} from '@easylogic/sapa'
 # How to use in browser 
 
 ```html
-<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.0.15/dist/sapa.js'></script>
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.2.4/dist/sapa.umd.js'></script>
 <script type='text/javacript'>
     const {App, CLICK, SUBSCRIBE, UIElement} = sapa;   // or window.sapa 
 </script>
