@@ -749,8 +749,8 @@ npm run build
 
 # Projects 
 
-* https://editor.easylogic.studio - Web Design Editor
-`
+* https://github.com/easylogic/editor - Web Design Editor
+
 
 
 # LICENSE: MIT 
