@@ -4,9 +4,11 @@ sapa is an event system that makes creating js applications simple and easy.
 
 # Basic concept
 
-* No compile.
-* No dependencies.
-* Simple dom event system
+sapa helps you to create applications naturally in html without compiling.
+
+* No compile
+* No virtual dom 
+* Simple DOM event system 
 
 # Install 
 
