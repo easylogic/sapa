@@ -2,15 +2,17 @@
   "name": "@easylogic/sapa",
   "version": "0.2.5",
   "description": "Simple JS Application Library",
-  "type": "module",
   "source": "src/index.js",
-  "exports": "./dist/sapa.modern.js",
-  "main": "./dist/sapa.umd.js",
-  "module": "./dist/sapa.module.js",
-  "types": "dist/sapa.d.ts",
+  "exports": {
+    "require": "./dist/sapa.js",
+    "import": "./dist/sapa.modern.js"
+  },
+  "main": "./dist/sapa.js",
+  "umd:main": "./dist/sapa.umd.js",
+  "types": "dist/index.d.ts",
   "publishConfig": {
     "source": "src/index.js",
-    "main": "dist/sapa.js"
+    "main": "dist/sapa.umd.js"
   },
   "directories": {
     "test": "test"

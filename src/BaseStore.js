@@ -1,4 +1,4 @@
-import EventMachine from "./EventMachine";
+import { EventMachine } from "./EventMachine";
 import { debounce, ifCheck, isFunction, throttle } from "./functions/func";
  
 /**
