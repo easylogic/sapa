@@ -8,6 +8,7 @@ sapa helps you to create applications naturally in html without compiling.
 * No compile
 * No virtual dom 
 * Simple DOM event system 
+* Support Typescript
 
 # Install 
 
