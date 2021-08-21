@@ -2,6 +2,7 @@ import { CHECK_SAPARATOR, CHECK_SUBSCRIBE_PATTERN, SUBSCRIBE_SAPARATOR } from ".
 import { EventMachine } from "./EventMachine";
 import { isFunction, splitMethodByKeyword } from "./functions/func";
 import { uuidShort } from "./functions/uuid";
+import { IBaseStore, IKeyValue } from "./types";
 
 /**
  * UI 를 만드는 기본 단위 
@@ -9,14 +10,12 @@ import { uuidShort } from "./functions/uuid";
  * dom handler, 
  * bind handler, 
  * store handler 를 가진다. 
- * 
- * @property {Editor} $editor 
  */
 export class UIElement extends EventMachine {
-  constructor(opt, props = {}) {
+  private __storeInstance: any;
+  constructor(opt: UIElement|Object, props: IKeyValue) {
     super(opt, props);
 
-    this.__UID = new Set();
     if (props.store) {
       this.__storeInstance = props.store;
     }
@@ -29,7 +28,7 @@ export class UIElement extends EventMachine {
 
   }
 
-  setStore (storeInstance) {
+  setStore (storeInstance: IBaseStore) {
     this.__storeInstance = storeInstance;
   }
 
@@ -48,12 +47,17 @@ export class UIElement extends EventMachine {
    */
   created() {}
 
-  getRealEventName(e, s = MULTI_PREFIX) {
-    var startIndex = e.indexOf(s);
-    return e.substr(startIndex < 0 ? 0 : startIndex + s.length);
+  getRealEventName(e: string, separator: string) {
+    var startIndex = e.indexOf(separator);
+    return e.substr(startIndex < 0 ? 0 : startIndex + separator.length);
   }
 
-  splitMethod (arr, keyword, defaultValue = 0) {
+  /**
+   * 메소드 분리 
+   * 
+   * @returns {any[]}
+   */ 
+  splitMethod (arr: string[], keyword: string, defaultValue: any = 0) {
     var [methods, params] = splitMethodByKeyword(arr, keyword);
 
     return [
@@ -63,7 +67,7 @@ export class UIElement extends EventMachine {
     ]
   }
 
-  createLocalCallback(event, callback) {
+  createLocalCallback(event:string, callback: Function) {
     var newCallback = callback.bind(this);
     newCallback.displayName = `${this.sourceName}.${event}`;
     newCallback.source = this.source;
@@ -80,7 +84,7 @@ export class UIElement extends EventMachine {
    *
    */
   initializeStoreEvent() {
-    this.filterProps(CHECK_SUBSCRIBE_PATTERN).forEach(key => {
+    this.filterProps(CHECK_SUBSCRIBE_PATTERN).forEach((key: string) => {
       const events = this.getRealEventName(key, SUBSCRIBE_SAPARATOR);
       // context 에 속한 변수나 메소드 리스트 체크
       const [method, ...methodLine] = events.split(CHECK_SAPARATOR);
@@ -96,7 +100,6 @@ export class UIElement extends EventMachine {
         .split(CHECK_SAPARATOR)
         .filter(it => {
           return (
-              checkMethodList.indexOf(it) === -1 &&             
               debounceMethods.indexOf(it) === -1 && 
               allTriggerMethods.indexOf(it) === -1 &&               
               selfTriggerMethods.indexOf(it) === -1 &&                             
@@ -150,7 +153,7 @@ export class UIElement extends EventMachine {
    * @param {string} messageName
    * @param {any[]} args 
    */
-  emit(messageName, ...args) {
+  emit(messageName: string, ...args: any[]) {
     this.$store.source = this.source;
     this.$store.sourceContext = this; 
     this.$store.emit(messageName, ...args);
@@ -161,7 +164,7 @@ export class UIElement extends EventMachine {
    * 
    * @param {Function} callback 
    */
-  nextTick (callback) {
+  nextTick (callback: Function) {
     this.$store.nextTick(callback);
   }
 
@@ -173,7 +176,7 @@ export class UIElement extends EventMachine {
    * @param {string} messageName 
    * @param {any[]} args 
    */
-  trigger(messageName, ...args) {
+  trigger(messageName: string, ...args: any[]) {
     this.$store.source = this.source;
     this.$store.trigger(messageName, ...args);
   }
@@ -184,7 +187,7 @@ export class UIElement extends EventMachine {
    * @param {string} messageName
    * @param {any[]} args
    */ 
-  broadcast(messageName, ...args) {
+  broadcast(messageName: string, ...args: any[]) {
     Object.keys(this.children).forEach(key => {
       this.children[key].trigger(messageName, ...args);
     })
@@ -197,11 +200,15 @@ export class UIElement extends EventMachine {
    * @param {string} message 이벤트 메세지 이름 
    * @param {Function} callback 메세지 지정시 실행될 함수
    */ 
-  on (message, callback) {
+  on (message: string, callback: Function) {
     this.$store.on(message, callback);
   }
 
-  off (message, callback) {
+  /**
+   * @param {string} message message name or function 
+   * @param {Function} callback
+   */ 
+  off (message: string, callback: Function) {
     this.$store.off(message, callback);
   }
 
@@ -218,21 +225,18 @@ export class UIElement extends EventMachine {
    * 
    * ```js
    * html`
-   *     <div onClick=${this.subscribe(() => { 
+   *     <div clickElement=${this.subscribe(() => { 
    *        console.log('click is fired'); 
    *        console.log(this.source);
    *     })}>
-   *        눌러주세요.
+   *        Click me
    *     </div>
    * `
    * ```
    * 
-   * @param {Function} callback subscribe 함수로 지정할 callback 
-   * @param {number} [debounceSecond=0] debounce 시간(ms)
-   * @param {number} [throttleSecond=0] throttle 시간(ms)
    * @returns {string} function id 
    */ 
-  subscribe(callback, debounceSecond = 0, throttleSecond = 0) {
+  subscribe(callback: Function, debounceSecond = 0, throttleSecond = 0) {
     const id = `subscribe.${uuidShort()}`;
 
     const newCallback = this.createLocalCallback(id, callback);

@@ -9,7 +9,6 @@ import {
 
 import {
   isFunction,
-  // Array.isArray,
   html,
   keyEach,
   collectProps,
@@ -21,6 +20,7 @@ import {BindHandler} from "./handler/BindHandler";
 import { retriveElement } from "./functions/registElement";
 import { uuid, uuidShort } from "./functions/uuid";
 import { Dom } from "./functions/Dom";
+import { IBaseHandler, IDom, IEventMachine, IKeyValue } from "./types";
 
 
 const REFERENCE_PROPERTY = "ref";
@@ -31,8 +31,17 @@ const REF_CLASS_PROPERTY = `[${REF_CLASS}]`
 const VARIABLE_SAPARATOR = "__ref__variable:";
 
 
-export class EventMachine {
-  constructor(opt, props) {
+export class EventMachine implements IEventMachine {
+  state: {};
+  prevState: {};
+  children: {};
+  _bindings: never[];
+  id: string;
+  __tempVariables: Map<any, any>;
+  handlers: (BindHandler | DomEventHandler)[];
+  _loadMethods: any;
+  __cachedMethodList: any;
+  constructor(opt: Object | IEventMachine, props: IKeyValue) {
     this.state = {};
     this.prevState = {};
     this.refs = {};
@@ -46,15 +55,33 @@ export class EventMachine {
 
     this.initComponents();
   }
+  private _$store: any;
+  public get $store(): any {
+    return this._$store;
+  }
+  public set $store(value: any) {
+    this._$store = value;
+  }
+  el: any;
+  $el: any;
+  $root: any;
+  refs: any;
+  opt!: IKeyValue;
+  parent!: IEventMachine;
+  props!: IKeyValue;
+  source!: string;
+  sourceName!: string;
+  childComponents!: IKeyValue;
+
 
 
   /**
    * UIElement instance 에 필요한 기본 속성 설정 
    */
-  initializeProperty (opt, props = {}) {
+  initializeProperty (opt: any, props = {}) {
 
     this.opt = opt || {};
-    this.parent = this.opt;
+    this.parent = this.opt as IEventMachine;
     this.props = props;
     this.source = uuid();
     this.sourceName = this.constructor.name;  
@@ -69,8 +96,8 @@ export class EventMachine {
 
   initializeHandler () {
     return [
-      new BindHandler(this),
-      new DomEventHandler(this)
+      new BindHandler(this as any),
+      new DomEventHandler(this as any)
     ]
   }
 
@@ -105,7 +132,7 @@ export class EventMachine {
    * @param {string} key 
    * @param {Boolean} isLoad 
    */
-  toggleState(key, isLoad = true) {
+  toggleState(key: string | number, isLoad = true) {
     this.setState({
       [key]: !(this.state[key])
     }, isLoad)
@@ -117,7 +144,7 @@ export class EventMachine {
    * @param {any} value
    * @returns {string} 참조 id 생성 
    */ 
-  variable(value) {
+  variable(value: any) {
     const id = `${VARIABLE_SAPARATOR}${uuidShort()}`;
 
     this.__tempVariables.set(id, value);
@@ -127,11 +154,8 @@ export class EventMachine {
 
   /**
    * 참조 id 를 가지고 있는 variable 을 복구한다. 
-   * 
-   * @param {string} id
-   * @returns {any}
    */ 
-  recoverVariable(id) {
+  recoverVariable(id: string) {
     if (isString(id) === false) {
       return id;
     }
@@ -153,11 +177,11 @@ export class EventMachine {
    * @param {*} props 
    * @protected
    */
-  _reload(props) {
+  _reload(props: any) {
     this.props = props;
     this.state = {}; 
     this.setState(this.initState(), false);
-    this.refresh(true);
+    this.refresh();
   }
 
   /**
@@ -165,7 +189,7 @@ export class EventMachine {
    * 
    * @param {Dom|undefined} $container  컴포넌트가 그려질 대상 
    */
-  render($container) {
+  render($container: IDom) {
     this.$el = this.parseTemplate(
       html`
         ${this.template()}
@@ -212,7 +236,7 @@ export class EventMachine {
    * @param  {any[]} args 
    * @returns {EventMachine}
    */
-  getRef(...args) {
+  getRef(...args: string[]) {
     const key = args.join('')
     return this.refs[key];
   }
@@ -223,14 +247,14 @@ export class EventMachine {
    * @param {string} html 
    * @param {Boolean} [isLoad=false] 
    */
-  parseTemplate(html, isLoad) {
+  parseTemplate(html: string, isLoad: boolean | undefined = false) {
     //FIXME: html string, element 형태 모두 array 로 받을 수 있도록 해보자. 
     if (Array.isArray(html)) {
       html = html.join('');
     }
 
     html = html.trim();
-    const list = TEMP_DIV.html(html).children();
+    const list = (TEMP_DIV.html(html) as IDom).children();
     /////////////////////////////////
 
     for(var i = 0, len = list.length; i < len; i++) {
@@ -265,11 +289,11 @@ export class EventMachine {
     return Dom.create(TEMP_DIV.createChildrenFragment());
   }
 
-  parseProperty ($dom) {
+  parseProperty ($dom: IDom) {
     let props = {};
 
     // parse properties 
-    for(var t of $dom.el.attributes) {
+    for(var t of $dom.htmlEl.attributes) {
       props[t.nodeName] = this.recoverVariable(t.nodeValue);
     }
 
@@ -280,7 +304,7 @@ export class EventMachine {
       }
     }
 
-    $dom.$$('property').forEach($p => {
+    $dom.$$('property').forEach(($p: { attrs: (arg0: string, arg1: string, arg2: string) => [any, any, any]; text: () => any; }) => {
       const [name, value, valueType] = $p.attrs('name', 'value', 'valueType')
 
       let realValue = value || $p.text();
@@ -295,16 +319,7 @@ export class EventMachine {
     return props;
   }
 
-  parseSourceName(obj) {
-
-    if (obj.parent) {
-      return [obj.sourceName, ...this.parseSourceName(obj.parent)]
-    }
-
-    return [obj.sourceName]
-  }
-
-  getEventMachineComponent (refClassName) {
+  getEventMachineComponent (refClassName: string) {
     var EventMachineComponent = retriveElement(refClassName) || this.childComponents[refClassName];
 
     return EventMachineComponent;
@@ -315,7 +330,7 @@ export class EventMachine {
 
     let targets = $el.$$(REF_CLASS_PROPERTY);
 
-    targets.forEach($dom => {
+    targets.forEach(($dom: IDom) => {
 
       const EventMachineComponent = this.getEventMachineComponent($dom.attr(REF_CLASS))
 
@@ -392,29 +407,29 @@ export class EventMachine {
     this.parseComponent();
   }
 
-  async load(...args) {
+  async load(...args: string[]) {
     if (!this._loadMethods) {
       this._loadMethods = this.filterProps(CHECK_LOAD_PATTERN);
     }
 
     // loop 가 비동기라 await 로 대기를 시켜줘야 나머지 html 업데이트에 대한 순서를 맞출 수 있다. 
-    const localLoadMethods = this._loadMethods.filter(callbackName => {
+    const localLoadMethods = this._loadMethods.filter((callbackName: string) => {
         const elName = callbackName.split(LOAD_SAPARATOR)[1]
                                   .split(CHECK_SAPARATOR)
-                                  .map(it => it.trim())[0];
+                                  .map((it: string) => it.trim())[0];
         if (!args.length) return true; 
         return args.indexOf(elName) > -1
       })
 
 
 
-    await localLoadMethods.forEach(async (callbackName) => {
+    await localLoadMethods.forEach(async (callbackName: string) => {
       let methodName = callbackName.split(LOAD_SAPARATOR)[1];
-      var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map(it => it.trim())
+      var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map((it: string) => it.trim())
 
-      checker = checker.map(it => it.trim())
+      checker = checker.map((it: string) => it.trim())
       
-      const isDomDiff = Boolean(checker.filter(it => DOMDIFF.includes(it)).length);
+      const isDomDiff = Boolean(checker.filter((it: string) => DOMDIFF.includes(it)).length);
 
       if (this.refs[elName]) {        
         var newTemplate = await this[callbackName].call(this, ...args);
@@ -438,11 +453,11 @@ export class EventMachine {
 
   }
 
-  runHandlers(func = 'run', ...args) {
-    this.handlers.forEach(h => h[func](...args));
+  runHandlers(func = 'run', ...args: any[]) {
+    this.handlers.forEach((h: IBaseHandler) => h[func](...args));
   }
 
-  bindData (...args) {
+  bindData (...args: string[]) {
     this.runHandlers('load', ...args);
   }
 
@@ -453,11 +468,11 @@ export class EventMachine {
    * 화면에는 보이지 않지만 document, window 처럼 다른 영역의 이벤트로 정의하거나 subscribe 형태로 가져올 수 있다.
    * 
    */ 
-  template() {
+  template(): string|string[]|DocumentFragment|null {
     return null;
   }
 
-  eachChildren(callback) {
+  eachChildren(callback: { (childComponent: any): void; (arg0: any): void; }) {
     if (!isFunction(callback)) return;
 
     keyEach(this.children, (_, Component) => {
@@ -477,7 +492,7 @@ export class EventMachine {
    * 
    */
   destroy() {
-    this.eachChildren(childComponent => {
+    this.eachChildren((childComponent: { destroy: () => void; }) => {
       childComponent.destroy();
     });
 
@@ -500,7 +515,7 @@ export class EventMachine {
   collectProps() {
 
     if (!this.__cachedMethodList){
-      this.__cachedMethodList = collectProps(this, (name) => {
+      this.__cachedMethodList = collectProps(this, (name: string | string[]) => {
         return name.indexOf(MAGIC_METHOD) === 0; 
       });
     }
@@ -508,46 +523,46 @@ export class EventMachine {
     return this.__cachedMethodList;
   }
 
-  filterProps(pattern) {
-    return this.collectProps().filter(key => {
+  filterProps(pattern: RegExp) {
+    return this.collectProps().filter((key: string) => {
       return key.match(pattern);
     });
   }
 
   /* magic check method  */
 
-  self(e) {
+  self(e: { $dt: { is: (arg0: any) => any; }; target: any; }) {
     return e && e.$dt && e.$dt.is(e.target);
   }
-  isAltKey(e) {
+  isAltKey(e: { altKey: any; }) {
     return e.altKey;
   }
-  isCtrlKey(e) {
+  isCtrlKey(e: { ctrlKey: any; }) {
     return e.ctrlKey;
   }
-  isShiftKey(e) {
+  isShiftKey(e: { shiftKey: any; }) {
     return e.shiftKey;
   }
-  isMetaKey(e) {
+  isMetaKey(e: { metaKey: any; key: string; code: string | string[]; }) {
     return e.metaKey || e.key == 'Meta' || e.code.indexOf('Meta') > -1 ;
   }
-  isMouseLeftButton(e) {
+  isMouseLeftButton(e: { buttons: number; }) {
     return e.buttons === 1;     // 1 is left button 
   }
 
-  isMouseRightButton(e) {
+  isMouseRightButton(e: { buttons: number; }) {
     return e.buttons === 2;     // 2 is right button 
   }  
 
-  hasMouse(e) { 
+  hasMouse(e: { pointerType: string; }) { 
     return e.pointerType === 'mouse';
   }
 
-  hasTouch(e) {
+  hasTouch(e: { pointerType: string; }) {
     return e.pointerType === 'touch';
   }
 
-  hasPen(e) {
+  hasPen(e: { pointerType: string; }) {
     return e.pointerType === 'pen';
   }  
 
@@ -555,12 +570,12 @@ export class EventMachine {
 
   /* after check method */
 
-  preventDefault(e) {
+  preventDefault(e: { preventDefault: () => void; }) {
     e.preventDefault();
     return true;
   }
 
-  stopPropagation(e) {
+  stopPropagation(e: { stopPropagation: () => void; }) {
     e.stopPropagation();
     return true;
   }

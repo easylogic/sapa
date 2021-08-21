@@ -1,3 +1,5 @@
+import { IKeyValue } from "../types";
+
 const map = new Map();
 
 /**
@@ -5,7 +7,7 @@ const map = new Map();
  * 
  * @param {object} classes 클래스명 리스트 
  */ 
-export function registElement(classes = {}) {
+export function registElement(classes: IKeyValue = {}) {
 
     Object.keys(classes).forEach(key => {
         if (map.has(key)) {
@@ -17,6 +19,6 @@ export function registElement(classes = {}) {
     })
 }
 
-export function retriveElement(className) {
+export function retriveElement(className: string) {
     return map.get(className);
 }

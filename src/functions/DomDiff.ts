@@ -1,4 +1,6 @@
-const setBooleanProp = (el, name, value) => {
+import { HTMLInstance, IDom, IKeyValue } from "../types";
+
+const setBooleanProp = (el: Element, name: string, value: boolean) => {
     if (value) {
         el.setAttribute(name, name);
         el[name] = value;
@@ -8,7 +10,7 @@ const setBooleanProp = (el, name, value) => {
     }
   };
   
-const setProp = (el, name, value) => {
+const setProp = (el: Element, name: string, value: boolean|any) => {
     if (typeof value === 'boolean') {
         setBooleanProp(el, name, value);
     } else {
@@ -17,16 +19,16 @@ const setProp = (el, name, value) => {
 };
 
 
-const removeBooleanProp = (node, name) => {
+const removeBooleanProp = (node: Element, name: string) => {
     node.removeAttribute(name);
     node[name] = false;
 };
 
-const removeUndefinedProp = (node, name) => {
+const removeUndefinedProp = (node: Element, name: string) => {
     node.removeAttribute(name);
 }
   
-const removeProp = (node, name, value) => {
+const removeProp = (node: Element, name: string, value: any) => {
     if (typeof value === 'boolean') {
         removeBooleanProp(node, name);
     } else if (name) {
@@ -35,7 +37,7 @@ const removeProp = (node, name, value) => {
 };
   
 
-const updateProp = (node, name, newValue, oldValue) => {
+const updateProp = (node: Element, name: string, newValue: any, oldValue: any) => {
     if (!newValue) {
       removeProp(node, name, oldValue);
     } else if (!oldValue || newValue !== oldValue) {
@@ -44,9 +46,9 @@ const updateProp = (node, name, newValue, oldValue) => {
   };
 
 
-const updateProps = (node, newProps = {}, oldProps = {}) => {
+const updateProps = (node: Element, newProps: IKeyValue = {}, oldProps: IKeyValue = {}) => {
 
-    const keyList = [];
+    const keyList: any[] = [];
     keyList.push.apply(keyList, Object.keys(newProps))
     keyList.push.apply(keyList, Object.keys(oldProps))
 
@@ -56,9 +58,6 @@ const updateProps = (node, newProps = {}, oldProps = {}) => {
         const key = props[i];
         updateProp(node, key, newProps[key], oldProps[key]);
     }
-    // props.forEach((name) => {
-    //   updateProp(node, name, newProps[name], oldProps[name]);
-    // });
 };
 
 /**
@@ -67,14 +66,14 @@ const updateProps = (node, newProps = {}, oldProps = {}) => {
  * @param {*} node1 
  * @param {*} node2 
  */
-function changed(node1, node2) {
+function changed(node1: { nodeType: number; textContent: any; nodeName: any; }, node2: { textContent: any; nodeName: any; }) {
     return (
         (node1.nodeType === Node.TEXT_NODE && node1.textContent !== node2.textContent) 
         || node1.nodeName !== node2.nodeName
     ) 
 }
 
-function hasPassed(node1) {
+function hasPassed(node1: Element) {
     return (
         (node1.nodeType !== Node.TEXT_NODE && node1.getAttribute('data-domdiff-pass') === 'true') 
     ) 
@@ -84,13 +83,13 @@ function hasPassed(node1) {
  * refClass 속성을 가지고 있으면 기존 el 을 대체한다. 
  * 
  */ 
-function hasRefClass(node1) {
+function hasRefClass(node1: Element) {
     return (
         (node1.nodeType !== Node.TEXT_NODE && (node1.getAttribute('refClass'))) 
     ) 
 }
 
-function getProps (attributes) {
+function getProps (attributes: NamedNodeMap) {
     var results = {}
     const len = attributes.length;
     for(let i = 0; i < len; i++) {
@@ -102,7 +101,7 @@ function getProps (attributes) {
     
 }
 
-function updateElement (parentElement, oldEl, newEl, i) {
+function updateElement (parentElement: Element, oldEl: Element, newEl: Element, i: number) {
 
     if (!oldEl) {
         // console.log('replace');        
@@ -136,17 +135,17 @@ function updateElement (parentElement, oldEl, newEl, i) {
 
 }
 
-const children = (el) => {
+const children = (el: Element): Element[] => {
     var element = el.firstChild; 
 
     if (!element) {
         return [] 
     }
 
-    var results = [] 
+    var results = [] as Element[]
 
     do {
-        results.push(element);
+        results.push(element as Element);
         element = element.nextSibling;
     } while (element);
 
@@ -154,16 +153,16 @@ const children = (el) => {
 }
 
 
-export function DomDiff (A, B) {
+export function DomDiff (A: HTMLInstance | IDom, B: HTMLInstance | IDom) {
 
-    A = A.el || A; 
-    B = B.el || B; 
+    A = (A as IDom).el || A; 
+    B = (B as IDom).el || B; 
 
-    var childrenA = children(A);
-    var childrenB = children(B); 
+    var childrenA = children(A as Element);
+    var childrenB = children(B as Element); 
 
     var len = Math.max(childrenA.length, childrenB.length);
     for (var i = 0; i < len; i++) {
-        updateElement(A, childrenA[i], childrenB[i], i);
+        updateElement(A as Element, childrenA[i], childrenB[i], i);
     }
 }

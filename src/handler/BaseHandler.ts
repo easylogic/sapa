@@ -1,10 +1,10 @@
-export class BaseHandler {
-    /**
-     * 
-     * @param {EventMachine} context 
-     * @param {*} options 
-     */
-    constructor (context, options = {}) {
+import { IBaseHandler, IEventMachine, IKeyValue } from "../types";
+
+
+export class BaseHandler implements IBaseHandler {
+    context: IEventMachine;
+    options: IKeyValue;
+    constructor (context: IEventMachine, options: IKeyValue = {}) {
         this.context = context;
         this.options = options;
     }
@@ -29,7 +29,7 @@ export class BaseHandler {
 
     }
 
-    getRef(id) {
+    getRef(id: string): any {
         return this.context.getRef(id);
     }
 

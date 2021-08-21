@@ -1,6 +1,6 @@
 export const MAGIC_METHOD = "@magic:";
 
-export const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+export const makeEventChecker = (value: string, split = CHECK_SAPARATOR) => {
   return ` ${split} ${value}`;
 }
 
@@ -12,7 +12,7 @@ export const CHECK_SUBSCRIBE_PATTERN = /subscribe (.*)/gi;
 
 const SPLITTER = "|";
 
-export const PIPE = (...args) => {
+export const PIPE = (...args: string[]) => {
   return args.join(SPLITTER);
 };
 
@@ -27,28 +27,28 @@ export const SAPARATOR = ' ';
 
 const refManager = {};
 
-const DOM_EVENT_MAKE = (...keys) => {
+const DOM_EVENT_MAKE = (...keys: string[]) => {
   var key = keys.join(NAME_SAPARATOR);
-  return (...args) => {
+  return (...args: string[]) => {
     return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
   };
 };
 
-const SUBSCRIBE_EVENT_MAKE = (...args) => {
+const SUBSCRIBE_EVENT_MAKE = (...args: string[]) => {
   return SUBSCRIBE_SAPARATOR + args.join(CHECK_SAPARATOR);
 }
 
 
 // Predefined CHECKER
-export const CHECKER = (value, split = CHECK_SAPARATOR) => {
+export const CHECKER = (value: string, split = CHECK_SAPARATOR) => {
   return makeEventChecker(value, split);
 };
 
-export const AFTER = (value, split = CHECK_SAPARATOR) => {
+export const AFTER = (value: string, split = CHECK_SAPARATOR) => {
   return makeEventChecker(`after(${value})`, split);
 };
 
-export const BEFORE = (value, split = CHECK_SAPARATOR) => {
+export const BEFORE = (value: any, split = CHECK_SAPARATOR) => {
   return makeEventChecker(`before(${value})`, split);  
 };
 
@@ -106,9 +106,9 @@ export const PREVENT = AFTER(`preventDefault`);
 export const STOP = AFTER(`stopPropagation`);
 
 export const SUBSCRIBE = SUBSCRIBE_EVENT_MAKE;
-export const SUBSCRIBE_ALL = (...args) => SUBSCRIBE_EVENT_MAKE(...args, ALL_TRIGGER);
-export const SUBSCRIBE_SELF = (...args) => SUBSCRIBE_EVENT_MAKE(...args, SELF_TRIGGER);
-export const CONFIG = (config, ...args) => SUBSCRIBE_EVENT_MAKE(`config:${config}`, ...args);
+export const SUBSCRIBE_ALL = (...args: any[]) => SUBSCRIBE_EVENT_MAKE(...args, ALL_TRIGGER);
+export const SUBSCRIBE_SELF = (...args: any[]) => SUBSCRIBE_EVENT_MAKE(...args, SELF_TRIGGER);
+export const CONFIG = (config: any, ...args: any[]) => SUBSCRIBE_EVENT_MAKE(`config:${config}`, ...args);
 export const CUSTOM = DOM_EVENT_MAKE;
 export const CLICK = DOM_EVENT_MAKE("click");
 export const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
@@ -148,7 +148,7 @@ export const SUBMIT = DOM_EVENT_MAKE("submit");
 
 // pointerstart 의 경우 drag 를 위한 시작점이기 때문에  left button 만 허용한다. 
 // context 메뉴나 wheel 은 허용하지 않는다. 
-export const POINTERSTART = (...args) => {
+export const POINTERSTART = (...args: any[]) => {
   return (CUSTOM("pointerdown")(...args) + LEFT_BUTTON);
 }
 // 
@@ -175,11 +175,11 @@ export const LOAD = (value = "$el") => {
   return LOAD_SAPARATOR + value;
 };
 
-export const getRef = id => {
+export const getRef = (id: string | number) => {
   return refManager[id] || '';
 };
 
-export const BIND_CHECK_FUNCTION = field => {
+export const BIND_CHECK_FUNCTION = (field: string | number) => {
   return function() {
     return this.prevState[field] != this.state[field];
   };
@@ -195,7 +195,7 @@ export const BIND = (value = "$el") => {
   );
 };
 
-export function normalizeWheelEvent (e) {
+export function normalizeWheelEvent (e: { deltaX: any; deltaY: any; shiftKey: any; deltaMode: number; }) {
   let dx = e.deltaX;
   let dy = e.deltaY;
 
@@ -218,24 +218,24 @@ export function normalizeWheelEvent (e) {
   ]
 }
 
-function limit (delta, maxDelta) {
+function limit (delta: number, maxDelta: number) {
   return Math.sign(delta) * Math.min( maxDelta, Math.abs(delta))
 }
 
 export default {
-  addDomEvent(dom, eventName, callback, useCapture = false) {
+  addDomEvent(dom: Element, eventName: keyof ElementEventMap, callback: EventListenerOrEventListenerObject, options: boolean|AddEventListenerOptions = false) {
     if (dom) {
-      dom.addEventListener(eventName, callback, useCapture);
+      dom.addEventListener(eventName, callback, options);
     }
   },
 
-  removeDomEvent(dom, eventName, callback) {
+  removeDomEvent(dom: Element, eventName: keyof ElementEventMap, callback: EventListenerOrEventListenerObject) {
     if (dom) {
       dom.removeEventListener(eventName, callback);
     }
   },
 
-  pos(e) {
+  pos(e: { touches: any[]; }) {
     if (e.touches && e.touches[0]) {
       return e.touches[0];
     }
@@ -243,7 +243,7 @@ export default {
     return e;
   },
 
-  posXY(e) {
+  posXY(e: any) {
     var pos = this.pos(e);
     return {
       x: pos.pageX,

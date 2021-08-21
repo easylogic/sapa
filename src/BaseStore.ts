@@ -1,5 +1,5 @@
-import { EventMachine } from "./EventMachine";
 import { debounce, ifCheck, isFunction, throttle } from "./functions/func";
+import { IMultiCallback, IKeyValue } from "./types";
  
 /**
  * @class BaseStore
@@ -7,14 +7,17 @@ import { debounce, ifCheck, isFunction, throttle } from "./functions/func";
  * 
  */ 
 export class BaseStore {
-  constructor(editor) {
+  cachedCallback: {};
+  callbacks: {};
+  editor: any;
+  source: any;
+  constructor(editor?: any) {
     this.cachedCallback = {};
     this.callbacks = {};
-    this.commandes = [];
     this.editor = editor;
   }
 
-  getCallbacks(event) {
+  getCallbacks(event: string) {
     if (!this.callbacks[event]) {
       this.callbacks[event] = []
     }
@@ -22,15 +25,8 @@ export class BaseStore {
     return this.callbacks[event]
   }
 
-  setCallbacks(event, list = []) {
+  setCallbacks(event: string, list = []) {
     this.callbacks[event] = list; 
-  }
-
-  debug (...args) {
-    if (this.editor && this.editor.config.get('debug')) {
-      console.debug(...args );
-    }
-
   }
 
   /**
@@ -46,7 +42,7 @@ export class BaseStore {
    * @param {string[]} [beforeMethods=[]]
    * @returns {Function} off callback 
    */
-  on(event, originalCallback, context, debounceDelay = 0, throttleDelay = 0, enableAllTrigger = false, enableSelfTrigger = false, beforeMethods = []) {
+  on(event: any, originalCallback: IMultiCallback, context: IKeyValue, debounceDelay = 0, throttleDelay = 0, enableAllTrigger = false, enableSelfTrigger = false, beforeMethods = []) {
     var callback = originalCallback;
     
     if (debounceDelay > 0)  callback = debounce(originalCallback, debounceDelay);
@@ -64,6 +60,9 @@ export class BaseStore {
       this.off(event, originalCallback);
     }
   }
+  debug(message: string, event: any, sourceName?: any) {
+    throw new Error("Method not implemented.");
+  }
 
   /**
    * 메세지 해제
@@ -71,34 +70,34 @@ export class BaseStore {
    * @param {string} event 
    * @param {*} originalCallback 
    */
-  off(event, originalCallback) {
+  off(event: any, originalCallback: any) {
 
     this.debug('off message event', event );
 
     if (arguments.length == 1) {
       this.setCallbacks(event);
     } else if (arguments.length == 2) {      
-      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+      this.setCallbacks(event, this.getCallbacks(event).filter((f: { originalCallback: any; }) => {
         return f.originalCallback !== originalCallback
       }));
     }
   }
 
-  offAll (context) {
+  offAll (context: { sourceName: any; }) {
 
     Object.keys(this.callbacks).forEach(event => {
-      this.setCallbacks(event, this.getCallbacks(event).filter(f => {
+      this.setCallbacks(event, this.getCallbacks(event).filter((f: { context: any; }) => {
         return f.context !== context;  
       }))
     })
     this.debug('off all message', context.sourceName );
   }
 
-  getCachedCallbacks (event) {
+  getCachedCallbacks (event: any) {
     return this.getCallbacks(event);
   }
 
-  sendMessage(source, event, ...args) {
+  sendMessage(source: any, event: string|Function, ...args: any[]) {
     Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
       if (list) {
@@ -117,13 +116,13 @@ export class BaseStore {
     });
   }
 
-  nextSendMessage(source, callback, ...args) {
+  nextSendMessage(source: any, callback: IMultiCallback, ...args: any[]) {
     Promise.resolve().then(() => {
       callback(...args)
     });
   }
 
-  triggerMessage(source, event, ...args) {
+  triggerMessage(source: (source: any, event: any, arg2: any) => void, event: any, ...args: any[]) {
     Promise.resolve().then(() => {
       var list = this.getCachedCallbacks(event);
 
@@ -142,29 +141,29 @@ export class BaseStore {
     });
   }
 
-  emit(event, ...args) {
+  emit(event: IMultiCallback| string, ...args: any[]) {
 
     if (isFunction(event)) {
-      event(...args);
+      (event as IMultiCallback)(...args);
     } else {
       this.sendMessage(this.source, event, ...args);
     }
 
   }
-
+  
   /**
-   * 마이크로 Task 를 실행 
+   * 마이크로 Task 실행 
    * 
    * @param {Function} callback  마이크로Task 형식으로 실행될 함수 
    */
-  nextTick (callback) {
+  nextTick (callback: IMultiCallback) {
     this.nextSendMessage(this.source, callback);
   }
 
-  trigger(event, ...args) {
+  trigger(event: IMultiCallback|string, ...args: any[]) {
 
     if (isFunction(event)) {
-      event(...args);
+      (event as IMultiCallback)(...args);
     } else {
       this.triggerMessage(this.source, event, ...args);
     }

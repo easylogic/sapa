@@ -1,8 +1,8 @@
 
 import { isObject } from "../functions/func";
 import { CHECK_BIND_PATTERN, BIND_CHECK_FUNCTION, CHECK_SAPARATOR, BIND_CHECK_DEFAULT_FUNCTION, BIND_SAPARATOR } from "../Event";
-import { Dom } from "../functions/Dom";
 import { BaseHandler } from "./BaseHandler";
+import { IBindHandlerData, IDom, IKeyValue } from "../types";
 
 /**
  * 
@@ -10,13 +10,13 @@ import { BaseHandler } from "./BaseHandler";
  * @param {string} key 
  * @param {any} value 
  */
-const applyElementAttribute = ($element, key, value) => {
+const applyElementAttribute = ($element: IDom, key: string|IKeyValue, value?: string|string[]|object|Function) => {
 
   if (key === 'cssText') {
     /**
      * cssText: 'position:absolute'
      */
-    $element.cssText(value);
+    ($element as IDom).cssText(value);
     return; 
   } else if (key === "style") {
     /**
@@ -33,17 +33,17 @@ const applyElementAttribute = ($element, key, value) => {
     //  "class" : 'string-class' 
 
     if (Array.isArray(value)) {
-      $element.addClass(...value.filter(Boolean));
+      $element.addClass(...(value)?.filter(Boolean));
     } else if (isObject(value)) {
-      const keys = Object.keys(value);
+      const keys = Object.keys(value as IKeyValue);
       for(var i = 0, len = keys.length; i < len; i++) {
         const className = keys[i];
-        const hasClass = value[className];
+        const hasClass = (value as IKeyValue)[className];
 
         $element.toggleClass(className, hasClass);
       }
     } else {
-      $element.el.className  = value;
+      $element.htmlEl.className  = value;
     }
 
     return;
@@ -76,14 +76,15 @@ const applyElementAttribute = ($element, key, value) => {
 };
 
 export class BindHandler extends BaseHandler {
+    _bindMethods: string[] | undefined;
 
-    load (...args) {
+    load (...args: string[]) {
       this.bindData(...args);
     }
 
     // 어떻게 실행하는게 좋을까? 
     // this.runHandle('bind', ...);
-    bindData (...args) {
+    bindData (...args: string[]) {
       if (!this._bindMethods) {
         this._bindMethods = this.context.filterProps(CHECK_BIND_PATTERN);
       }
@@ -92,8 +93,7 @@ export class BindHandler extends BaseHandler {
        * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.
        * BIND 는 특정 element 에 html 이 아닌 데이타를 업데이트하기 위한 간단한 로직이다.
        */
-      const bindList = this._bindMethods
-        .filter(originalCallbackName => {
+      const bindList = this._bindMethods?.filter(originalCallbackName => {
           if (!args.length) return true; 
           var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);        
   
@@ -102,14 +102,14 @@ export class BindHandler extends BaseHandler {
           return args.indexOf($bind) >  -1 
         })
 
-        bindList.forEach(async (callbackName) => {
+        bindList?.forEach(async (callbackName) => {
           const bindMethod = this.context[callbackName];
           var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
   
           const refObject = this.getRef(id);
           let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
   
-          if (refObject != '' && typeof(refObject) === 'string') {
+          if (typeof(refObject) === 'string' && refObject !== '') {
             refCallback = BIND_CHECK_FUNCTION(refObject);
           } else if (typeof refObject === 'function') {
             refCallback = refObject;
@@ -121,7 +121,7 @@ export class BindHandler extends BaseHandler {
           // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
           const isBindCheck = typeof(refCallback) === 'function' && refCallback.call(this.context);
           if ($element && isBindCheck) {
-            const results = await bindMethod.call(this.context, ...args);
+            const results = (await bindMethod.call(this.context, ...args)) as IBindHandlerData;
 
             if (!results) return;
   
