@@ -60,6 +60,7 @@ export interface IEventMachine {
     source: string;
     sourceName: string;
     childComponents: IKeyValue;
+    destroy(): void;
 }
 export interface ISplitedMethod {
     target: string | number;

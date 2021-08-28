@@ -37,7 +37,7 @@ export class EventMachine implements IEventMachine {
   children: {};
   _bindings: never[];
   id: string;
-  __tempVariables: Map<any, any>;
+  __tempVariables: Map<string, any>;
   handlers: (BindHandler | DomEventHandler)[];
   _loadMethods: any;
   __cachedMethodList: any;
@@ -472,7 +472,7 @@ export class EventMachine implements IEventMachine {
     return null;
   }
 
-  eachChildren(callback: { (childComponent: any): void; (arg0: any): void; }) {
+  eachChildren(callback: Function) {
     if (!isFunction(callback)) return;
 
     keyEach(this.children, (_, Component) => {
@@ -492,7 +492,7 @@ export class EventMachine implements IEventMachine {
    * 
    */
   destroy() {
-    this.eachChildren((childComponent: { destroy: () => void; }) => {
+    this.eachChildren((childComponent: IEventMachine) => {
       childComponent.destroy();
     });
 
@@ -531,38 +531,38 @@ export class EventMachine implements IEventMachine {
 
   /* magic check method  */
 
-  self(e: { $dt: { is: (arg0: any) => any; }; target: any; }) {
+  self(e: any) {
     return e && e.$dt && e.$dt.is(e.target);
   }
-  isAltKey(e: { altKey: any; }) {
+  isAltKey(e: any) {
     return e.altKey;
   }
-  isCtrlKey(e: { ctrlKey: any; }) {
+  isCtrlKey(e: any) {
     return e.ctrlKey;
   }
-  isShiftKey(e: { shiftKey: any; }) {
+  isShiftKey(e: any) {
     return e.shiftKey;
   }
-  isMetaKey(e: { metaKey: any; key: string; code: string | string[]; }) {
+  isMetaKey(e: any) {
     return e.metaKey || e.key == 'Meta' || e.code.indexOf('Meta') > -1 ;
   }
-  isMouseLeftButton(e: { buttons: number; }) {
+  isMouseLeftButton(e: any) {
     return e.buttons === 1;     // 1 is left button 
   }
 
-  isMouseRightButton(e: { buttons: number; }) {
+  isMouseRightButton(e: any) {
     return e.buttons === 2;     // 2 is right button 
   }  
 
-  hasMouse(e: { pointerType: string; }) { 
+  hasMouse(e: any) { 
     return e.pointerType === 'mouse';
   }
 
-  hasTouch(e: { pointerType: string; }) {
+  hasTouch(e: any) {
     return e.pointerType === 'touch';
   }
 
-  hasPen(e: { pointerType: string; }) {
+  hasPen(e: any) {
     return e.pointerType === 'pen';
   }  
 
@@ -570,12 +570,12 @@ export class EventMachine implements IEventMachine {
 
   /* after check method */
 
-  preventDefault(e: { preventDefault: () => void; }) {
+  preventDefault(e: any) {
     e.preventDefault();
     return true;
   }
 
-  stopPropagation(e: { stopPropagation: () => void; }) {
+  stopPropagation(e: any) {
     e.stopPropagation();
     return true;
   }

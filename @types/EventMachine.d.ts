@@ -7,7 +7,7 @@ export declare class EventMachine implements IEventMachine {
     children: {};
     _bindings: never[];
     id: string;
-    __tempVariables: Map<any, any>;
+    __tempVariables: Map<string, any>;
     handlers: (BindHandler | DomEventHandler)[];
     _loadMethods: any;
     __cachedMethodList: any;
@@ -126,10 +126,7 @@ export declare class EventMachine implements IEventMachine {
      *
      */
     template(): string | string[] | DocumentFragment | null;
-    eachChildren(callback: {
-        (childComponent: any): void;
-        (arg0: any): void;
-    }): void;
+    eachChildren(callback: Function): void;
     rerender(): void;
     /**
      * 자원을 해제한다.
@@ -145,46 +142,17 @@ export declare class EventMachine implements IEventMachine {
      */
     collectProps(): any;
     filterProps(pattern: RegExp): any;
-    self(e: {
-        $dt: {
-            is: (arg0: any) => any;
-        };
-        target: any;
-    }): any;
-    isAltKey(e: {
-        altKey: any;
-    }): any;
-    isCtrlKey(e: {
-        ctrlKey: any;
-    }): any;
-    isShiftKey(e: {
-        shiftKey: any;
-    }): any;
-    isMetaKey(e: {
-        metaKey: any;
-        key: string;
-        code: string | string[];
-    }): any;
-    isMouseLeftButton(e: {
-        buttons: number;
-    }): boolean;
-    isMouseRightButton(e: {
-        buttons: number;
-    }): boolean;
-    hasMouse(e: {
-        pointerType: string;
-    }): boolean;
-    hasTouch(e: {
-        pointerType: string;
-    }): boolean;
-    hasPen(e: {
-        pointerType: string;
-    }): boolean;
+    self(e: any): any;
+    isAltKey(e: any): any;
+    isCtrlKey(e: any): any;
+    isShiftKey(e: any): any;
+    isMetaKey(e: any): any;
+    isMouseLeftButton(e: any): boolean;
+    isMouseRightButton(e: any): boolean;
+    hasMouse(e: any): boolean;
+    hasTouch(e: any): boolean;
+    hasPen(e: any): boolean;
     /** before check method */
-    preventDefault(e: {
-        preventDefault: () => void;
-    }): boolean;
-    stopPropagation(e: {
-        stopPropagation: () => void;
-    }): boolean;
+    preventDefault(e: any): boolean;
+    stopPropagation(e: any): boolean;
 }

@@ -61,7 +61,7 @@ export class BaseStore {
     }
   }
   debug(message: string, event: any, sourceName?: any) {
-    throw new Error("Method not implemented.");
+    console.log({message, event, sourceName});
   }
 
   /**
@@ -70,7 +70,7 @@ export class BaseStore {
    * @param {string} event 
    * @param {*} originalCallback 
    */
-  off(event: any, originalCallback: any) {
+  off(event: any, originalCallback: IMultiCallback) {
 
     this.debug('off message event', event );
 
@@ -83,7 +83,7 @@ export class BaseStore {
     }
   }
 
-  offAll (context: { sourceName: any; }) {
+  offAll (context: any) {
 
     Object.keys(this.callbacks).forEach(event => {
       this.setCallbacks(event, this.getCallbacks(event).filter((f: { context: any; }) => {

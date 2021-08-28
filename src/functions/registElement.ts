@@ -19,6 +19,12 @@ export function registElement(classes: IKeyValue = {}) {
     })
 }
 
+/**
+ * 등록된 Element 반환 
+ * 
+ * @param {string} key
+ * @returns {IUIElement}
+ */ 
 export function retriveElement(className: string) {
     return map.get(className);
 }

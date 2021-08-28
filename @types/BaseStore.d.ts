@@ -33,10 +33,8 @@ export declare class BaseStore {
      * @param {string} event
      * @param {*} originalCallback
      */
-    off(event: any, originalCallback: any): void;
-    offAll(context: {
-        sourceName: any;
-    }): void;
+    off(event: any, originalCallback: IMultiCallback): void;
+    offAll(context: any): void;
     getCachedCallbacks(event: any): any;
     sendMessage(source: any, event: string | Function, ...args: any[]): void;
     nextSendMessage(source: any, callback: IMultiCallback, ...args: any[]): void;

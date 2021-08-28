@@ -46,7 +46,6 @@ export type HTMLInstance = HTMLElement | SVGElement | DocumentFragment | ShadowR
 export type DomElement = HTMLInstance | string;
 
 export interface IEventMachine {
-
     $store: any;
     el: any;
     $el: any;
@@ -67,6 +66,7 @@ export interface IEventMachine {
     source: string;
     sourceName: string;
     childComponents: IKeyValue;    
+    destroy(): void;    
 }
 
 export interface ISplitedMethod {
