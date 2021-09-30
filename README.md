@@ -26,7 +26,7 @@ import {App, UIElement, SUBSCRIBE, CLICK} from '@easylogic/sapa'
 # How to use in browser 
 
 ```html
-<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.2.4/dist/sapa.umd.js'></script>
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/@easylogic/sapa@0.3.2/dist/sapa.umd.js'></script>
 <script type='text/javacript'>
     const {App, CLICK, SUBSCRIBE, UIElement} = sapa;   // or window.sapa 
 </script>
