@@ -1,6 +1,6 @@
 
 import { UIElement } from '../src/UIElement';
-import { BIND, CLICK, SUBSCRIBE, LOAD } from '../src/Event';
+import { LOAD } from '../src/Event';
 import { start } from '../src/App';
 import { Todo } from './todo';
 
