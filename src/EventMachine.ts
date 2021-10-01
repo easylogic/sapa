@@ -32,9 +32,9 @@ const VARIABLE_SAPARATOR = "__ref__variable:";
 
 
 export class EventMachine implements IEventMachine {
-  state: {};
-  prevState: {};
-  children: {};
+  state: any;
+  prevState: any;
+  children: any;
   _bindings: never[];
   id: string;
   __tempVariables: Map<string, any>;

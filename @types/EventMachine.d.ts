@@ -2,9 +2,9 @@ import { DomEventHandler } from "./handler/DomEventHandler";
 import { BindHandler } from "./handler/BindHandler";
 import { IDom, IEventMachine, IKeyValue } from "./types";
 export declare class EventMachine implements IEventMachine {
-    state: {};
-    prevState: {};
-    children: {};
+    state: any;
+    prevState: any;
+    children: any;
     _bindings: never[];
     id: string;
     __tempVariables: Map<string, any>;

@@ -61,7 +61,7 @@ export class BaseStore {
     }
   }
   debug(message: string, event: any, sourceName?: any) {
-    console.log({message, event, sourceName});
+    // console.log({message, event, sourceName});
   }
 
   /**
