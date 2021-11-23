@@ -54,7 +54,7 @@ export class BaseStore {
 
     this.getCallbacks(event).push({ event, callback, context, originalCallback, enableAllTrigger, enableSelfTrigger });
 
-    this.debug('add message event', event, context.sourceName );
+    this.debug('add message event', event, context?.sourceName );
 
     return () => {
       this.off(event, originalCallback);

@@ -9,7 +9,8 @@ import { IBaseStore, IKeyValue } from "./types";
  */
 export declare class UIElement extends EventMachine {
     private __storeInstance;
-    constructor(opt: UIElement | Object, props: IKeyValue);
+    attributes: never[] | undefined;
+    constructor(opt: UIElement | Object, props?: IKeyValue);
     setStore(storeInstance: IBaseStore): void;
     /**
      * 메세징 루트를 재정의 할 수 있음.

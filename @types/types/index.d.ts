@@ -40,6 +40,7 @@ export interface IDom {
 export declare type HTMLInstance = HTMLElement | SVGElement | DocumentFragment | ShadowRoot;
 export declare type DomElement = HTMLInstance | string;
 export interface IEventMachine {
+    [x: string]: any;
     $store: any;
     el: any;
     $el: any;
@@ -50,7 +51,6 @@ export interface IEventMachine {
     state: IKeyValue;
     prevState: IKeyValue;
     children: IKeyValue;
-    _bindings: never[];
     id: string;
     __tempVariables: Map<any, any>;
     handlers: IBaseHandler[];
@@ -61,6 +61,8 @@ export interface IEventMachine {
     sourceName: string;
     childComponents: IKeyValue;
     destroy(): void;
+}
+export interface IUIElement extends IEventMachine {
 }
 export interface ISplitedMethod {
     target: string | number;
@@ -94,5 +96,6 @@ export interface IStartOptions {
 export interface IBaseHandler {
 }
 export interface UIElementConstructor {
-    new (opt: any, props: IKeyValue): any;
+    new (opt?: any, props?: IKeyValue): IUIElement;
+    attributes?: string[];
 }

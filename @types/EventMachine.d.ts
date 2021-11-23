@@ -2,10 +2,12 @@ import { DomEventHandler } from "./handler/DomEventHandler";
 import { BindHandler } from "./handler/BindHandler";
 import { IDom, IEventMachine, IKeyValue } from "./types";
 export declare class EventMachine implements IEventMachine {
+    /**
+     * local state
+     */
     state: any;
     prevState: any;
     children: any;
-    _bindings: never[];
     id: string;
     __tempVariables: Map<string, any>;
     handlers: (BindHandler | DomEventHandler)[];
@@ -70,7 +72,7 @@ export declare class EventMachine implements IEventMachine {
      * @param {*} props
      * @protected
      */
-    _reload(props: any): void;
+    _reload(props: any, $container?: IDom): void;
     /**
      * template 을 렌더링 한다.
      *

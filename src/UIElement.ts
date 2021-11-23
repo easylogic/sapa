@@ -3,6 +3,7 @@ import { EventMachine } from "./EventMachine";
 import { isFunction, splitMethodByKeyword } from "./functions/func";
 import { uuidShort } from "./functions/uuid";
 import { IBaseStore, IKeyValue } from "./types";
+import { BaseStore } from './BaseStore';
 
 /**
  * UI 를 만드는 기본 단위 
@@ -13,11 +14,14 @@ import { IBaseStore, IKeyValue } from "./types";
  */
 export class UIElement extends EventMachine {
   private __storeInstance: any;
-  constructor(opt: UIElement|Object, props: IKeyValue) {
-    super(opt, props);
+    attributes: never[] | undefined;
+  constructor(opt: UIElement|Object, props: IKeyValue = {}) {
+    super(opt, props); 
 
-    if (props.store) {
+    if (props?.store) {
       this.__storeInstance = props.store;
+    } else {
+      this.__storeInstance = new BaseStore();
     }
 
     this.created();
@@ -201,7 +205,7 @@ export class UIElement extends EventMachine {
    * @param {Function} callback 메세지 지정시 실행될 함수
    */ 
   on (message: string, callback: Function) {
-    this.$store.on(message, callback);
+    this.$store.on(message, callback, this);
   }
 
   /**

@@ -4,6 +4,8 @@ import { LOAD } from '../src/Event';
 import { start } from '../src/App';
 import { Todo } from './todo';
 
+import './webcomponent';
+
 
 
 const AppList = [
@@ -30,6 +32,9 @@ class Test extends UIElement {
             <div class='test-view'>
                 <h1>Sample List</h1>
                 <div class='list' ref='$list'></div>
+
+                <h1>Sample Web Component</h1>
+                <sample-web-component key="color" value="yellow" />
             </div>
         </div>
         `

@@ -22,5 +22,5 @@ export const start = (ElementClass: UIElementConstructor, opt: IStartOptions = {
 
   app.render($container);
 
-  return app; 
+  return app as UIElement; 
 };

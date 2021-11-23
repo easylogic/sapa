@@ -32,10 +32,14 @@ const VARIABLE_SAPARATOR = "__ref__variable:";
 
 
 export class EventMachine implements IEventMachine {
+  /**
+   * local state
+   */
   state: any;
   prevState: any;
-  children: any;
-  _bindings: never[];
+
+  children: any; 
+  // _bindings: never[];
   id: string;
   __tempVariables: Map<string, any>;
   handlers: (BindHandler | DomEventHandler)[];
@@ -46,7 +50,7 @@ export class EventMachine implements IEventMachine {
     this.prevState = {};
     this.refs = {};
     this.children = {};
-    this._bindings = [];
+    // this._bindings = [];
     this.id = uuid();    
     this.__tempVariables = new Map();
     this.handlers = this.initializeHandler()
@@ -177,7 +181,12 @@ export class EventMachine implements IEventMachine {
    * @param {*} props 
    * @protected
    */
-  _reload(props: any) {
+  _reload(props: any, $container?: IDom) {
+
+    if ($container) {
+      this.render($container);
+    }
+
     this.props = props;
     this.state = {}; 
     this.setState(this.initState(), false);
@@ -327,6 +336,8 @@ export class EventMachine implements IEventMachine {
 
   parseComponent() {
     const $el = this.$el;
+
+    if (!$el) return;
 
     let targets = $el.$$(REF_CLASS_PROPERTY);
 
