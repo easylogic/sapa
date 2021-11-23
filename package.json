@@ -1,6 +1,6 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Simple JS Application Library",
   "source": "src/index.ts",
   "exports": {
