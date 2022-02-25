@@ -5,6 +5,7 @@ import { start } from '../src/App';
 import { Todo } from './todo';
 
 import './webcomponent';
+import { createComponent } from '../src/functions/jsx';
 
 
 
@@ -45,7 +46,7 @@ class Test extends UIElement {
             return /*html*/`
             <div class='item'>
                 <h1>${item.title}</h1>
-                <object refClass="${item.refClass}" />
+                ${createComponent(item.refClass)}
             </div>
             `
         })

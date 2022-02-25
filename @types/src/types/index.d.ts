@@ -1,11 +1,9 @@
 export interface IKeyValue {
     [key: string]: any;
 }
-
 export interface IMultiCallback {
     (...args: any[]): void;
 }
-
 export interface IBindHandlerData extends IKeyValue {
     style: string | IKeyValue;
     cssText: string;
@@ -14,12 +12,11 @@ export interface IBindHandlerData extends IKeyValue {
     value: string;
     html: string;
     innerHTML: string;
-    text: string; 
+    text: string;
     textContent: string;
     htmlDiff: string;
     svgDiff: string;
 }
-
 export interface IDom {
     [x: string]: any;
     append($el: any): any;
@@ -38,14 +35,11 @@ export interface IDom {
     toggleClass(className: string, hasClass: any): any;
     addClass(...args: any[]): IDom;
     css(value: any): IDom;
-    cssText(value: any): string|IDom;
+    cssText(value: any): string | IDom;
     el: HTMLInstance;
 }
-
-export type HTMLInstance = HTMLElement | SVGElement | DocumentFragment | ShadowRoot;
-
-export type DomElement = HTMLInstance | string;
-
+export declare type HTMLInstance = HTMLElement | SVGElement | DocumentFragment | ShadowRoot;
+export declare type DomElement = HTMLInstance | string;
 export interface IEventMachine {
     [x: string]: any;
     $store: any;
@@ -58,7 +52,6 @@ export interface IEventMachine {
     state: IKeyValue;
     prevState: IKeyValue;
     children: IKeyValue;
-    // _bindings: never[];
     id: string;
     __tempVariables: Map<any, any>;
     handlers: IBaseHandler[];
@@ -67,24 +60,19 @@ export interface IEventMachine {
     props: IKeyValue;
     source: string;
     sourceName: string;
-    childComponents: IKeyValue;    
-    destroy(): void;    
+    childComponents: IKeyValue;
+    destroy(): void;
 }
-
 export interface IUIElement extends IEventMachine {
-
 }
-
 export interface ISplitedMethod {
     target: string | number;
     param: any;
 }
-
 export interface IDomEventObjectOption {
     passive: boolean;
-    capture: any; 
+    capture: any;
 }
-
 export interface IDomEventObject {
     customEventName: string;
     delayMethods: any;
@@ -100,19 +88,15 @@ export interface IDomEventObject {
     dom?: Element;
     callback?: EventListenerOrEventListenerObject;
 }
-
-export interface IBaseStore {}
-
+export interface IBaseStore {
+}
 export interface IStartOptions {
     store?: IBaseStore;
     container?: HTMLElement;
 }
-
 export interface IBaseHandler {
-
 }
-
 export interface UIElementConstructor {
-    new (opt?: any, props?: IKeyValue): IUIElement;    
-    attributes?: string[]; 
+    new (opt?: any, props?: IKeyValue): IUIElement;
+    attributes?: string[];
 }

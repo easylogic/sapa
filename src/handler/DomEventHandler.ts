@@ -34,6 +34,11 @@ export class DomEventHandler extends BaseHandler {
     initialize() {
         this.destroy();
 
+        // 이미 정의된 domEvents 가 있고 notEventRedefine 설정이 true 로 되어 있으면 이벤트를 한번만 설정한다. 
+        if (this._domEvents && this.context.notEventRedefine) {
+          return;
+        }
+
         if (!this._domEvents) {
           this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN)
         }
@@ -42,7 +47,12 @@ export class DomEventHandler extends BaseHandler {
     }
 
     destroy() {
+      if (this.context.notEventRedefine) {
+        // NOOP
+      } else {
         this.removeEventAll();
+      }
+        
     }
 
 

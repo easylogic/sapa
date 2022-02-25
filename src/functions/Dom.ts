@@ -8,7 +8,6 @@ import { DomDiff } from "./DomDiff";
  */ 
 export class Dom implements IDom {
   el: HTMLInstance;
-  _initContext: any;
   constructor(tag: DomElement, className: string = '', attr: IKeyValue = {}) {
     if (typeof tag !== 'string') {
       this.el = tag;
@@ -134,7 +133,9 @@ export class Dom implements IDom {
    */
   attr(key: string, value?: undefined) {
     if (arguments.length == 1) {
-      return this.htmlEl.getAttribute(key);
+      // FIXME: document 가 최상위가 되는 경우가 있기 때문에 예외 처리가 필요하다. 
+      // FIXME: 현재는 메소드를 못쓰는 형태로 적용
+      return this.htmlEl.getAttribute?.(key);
     }
 
     // 동일한 속성 값이 있다면 변경하지 않는다. 
@@ -243,15 +244,26 @@ export class Dom implements IDom {
 
     if (!this.htmlEl) return [];
 
-    const $parentNode = this.parent(); 
+    let pathList: Dom[] = [this];    
+    let $parentNode = this.parent(); 
 
-    if ($parentNode) {
-      return [...$parentNode.path(), this]
-    } else {
-      return [this]
-    }
+    if (!$parentNode.el) return pathList;
+
+    while ($parentNode) {
+      pathList.unshift($parentNode);
+
+      $parentNode = $parentNode.parent();
+
+      if (!$parentNode.el) break;
+    }  
+
+    return pathList
 
 
+  }
+
+  get $parent() {
+    return this.parent();
   }
 
   parent() {
@@ -312,18 +324,24 @@ export class Dom implements IDom {
   /**
    * @param {string} html
    */
-  html(html: string) {
-    if (typeof html === 'undefined') {
-      return this.htmlEl.innerHTML;
+  html(html?: string) {
+    try {
+      if (typeof html === 'undefined') {
+        return this.htmlEl.innerHTML;
+      }
+  
+      if (typeof html === 'string') {
+        Object.assign(this.el, { innerHTML: html });
+      } else {
+        this.empty().append(html);
+      }
+  
+      return this;
+    } catch (e) {
+      console.log(e, html);
+      return this;
     }
 
-    if (typeof html === 'string') {
-      this.htmlEl.innerHTML = html;
-    } else {
-      this.empty().append(html);
-    }
-
-    return this;
   }
 
   /**
@@ -459,9 +477,9 @@ export class Dom implements IDom {
    * @param {string} value 
    * @returns {string} 파라미터가 없을 때  textContent 를 리턴한다. 
    */
-  text(value?: string | Dom | undefined) {
+  text(value?: string | Dom | undefined): string | Dom {
     if (typeof value === 'undefined') {
-      return this.htmlEl.textContent;
+      return this.htmlEl.textContent as string;
     } else {
       var tempText: string = value as string;
 

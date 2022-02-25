@@ -9,18 +9,18 @@ import {
 
 import {
   isFunction,
-  html,
   keyEach,
   collectProps,
-  isString
+  isObject
 } from "./functions/func";
 
 import {DomEventHandler} from "./handler/DomEventHandler";
 import {BindHandler} from "./handler/BindHandler";
-import { retriveElement } from "./functions/registElement";
+import { retriveElement, spreadVariable, getVariable, hasVariable } from "./functions/registElement";
 import { uuid, uuidShort } from "./functions/uuid";
 import { Dom } from "./functions/Dom";
 import { IBaseHandler, IDom, IEventMachine, IKeyValue } from "./types";
+import CallbackHandler from './handler/CallbackHandler';
 
 
 const REFERENCE_PROPERTY = "ref";
@@ -42,14 +42,27 @@ export class EventMachine implements IEventMachine {
   // _bindings: never[];
   id: string;
   __tempVariables: Map<string, any>;
-  handlers: (BindHandler | DomEventHandler)[];
+  handlers: (BindHandler | DomEventHandler | CallbackHandler)[];
   _loadMethods: any;
   __cachedMethodList: any;
+  el: any;
+  $el: any;
+  $root: any;
+  refs: any;
+  opt!: IKeyValue;
+  parent!: IEventMachine;
+  props!: IKeyValue;
+  source!: string;
+  sourceName!: string;
+  childComponents!: IKeyValue;
+  private _localTimestamp: number;
+
   constructor(opt: Object | IEventMachine, props: IKeyValue) {
     this.state = {};
     this.prevState = {};
     this.refs = {};
     this.children = {};
+    this._localTimestamp = 0;    
     // this._bindings = [];
     this.id = uuid();    
     this.__tempVariables = new Map();
@@ -66,18 +79,18 @@ export class EventMachine implements IEventMachine {
   public set $store(value: any) {
     this._$store = value;
   }
-  el: any;
-  $el: any;
-  $root: any;
-  refs: any;
-  opt!: IKeyValue;
-  parent!: IEventMachine;
-  props!: IKeyValue;
-  source!: string;
-  sourceName!: string;
-  childComponents!: IKeyValue;
 
 
+  get _timestamp() {
+    return this._localTimestamp++;
+  }
+
+  /**
+   * for svelte variable 
+   */
+  get target() {
+    return this.$el?.el;
+  }
 
   /**
    * UIElement instance 에 필요한 기본 속성 설정 
@@ -90,8 +103,6 @@ export class EventMachine implements IEventMachine {
     this.source = uuid();
     this.sourceName = this.constructor.name;  
 
-
-
   }
 
   initComponents() {
@@ -101,7 +112,8 @@ export class EventMachine implements IEventMachine {
   initializeHandler () {
     return [
       new BindHandler(this as any),
-      new DomEventHandler(this as any)
+      new DomEventHandler(this as any),
+      new CallbackHandler(this as any),
     ]
   }
 
@@ -111,7 +123,7 @@ export class EventMachine implements IEventMachine {
    * @protected
    * @returns {Object} 
    */
-  initState() {
+  initState(): object {
     return {};
   }
 
@@ -121,7 +133,7 @@ export class EventMachine implements IEventMachine {
    * @param {Object} state  새로운 state 
    * @param {Boolean} isLoad  다시 로드 할 것인지 체크 , true 면 state 변경후 다시 로드 
    */
-  setState(state = {}, isLoad = true) {
+  setState(state: object = {}, isLoad: boolean = true) {
     this.prevState = this.state;
     this.state = Object.assign({}, this.state, state );
     if (isLoad) {
@@ -136,44 +148,22 @@ export class EventMachine implements IEventMachine {
    * @param {string} key 
    * @param {Boolean} isLoad 
    */
-  toggleState(key: string | number, isLoad = true) {
+  toggleState(key: string | number, isLoad: boolean = true) {
     this.setState({
       [key]: !(this.state[key])
     }, isLoad)
   }
 
   /**
-   * props 를 넘길 때 해당 참조를 그대로 넘기기 위한 함수 
+   * object 값을 그대로 key, value 형태로 넘기기 위한 함수
    * 
-   * @param {any} value
-   * @returns {string} 참조 id 생성 
+   * @param {IKeyValue} obj
+   * @returns {string} `key=value` 형태의 문자열 리스트 
    */ 
-  variable(value: any) {
-    const id = `${VARIABLE_SAPARATOR}${uuidShort()}`;
-
-    this.__tempVariables.set(id, value);
-
-    return id;
+   apply(obj: IKeyValue): string {
+    return spreadVariable(obj);
   }
 
-  /**
-   * 참조 id 를 가지고 있는 variable 을 복구한다. 
-   */ 
-  recoverVariable(id: string) {
-    if (isString(id) === false) {
-      return id;
-    }
-
-    let value = id;
-
-    if (this.__tempVariables.has(id)) {
-      value = this.__tempVariables.get(id);
-
-      this.__tempVariables.delete(id);
-    }
-
-    return value;
-  }
 
   /**
    * 객체를 다시 그릴 때 사용한다. 
@@ -199,11 +189,7 @@ export class EventMachine implements IEventMachine {
    * @param {Dom|undefined} $container  컴포넌트가 그려질 대상 
    */
   render($container: IDom) {
-    this.$el = this.parseTemplate(
-      html`
-        ${this.template()}
-      `
-    );
+    this.$el = this.parseTemplate(`${this.template()}`);
     this.refs.$el = this.$el;
 
     if ($container) {
@@ -233,9 +219,9 @@ export class EventMachine implements IEventMachine {
    * 하위에 연결될 객체들을 정의한다 
    * 
    * @protected
-   * @returns {Object}
+   * @returns {IKeyValue}
    */
-  components() {
+  components(): IKeyValue {
     return {};
   }
 
@@ -245,7 +231,7 @@ export class EventMachine implements IEventMachine {
    * @param  {any[]} args 
    * @returns {EventMachine}
    */
-  getRef(...args: string[]) {
+  getRef(...args: string[]): EventMachine {
     const key = args.join('')
     return this.refs[key];
   }
@@ -298,35 +284,58 @@ export class EventMachine implements IEventMachine {
     return Dom.create(TEMP_DIV.createChildrenFragment());
   }
 
-  parseProperty ($dom: IDom) {
-    let props = {};
+
+  /**
+   * $dom 에 있는 props, children 정보만 가지고 온다. 
+   * 
+   * 이것을 가지고 오는 이유는  중첩된 컴포넌트 내에서 하위 컴포넌트를 찾기 위해서이다.
+   * 
+   * ps.
+   * 
+   * 조회만 하기 때문에 getVariable()로 값만 조회한다. 
+   * 
+   * @param {Dom} $dom 
+   * @returns 
+   */
+   parsePropertyInfo ($dom: IDom) {
+    let props: IKeyValue = {};
 
     // parse properties 
     for(var t of $dom.htmlEl.attributes) {
-      props[t.nodeName] = this.recoverVariable(t.nodeValue);
-    }
 
-    if (props['props']) {
-      props = {
-        ...props,
-        ...getRef(props['props'])
+      // 속성값이 없고, 속성 이름이 참조 변수 일 때는  그대로 보여준다. 
+      if (hasVariable(t.nodeName)) {
+        const recoveredValue = getVariable(t.nodeName);
+        if (isObject(recoveredValue)) {
+          props = Object.assign(props, recoveredValue)     
+        } else {
+          props[t.nodeName] = getVariable(t.nodeValue);                    
+        }
+
+      } else {
+        props[t.nodeName] = getVariable(t.nodeValue);          
       }
     }
 
-    $dom.$$('property').forEach(($p: { attrs: (arg0: string, arg1: string, arg2: string) => [any, any, any]; text: () => any; }) => {
-      const [name, value, valueType] = $p.attrs('name', 'value', 'valueType')
-
-      let realValue = value || $p.text();
-
-      if (valueType === 'json') {          
-        realValue = JSON.parse(realValue);
-      }
-    
-      props[name] = realValue; 
-    })
+    // 하위 html 문자열을 props.content 로 저장한다. 
+    const content = $dom.html() as string;
+    if (content) {
+      props.content = content;
+      props.contentChildren = this.parseContent(props.content)
+    }
 
     return props;
   }
+
+  parseSourceName(obj: IEventMachine): string[] {
+
+    if (obj.parent) {
+      return [obj.sourceName, ...this.parseSourceName(obj.parent)]
+    }
+
+    return [obj.sourceName]
+  }  
+
 
   getEventMachineComponent (refClassName: string) {
     var EventMachineComponent = retriveElement(refClassName) || this.childComponents[refClassName];
@@ -334,56 +343,158 @@ export class EventMachine implements IEventMachine {
     return EventMachineComponent;
   }
 
+
+  createInstanceForComponent (EventMachineComponent: any, targetElement: Element, props: IKeyValue = {}) {
+    // external component 
+    if (EventMachineComponent.__proto__.name === 'ProxyComponent') {
+      return new EventMachineComponent({target: targetElement, props});
+    }
+
+    // return sapa component 
+    return new EventMachineComponent(this, props);
+  }  
+
+  renderComponent({ $dom, refName, component, props }: IEventMachine) {
+    var instance = null; 
+
+    // 동일한 refName 의 EventMachine 이 존재하면  해당 컴포넌트는 다시 그려진다. 
+    // 루트 element 는 변경되지 않는다. 
+    if (this.children[refName]) {
+
+      // FIXME: svelte 컴포넌트를 어떻게 재로드 할지 고민해야함 
+      instance = this.children[refName] 
+      instance.__timestamp = this._localTimestamp;
+      instance._reload(props);
+    } else {
+      instance = this.createInstanceForComponent(component, $dom.$parent.el, props);
+      instance.__timestamp = this._localTimestamp;
+
+      this.children[refName || instance.id] = instance;
+
+      if (isFunction(instance.render)) {
+        instance.render();
+
+      } else {
+        // NOOP
+        // console.log(instance);
+      }
+
+    }
+    
+
+    if (instance.renderTarget) {
+      instance.$el?.appendTo(instance.renderTarget);
+      $dom.remove();
+    } else if (instance.$el) {
+      $dom.replace(instance.$el);     
+    } else {
+      // EventMachine 의 renderTarget 또는 $el 이 없으면
+      // renderTarget 과 유사하지만 appendTo 를 하지 않는다.
+      $dom.remove();
+    }
+  }
+
+  /**
+   * 특정 html 의 자식 컴포넌트(EventMachine)의 정보를 가지고 온다. 
+   * 
+   * @param {string} html 
+   * @param {string[]} filteredRefClass 
+   * @returns {object[]}  - { refName, EventMachineComponent, props, $dom, refClass }
+   */
+  parseContent(html:string, filteredRefClass: string[] = []) {
+    return (Dom.create('div').html(html) as IDom).children().map(($dom: any) => {
+      return this._getComponentInfo($dom)
+    }).filter((it: { refClass: any; }) => filteredRefClass.length === 0 ? true : filteredRefClass.includes(it.refClass))
+  }
+
+  /**
+   * component 정보 얻어오기 
+   * 
+   * @param {Dom} $dom 
+   * @returns {Object}
+   */
+  _getComponentInfo ($dom: IDom) {
+
+    const refClass = $dom.attr(REF_CLASS);
+    const EventMachineComponent = this.getEventMachineComponent(refClass)
+
+    if (EventMachineComponent) {
+      let props = this.parsePropertyInfo($dom);
+
+      // get component class name
+      let refName = $dom.attr(REFERENCE_PROPERTY);
+
+      return { 
+        $dom,
+        refClass,
+        props,
+        // variable 로 props 를 지정했을 수도 있기 때문에 props.ref 도 같이 사용한다. 
+        refName: refName || props.ref, 
+        component: EventMachineComponent
+      }
+    } else {
+      return {
+        notUsed: true, 
+        $dom,
+      }
+    }
+  }
+
+  /**
+   * element 를 기준으로 내부 component 리스트를 생성한다. 
+   * 
+   * @return {object[]}
+   */ 
+   getComponentInfoList($el: IDom) {
+
+    if (!$el) return [];
+
+    const children: ({
+      $dom: any; 
+      refClass: any; 
+      props: IKeyValue;
+      // variable 로 props 를 지정했을 수도 있기 때문에 props.ref 도 같이 사용한다. 
+      refName: any; 
+      component: any; 
+      notUsed?: undefined;
+    } | {
+      notUsed: boolean; $dom: any; refClass?: undefined; props?: undefined;
+      // variable 로 props 를 지정했을 수도 있기 때문에 props.ref 도 같이 사용한다. 
+      refName?: undefined; component?: undefined;
+    })[] = []
+
+    // 하위에 refclass 를 가진 element 중에 마지막 지점인 컴포넌트만 조회한다. 
+    // 부모에 refclass 를 가지고 있는 경우는 그 다음 컴포넌트로 넘겨서 생성한다. 
+    // 이렇게 하지 않으면 최상위 부모에서 모든 하위 refclass 를 컴포넌트로 생성해버리는 문제가 생긴다. 
+    let targets = $el.$$(REF_CLASS_PROPERTY).filter((it: IDom) => {
+      return it.path().filter((a: IDom) =>{
+        return a.attr(REF_CLASS)
+      }).length === 1
+    })
+
+    targets.forEach(($dom: any) => {
+      children.push(this._getComponentInfo($dom));
+    })
+
+    return children; 
+  }
+
   parseComponent() {
     const $el = this.$el;
 
-    if (!$el) return;
+    const componentList = this.getComponentInfoList($el);
 
-    let targets = $el.$$(REF_CLASS_PROPERTY);
-
-    targets.forEach(($dom: IDom) => {
-
-      const EventMachineComponent = this.getEventMachineComponent($dom.attr(REF_CLASS))
-
-      if (EventMachineComponent) {
-        let props = this.parseProperty($dom);
-  
-        // create component 
-        let refName = $dom.attr(REFERENCE_PROPERTY);
-        var instance = null; 
-  
-        // 동일한 refName 의 EventMachine 이 존재하면  해당 컴포넌트는 다시 그려진다. 
-        // 루트 element 는 변경되지 않는다. 
-        if (this.children[refName]) {
-          instance = this.children[refName] 
-          instance._reload(props);
-        } else {
-          // 기존의 refName 이 존재하지 않으면 Component 를 생성해서 element 를 교체한다. 
-          instance = new EventMachineComponent(this, props);
-  
-          this.children[refName || instance.id] = instance;
-  
-          instance.render();
-        }
-        
-
-        if (instance.renderTarget) {
-          instance.$el?.appendTo(instance.renderTarget);
-          $dom.remove();
-        } else {
-          $dom.replace(instance.$el);     
-        }
-
+    componentList.forEach(comp => {
+      if (comp.notUsed) {
+        comp.$dom.remove();
       } else {
-        $dom.remove();
-      }
- 
-  
+        this.renderComponent(comp as unknown as IEventMachine);
+      }  
     })
 
-    keyEach(this.children, (key, obj) => {
-      if (obj && obj.clean()) {
-        delete this.children[key]
+    keyEach(this.children, (key, child) => {
+      if (child.__timestamp !== this._localTimestamp) {
+        child.clean();
       }
     })
   }
@@ -392,7 +503,9 @@ export class EventMachine implements IEventMachine {
     if (this.$el && !this.$el.hasParent()) {
 
       keyEach(this.children, (key, child) => {
-        child.clean();
+        if (isFunction(child?.clean)) {
+          child.clean();
+        }
       })
 
       this.destroy();  
@@ -441,8 +554,9 @@ export class EventMachine implements IEventMachine {
       checker = checker.map((it: string) => it.trim())
       
       const isDomDiff = Boolean(checker.filter((it: string) => DOMDIFF.includes(it)).length);
+      const refTarget = this.refs[elName];
 
-      if (this.refs[elName]) {        
+      if (refTarget) {        
         var newTemplate = await this[callbackName].call(this, ...args);
 
         if (Array.isArray(newTemplate)) {
@@ -450,7 +564,7 @@ export class EventMachine implements IEventMachine {
         }
 
         // create fragment 
-        const fragment = this.parseTemplate(html`${newTemplate}`, true);
+        const fragment = this.parseTemplate(newTemplate, true);
         if (isDomDiff) {
           this.refs[elName].htmlDiff(fragment);
         } else {
@@ -523,7 +637,7 @@ export class EventMachine implements IEventMachine {
    * 
    * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
    */
-  collectProps() {
+  collectProps(): string[] {
 
     if (!this.__cachedMethodList){
       this.__cachedMethodList = collectProps(this, (name: string | string[]) => {

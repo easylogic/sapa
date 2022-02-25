@@ -51,6 +51,14 @@ export function debounce(callback: IMultiCallback, delay = 0) {
     }
 }
 
+export function makeRequestAnimationFrame (callback: IMultiCallback, context: any) {
+    return (...args: any[]) => {
+        requestAnimationFrame(() => {
+            callback.apply(context, args);
+        });
+    };
+}
+
 
 export function throttle(callback: IMultiCallback, delay: number) {
 
@@ -103,6 +111,10 @@ export function isBoolean(value: any) {
 
 export function isString(value: any) {
     return typeof value == 'string'
+}
+
+export function isArray(value: any) {
+    return Array.isArray(value);
 }
 
 export function isNotString(value: any) {

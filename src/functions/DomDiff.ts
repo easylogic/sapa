@@ -1,4 +1,5 @@
 import { HTMLInstance, IDom, IKeyValue } from "../types";
+import { isFunction } from "./func";
 
 const setBooleanProp = (el: Element, name: string, value: boolean) => {
     if (value) {
@@ -74,6 +75,12 @@ function changed(node1: { nodeType: number; textContent: any; nodeName: any; }, 
 }
 
 function hasPassed(node1: Element) {
+
+    // <!-- comment -->  형태의 주석일 때는 그냥 패스 
+    if (node1?.nodeType === 8) {
+        return true;
+    }
+
     return (
         (node1.nodeType !== Node.TEXT_NODE && node1.getAttribute('data-domdiff-pass') === 'true') 
     ) 
@@ -101,7 +108,12 @@ function getProps (attributes: NamedNodeMap) {
     
 }
 
-function updateElement (parentElement: Element, oldEl: Element, newEl: Element, i: number) {
+interface IUpdateElementOptions {
+    removedElements?: never[];
+    checkPassed?: (oldEl: Element, newEl: Element) => boolean;
+}
+
+function updateElement (parentElement: Element, oldEl: Element, newEl: Element, i: number, options: IUpdateElementOptions = {}) {
 
     if (!oldEl) {
         // console.log('replace');        
@@ -122,8 +134,14 @@ function updateElement (parentElement: Element, oldEl: Element, newEl: Element, 
         && newEl.nodeType !== Node.COMMENT_NODE
         && newEl.toString() !== "[object HTMLUnknownElement]"
     ) {
-        // console.log(newEl);
-        updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
+        if (options.checkPassed && options.checkPassed(oldEl, newEl)) {
+            // NOOP 
+            // 정상적인 노드에서 checkPassed 가 true 이면 아무것도 하지 않는다. 
+            // 다만 자식의 속성은 변경해야한다. 
+        } else {
+            // console.log(newEl);
+            updateProps(oldEl, getProps(newEl.attributes), getProps(oldEl.attributes)); // added        
+        }
         var oldChildren = children(oldEl);
         var newChildren = children(newEl);
         var max = Math.max(oldChildren.length, newChildren.length);
@@ -153,7 +171,11 @@ const children = (el: Element): Element[] => {
 }
 
 
-export function DomDiff (A: HTMLInstance | IDom, B: HTMLInstance | IDom) {
+export function DomDiff (A: HTMLInstance | IDom, B: HTMLInstance | IDom, options: IUpdateElementOptions = {}) {
+
+    // initialize options parameter
+    options.checkPassed = isFunction(options.checkPassed) ? options.checkPassed : undefined;
+    options.removedElements = [];
 
     A = (A as IDom).el || A; 
     B = (B as IDom).el || B; 
@@ -163,6 +185,6 @@ export function DomDiff (A: HTMLInstance | IDom, B: HTMLInstance | IDom) {
 
     var len = Math.max(childrenA.length, childrenB.length);
     for (var i = 0; i < len; i++) {
-        updateElement(A as Element, childrenA[i], childrenB[i], i);
+        updateElement(A as Element, childrenA[i], childrenB[i], i, options);
     }
 }

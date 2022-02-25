@@ -1,3 +1,5 @@
+import { variable } from ".";
+
 export const MAGIC_METHOD = "@magic:";
 
 export const makeEventChecker = (value: string, split = CHECK_SAPARATOR) => {
@@ -6,19 +8,31 @@ export const makeEventChecker = (value: string, split = CHECK_SAPARATOR) => {
 
 // event name regular expression
 export const CHECK_DOM_EVENT_PATTERN = /domevent (.*)/gi;
+export const CHECK_CALLBACK_PATTERN = /callback (.*)/gi;
 export const CHECK_LOAD_PATTERN = /load (.*)/gi;
 export const CHECK_BIND_PATTERN = /bind (.*)/gi;
 export const CHECK_SUBSCRIBE_PATTERN = /subscribe (.*)/gi;
 
+const MULTI_PREFIX = "ME@";
 const SPLITTER = "|";
+
 
 export const PIPE = (...args: string[]) => {
   return args.join(SPLITTER);
 };
 
+export const EVENT = (...args: string[]) => {
+  return MULTI_PREFIX + PIPE(...args);
+};
+
+export const COMMAND = EVENT
+export const ON = EVENT
+
+
 export const NAME_SAPARATOR = ":";
 export const CHECK_SAPARATOR = "|";
 export const DOM_EVENT_SAPARATOR = `${MAGIC_METHOD}domevent `;
+export const CALLBACK_SAPARATOR = `${MAGIC_METHOD}callback `;
 export const LOAD_SAPARATOR = `${MAGIC_METHOD}load `;
 export const BIND_SAPARATOR = `${MAGIC_METHOD}bind `;
 export const SUBSCRIBE_SAPARATOR = `${MAGIC_METHOD}subscribe `;
@@ -36,6 +50,10 @@ const DOM_EVENT_MAKE = (...keys: string[]) => {
 
 const SUBSCRIBE_EVENT_MAKE = (...args: string[]) => {
   return SUBSCRIBE_SAPARATOR + args.join(CHECK_SAPARATOR);
+}
+
+const CALLBACK_EVENT_MAKE = (...args: string[]) => {
+  return CALLBACK_SAPARATOR + args.join(CHECK_SAPARATOR);
 }
 
 
@@ -62,6 +80,12 @@ export const ARROW_RIGHT = CHECKER('ArrowRight');
 export const ENTER = CHECKER('Enter');
 export const SPACE = CHECKER('Space');
 export const ESCAPE = CHECKER('Escape');
+export const BACKSPACE = CHECKER('Backspace');
+export const DELETE = CHECKER('Delete');
+export const EQUAL = CHECKER('Equal');
+export const MINUS = CHECKER('Minus');
+export const BRACKET_RIGHT = CHECKER('BracketRight');
+export const BRACKET_LEFT = CHECKER('BracketLeft');
 
 export const ALT = CHECKER("isAltKey");
 export const SHIFT = CHECKER("isShiftKey");
@@ -94,6 +118,11 @@ export const THROTTLE = (t = 100) => {
 };
 export const ALL_TRIGGER = CHECKER("allTrigger()");
 export const SELF_TRIGGER = CHECKER("selfTrigger()");
+export const FRAME = CHECKER("frame()");
+
+export const PARAMS = (obj: string) => {
+  return CHECKER(`params(${variable(obj)})`);
+}
 
 export const CAPTURE = CHECKER("capture()");
 
@@ -109,6 +138,10 @@ export const SUBSCRIBE = SUBSCRIBE_EVENT_MAKE;
 export const SUBSCRIBE_ALL = (...args: any[]) => SUBSCRIBE_EVENT_MAKE(...args, ALL_TRIGGER);
 export const SUBSCRIBE_SELF = (...args: any[]) => SUBSCRIBE_EVENT_MAKE(...args, SELF_TRIGGER);
 export const CONFIG = (config: any, ...args: any[]) => SUBSCRIBE_EVENT_MAKE(`config:${config}`, ...args);
+
+export const CALLBACK = CALLBACK_EVENT_MAKE;
+export const RAF = CALLBACK('requestAnimationFrame');
+
 export const CUSTOM = DOM_EVENT_MAKE;
 export const CLICK = DOM_EVENT_MAKE("click");
 export const DOUBLECLICK = DOM_EVENT_MAKE("dblclick");
