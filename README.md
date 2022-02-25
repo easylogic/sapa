@@ -94,6 +94,54 @@ class SecondElement extends UIElement {
 
 It creates MyElement internally when SecondElement is created. At this time, the parent property of MyElement becomes the instance of SecondElement.
 
+### register component
+You can register global components using registElement .
+
+```js
+
+class GlobalElement extends UIElement { }
+
+registElement({
+    GlobalElement
+})
+
+class Test extends UIElement {
+    template() {
+        return `
+            <div>
+                <object refClass='GlobalElement'></object>
+            </div>
+
+        `
+    }
+}
+
+```
+
+### add component alias 
+
+```js
+
+class GlobalElement extends UIElement { }
+
+registElement({
+    GlobalElement
+})
+
+registAlias('global-element', GlobalElement)
+
+class Test extends UIElement {
+    template() {
+        return `
+            <div>
+                <object refClass='global-element'></object>
+            </div>
+
+        `
+    }
+}
+
+```
 
 ### `refClass` attribute
 
@@ -111,6 +159,39 @@ It is free to define it in the form below.
 ```js
 <span refClass="MyElement" />
 ```
+
+### createComponent function 
+
+You can create object tags more easily by using the createComponent function.
+
+```js
+
+createComponent('GlobalElement', {ref: '$globalElement'}) 
+
+==> // output 
+
+<object refClass="GlobalElement" ref="$globalElement" ></object>
+
+```
+
+
+```js
+
+class Test extends UIElement {
+    template() {
+        return `
+            <div>
+                ${createComponent('GlobalElement', {
+                    ref: '$globalElement'
+                })}
+            </div>
+
+        `
+    }
+}
+
+```
+
 
 ### Pass props 
 
@@ -156,7 +237,7 @@ class SecondElement extends UIElement {
     template () {
         return `
             <div>
-                <object refClass='MyElement' title=${this.variable({
+                <object refClass='MyElement' title=${variable({
                     title: 'my element title'
                 })} />
             </div>
@@ -219,7 +300,7 @@ class MyElement extends UIElement {
 
 ### Access DOM 
 
-Use `this.$el`  
+Use `this.$el`
 
 $el is jQuery-liked DOM wrapper object.
 
@@ -665,6 +746,18 @@ You can also slow down the execution time of a message.
 
 }
 
+```
+
+### FRAME 
+
+You can run subscribe function by requestAnimationFrame.
+
+```js
+class A extends UIElement {
+    [SUBSCRIBE('animationStart') + FRAME] () {
+        console.log('Aanimation is started.');
+    }
+}
 ```
 
 
