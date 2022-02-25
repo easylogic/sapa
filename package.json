@@ -1,41 +1,40 @@
 {
   "name": "@easylogic/sapa",
-  "version": "0.4.0",
-  "description": "Simple JS Application Library",
-  "source": "src/index.ts",
-  "exports": {
-    "require": "./dist/sapa.js",
-    "import": "./dist/sapa.modern.js"
-  },
-  "main": "./dist/sapa.js",
-  "umd:main": "./dist/sapa.umd.js",
-  "types": "@types/index.d.ts",
-  "publishConfig": {
-    "source": "src/index.ts",
-    "main": "dist/sapa.umd.js"
-  },
+  "version": "0.5.0",
+  "description": "Simple JS Application Library - Sapa",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./@types/index.d.ts",
+  "module": "./dist/sapa.es.js",
   "directories": {
-    "test": "test"
+    ".": "./src"
+  },
+  "files": [
+    "@types",
+    "samples",
+    "src",
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./dist/sapa.umd.js"
+    }
   },
   "dependencies": {},
   "devDependencies": {
-    "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
-    "@babel/plugin-transform-classes": "^7.14.9",
-    "@babel/plugin-transform-runtime": "^7.15.0",
-    "@babel/plugin-transform-spread": "^7.14.6",
-    "@babel/preset-env": "^7.14.9",
-    "microbundle": "^0.13.3",
-    "release-it": "^14.10.1",
-    "typescript": "^4.3.5",
-    "vite": "^2.6.2"
+    "release-it": "^14.12.5",
+    "typescript": "^4.5.5",
+    "vite": "^2.8.4",
+    "vite-plugin-dts": "^0.9.9",
+    "vitest": "^0.5.5"
   },
   "scripts": {
-    "build": "microbundle",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build --config vite.dist.config.js",
+    "test": "vitest",
     "docs": "./node_modules/.bin/jsdoc -c jsdoc.json",
     "release": "release-it *",
-    "dev": "vite",
-    "watch": "microbundle watch"
+    "dev": "vite"
   },
   "repository": {
     "type": "git",
@@ -53,10 +52,5 @@
   "bugs": {
     "url": "https://github.com/easylogic/sapa/issues"
   },
-  "files": [
-    "@types",
-    "dist",
-    "src"
-  ],
   "homepage": "https://github.com/easylogic/sapa"
 }

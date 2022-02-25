@@ -1,25 +1,21 @@
 {
-    "compilerOptions": {
-      "target": "ESNext",
-      "module": "ESNext",
-      "lib": [
-        "DOM",
-        "ESNext"
-      ],
-      "declaration": true,
-      "emitDeclarationOnly": false,
-      "declarationMap": false,
-      "declarationDir": "./@types",
-      "noEmit": false,
-      "strict": true,
-      "suppressImplicitAnyIndexErrors": true,
-      "noImplicitThis": false,
-      "moduleResolution": "node",
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
-    },
-    "include": [
-      "src",
-    ]
-  }
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "ESNext"],
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "declarationMap": false,
+    "declarationDir": "./@types",
+    "noEmit": false,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noImplicitThis": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "@types", "dist"]
+}

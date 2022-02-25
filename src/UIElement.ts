@@ -1,9 +1,10 @@
 import { CHECK_SAPARATOR, CHECK_SUBSCRIBE_PATTERN, SUBSCRIBE_SAPARATOR } from "./Event";
 import { EventMachine } from "./EventMachine";
-import { isFunction, splitMethodByKeyword } from "./functions/func";
+import { isFunction, isNotUndefined, splitMethodByKeyword } from "./functions/func";
 import { uuidShort } from "./functions/uuid";
 import { IBaseStore, IKeyValue } from "./types";
 import { BaseStore } from './BaseStore';
+import { getVariable } from ".";
 
 /**
  * UI 를 만드는 기본 단위 
@@ -49,7 +50,7 @@ export class UIElement extends EventMachine {
    * UIElement 가 생성될 때 호출되는 메소드 
    * @protected
    */
-  created() {}
+  protected created() {}
 
   getRealEventName(e: string, separator: string) {
     var startIndex = e.indexOf(separator);
@@ -99,15 +100,36 @@ export class UIElement extends EventMachine {
       const [throttleSecond, throttleMethods] = this.splitMethod(methodLine, 'throttle');      
       const [allTrigger, allTriggerMethods] = this.splitMethod(methodLine, 'allTrigger');   
       const [selfTrigger, selfTriggerMethods] = this.splitMethod(methodLine, 'selfTrigger');            
+      const [frameTrigger, frameTriggerMethods] = this.splitMethod(methodLine, 'frame');
+      const [paramsVariable, paramsVariableMethods, params] = this.splitMethod(methodLine, 'params');
+
+
+      let debounce = +debounceSecond > 0 ? debounceSecond : 0;
+      let throttle = +throttleSecond > 0 ? throttleSecond : 0;
+      let isAllTrigger = Boolean(allTriggerMethods.length);
+      let isSelfTrigger = Boolean(selfTriggerMethods.length);
+      let isFrameTrigger = Boolean(frameTriggerMethods.length);
+
+      if (paramsVariableMethods.length) {
+        const settings = getVariable(paramsVariable);
+
+        if (isNotUndefined(settings.debounce)) debounce = settings.debounce;
+        if (isNotUndefined(settings.throttle)) throttle = settings.throttle;
+        if (isNotUndefined(settings.frame)) isFrameTrigger = settings.frame;
+      }
+
+      const originalCallback = this[key]
 
       events
         .split(CHECK_SAPARATOR)
         .filter(it => {
           return (
-              debounceMethods.indexOf(it) === -1 && 
-              allTriggerMethods.indexOf(it) === -1 &&               
-              selfTriggerMethods.indexOf(it) === -1 &&                             
-              throttleMethods.indexOf(it) === -1
+            checkMethodList.findIndex(a => a.target === it) === -1 &&
+            debounceMethods.indexOf(it) === -1 &&
+            allTriggerMethods.indexOf(it) === -1 &&
+            selfTriggerMethods.indexOf(it) === -1 &&
+            throttleMethods.indexOf(it) === -1 &&
+            paramsVariableMethods.indexOf(it) === -1
           )
         })
         .map(it => it.trim())
@@ -115,8 +137,8 @@ export class UIElement extends EventMachine {
         .forEach(e => {
 
           if (isFunction(this[key])) {
-            var callback = this.createLocalCallback(e, this[key] )
-            this.$store.on(e, callback, this, debounceSecond, throttleSecond, allTriggerMethods.length, selfTriggerMethods.length, checkMethodList);
+            var callback = this.createLocalCallback(e, originalCallback)
+            this.$store.on(e, callback, this, debounce, throttle, isAllTrigger, isSelfTrigger, checkMethodList, isFrameTrigger);
           }
 
       });
@@ -168,8 +190,12 @@ export class UIElement extends EventMachine {
    * 
    * @param {Function} callback 
    */
-  nextTick (callback: Function) {
-    this.$store.nextTick(callback);
+  nextTick (callback: Function, delay: number = 0) {
+
+    setTimeout(() => {
+      this.$store.nextTick(callback);
+    }, delay);
+
   }
 
   /**
@@ -194,6 +220,7 @@ export class UIElement extends EventMachine {
   broadcast(messageName: string, ...args: any[]) {
     Object.keys(this.children).forEach(key => {
       this.children[key].trigger(messageName, ...args);
+      this.children[key].broadcast(messageName, ...args);
     })
   }
 
@@ -204,8 +231,8 @@ export class UIElement extends EventMachine {
    * @param {string} message 이벤트 메세지 이름 
    * @param {Function} callback 메세지 지정시 실행될 함수
    */ 
-  on (message: string, callback: Function) {
-    this.$store.on(message, callback, this);
+  on (message: string, callback: Function, debounceDelay = 0, throttleDelay = 0, enableAllTrigger = false, enableSelfTrigger = false, frame = false) {
+    this.$store.on(message, callback, this, debounceDelay, throttleDelay, enableAllTrigger, enableSelfTrigger, [], frame);
   }
 
   /**
@@ -213,7 +240,7 @@ export class UIElement extends EventMachine {
    * @param {Function} callback
    */ 
   off (message: string, callback: Function) {
-    this.$store.off(message, callback);
+    this.$store.off(message, callback, this);
   }
 
   /**
@@ -240,7 +267,7 @@ export class UIElement extends EventMachine {
    * 
    * @returns {string} function id 
    */ 
-  subscribe(callback: Function, debounceSecond = 0, throttleSecond = 0) {
+  subscribe(callback: Function, debounceSecond = 0, throttleSecond = 0): string {
     const id = `subscribe.${uuidShort()}`;
 
     const newCallback = this.createLocalCallback(id, callback);

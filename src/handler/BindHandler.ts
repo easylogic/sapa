@@ -1,8 +1,26 @@
 
-import { isObject } from "../functions/func";
+import { isNumber, isObject } from "../functions/func";
 import { CHECK_BIND_PATTERN, BIND_CHECK_FUNCTION, CHECK_SAPARATOR, BIND_CHECK_DEFAULT_FUNCTION, BIND_SAPARATOR } from "../Event";
 import { BaseHandler } from "./BaseHandler";
 import { IBindHandlerData, IDom, IKeyValue } from "../types";
+
+const convertToPx = (key: string, value: any) => {
+
+  if (isNumber(value)) {
+    switch (key) {
+      case 'width':
+      case 'height':
+      case 'top':
+      case 'left':
+      case 'right':
+      case 'bottom':
+        return value + 'px';
+    }
+
+  }
+
+  return value;
+}
 
 /**
  * 
@@ -10,7 +28,7 @@ import { IBindHandlerData, IDom, IKeyValue } from "../types";
  * @param {string} key 
  * @param {any} value 
  */
-const applyElementAttribute = ($element: IDom, key: string|IKeyValue, value?: string|string[]|object|Function) => {
+const applyElementAttribute = ($element: IDom, key: string|IKeyValue, value?: string|string[]|object|IKeyValue|Function) => {
 
   if (key === 'cssText') {
     /**
@@ -23,6 +41,13 @@ const applyElementAttribute = ($element: IDom, key: string|IKeyValue, value?: st
      * style: { key: value }
      */
     if (typeof(value) !== 'string') {
+
+      const css = {}
+      Object.entries(value as IKeyValue).forEach(([key, value]) => {
+        css[key] = convertToPx(key, value);
+      })
+
+
       $element.css(value);
     }
 

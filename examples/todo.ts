@@ -12,7 +12,7 @@ export class Todo extends UIElement {
     }
 
     template() {
-        return `
+        return /*html*/`
         <div class='todo'>
             <div class="input-group">
                 <input type="text" ref="$input" class="form-control" placeholder="Add new todo">
@@ -45,7 +45,7 @@ export class Todo extends UIElement {
 
     [LOAD('$list')] () {
         return this.state.list.map(item => {
-            return `<div class="item" data-id="${item.id}">${item.text}</div>`
+            return /*html*/`<div class="item" data-id="${item.id}">${item.text}</div>`
         })
     }
 
