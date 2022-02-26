@@ -1,5 +1,5 @@
 import { UIElement } from '../src/UIElement';
-import { CLICK, ENTER, KEYDOWN, LOAD, SUBSCRIBE_SELF, PREVENT, DEBOUNCE } from '../src/Event';
+import { CLICK, ENTER, KEYDOWN, LOAD, SUBSCRIBE_SELF, PREVENT, DEBOUNCE, BIND } from '../src/Event';
 
 export class Todo extends UIElement {
 
@@ -33,7 +33,7 @@ export class Todo extends UIElement {
         this.trigger('updateList')
     }
 
-    [SUBSCRIBE_SELF('updateList') + DEBOUNCE(100)] () {
+    [SUBSCRIBE_SELF('updateList', 'changeList') + DEBOUNCE(100)] () {
         let text = this.refs.$input.value
         if (text) {
             this.refs.$input.val('');
@@ -41,12 +41,26 @@ export class Todo extends UIElement {
         this.setState({
             list: [...this.state.list, { id: this.state.list.length + 1, text }]
         })
+
+        setTimeout(() => {
+            this.refs.$input.focus();
+        }, 100)
     }
 
     [LOAD('$list')] () {
         return this.state.list.map(item => {
             return /*html*/`<div class="item" data-id="${item.id}">${item.text}</div>`
         })
+    }
+
+    [BIND('$list')] () {
+        return {
+            style: {
+                'background-color': 'blue',
+                color: 'white'
+            }
+
+        }
     }
 
 }

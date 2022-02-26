@@ -10,6 +10,7 @@ import { IBaseStore, IKeyValue } from "./types";
 export declare class UIElement extends EventMachine {
     private __storeInstance;
     attributes: never[] | undefined;
+    notEventRedefine: boolean;
     constructor(opt: UIElement | Object, props?: IKeyValue);
     setStore(storeInstance: IBaseStore): void;
     /**
@@ -24,12 +25,6 @@ export declare class UIElement extends EventMachine {
      */
     protected created(): void;
     getRealEventName(e: string, separator: string): string;
-    /**
-     * 메소드 분리
-     *
-     * @returns {any[]}
-     */
-    splitMethod(arr: string[], keyword: string, defaultValue?: any): any[];
     createLocalCallback(event: string, callback: Function): any;
     /**
      * initialize store event

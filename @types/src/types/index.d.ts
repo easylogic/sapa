@@ -1,3 +1,4 @@
+import { MagicMethodResult } from '../functions/MagicMethod';
 export interface IKeyValue {
     [key: string]: any;
 }
@@ -46,7 +47,7 @@ export interface IEventMachine {
     el: any;
     $el: any;
     $root: any;
-    filterProps(CHECK_BIND_PATTERN: RegExp): any;
+    filterProps(methodKey: string): MagicMethodResult[];
     refs: any;
     getRef(id: string): IEventMachine;
     state: IKeyValue;
@@ -61,6 +62,7 @@ export interface IEventMachine {
     source: string;
     sourceName: string;
     childComponents: IKeyValue;
+    notEventRedefine?: boolean;
     destroy(): void;
 }
 export interface IUIElement extends IEventMachine {
@@ -73,20 +75,21 @@ export interface IDomEventObjectOption {
     passive: boolean;
     capture: any;
 }
+interface MethodParam {
+    target: string;
+    param?: string;
+}
 export interface IDomEventObject {
-    customEventName: string;
-    delayMethods: any;
-    captures: ISplitedMethod[];
-    codes: string[];
     checkMethodList: string[];
-    beforeMethods: ISplitedMethod[];
-    afterMethods: ISplitedMethod[];
-    debounceMethods: ISplitedMethod[];
-    throttleMethods: ISplitedMethod[];
+    afterMethods: MethodParam[];
+    beforeMethods: MethodParam[];
+    codes: string[];
     delegate?: string;
+    customEventName: string;
     eventName: keyof ElementEventMap;
+    magicMethod: MagicMethodResult;
     dom?: Element;
-    callback?: EventListenerOrEventListenerObject;
+    callback?: IMultiCallback;
 }
 export interface IBaseStore {
 }
@@ -100,3 +103,4 @@ export interface UIElementConstructor {
     new (opt?: any, props?: IKeyValue): IUIElement;
     attributes?: string[];
 }
+export {};

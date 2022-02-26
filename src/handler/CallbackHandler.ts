@@ -1,9 +1,6 @@
-
-import { CHECK_CALLBACK_PATTERN, CHECK_SAPARATOR, CALLBACK_SAPARATOR } from "../Event";
-import { debounce, throttle, splitMethodByKeyword } from "../functions/func";
 import { IMultiCallback } from "../types";
 import { BaseHandler } from "./BaseHandler";
-import { IKeyValue } from '../../@types/types/index.d';
+import { IKeyValue } from '../types/index';
 
 export default class CallbackHandler extends BaseHandler {
   private _callbacks: any[] = [];
@@ -14,7 +11,7 @@ export default class CallbackHandler extends BaseHandler {
     this.destroy();
 
     if (!this._callbacks) {
-      this._callbacks = this.context.filterProps(CHECK_CALLBACK_PATTERN)
+      this._callbacks = this.context.filterProps('callback')
     }
     this._callbacks.forEach(key => this.parseCallback(key));
   }
@@ -83,35 +80,6 @@ export default class CallbackHandler extends BaseHandler {
     // context 에 속한 변수나 메소드 리스트 체크
     const checkMethodList = arr.filter((code: string | number) => !!context[code]);
 
-    // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
-    const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
-    const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
-    const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
-    const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");
-    const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
-    const [captures] = splitMethodByKeyword(arr, "capture");
-
-    // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
-    const filteredList = [
-      ...checkMethodList,
-      ...afters,
-      ...befores,
-      ...delays,
-      ...debounces,
-      ...throttles,
-      ...captures
-    ];
-
-    return {
-      callbackName,
-      captures,
-      afterMethods,
-      beforeMethods,
-      delayMethods,
-      debounceMethods,
-      throttleMethods,
-      checkMethodList
-    };
   }
 
 
@@ -125,18 +93,18 @@ export default class CallbackHandler extends BaseHandler {
 
 
   bindingCallback(callbackName: any, checkMethodFilters: any, originalCallback: IMultiCallback) {
-    let callbackObject = this.getDefaultCallbackObject(callbackName, checkMethodFilters);
+    // let callbackObject = this.getDefaultCallbackObject(callbackName, checkMethodFilters);
 
 
-    if (callbackObject.debounceMethods.length) {
-      var debounceTime = +callbackObject.debounceMethods[0].target;
-      originalCallback = debounce(originalCallback, debounceTime);
-    } else if (callbackObject.throttleMethods.length) {
-      var throttleTime = +callbackObject.throttleMethods[0].target;
-      originalCallback = throttle(originalCallback, throttleTime);
-    }
+    // if (callbackObject.debounceMethods.length) {
+    //   var debounceTime = +callbackObject.debounceMethods[0].target;
+    //   originalCallback = debounce(originalCallback, debounceTime);
+    // } else if (callbackObject.throttleMethods.length) {
+    //   var throttleTime = +callbackObject.throttleMethods[0].target;
+    //   originalCallback = throttle(originalCallback, throttleTime);
+    // }
 
-    this.addCallback(callbackObject, originalCallback);
+    // this.addCallback(callbackObject, originalCallback);
   };
 
   /**
@@ -145,15 +113,5 @@ export default class CallbackHandler extends BaseHandler {
    * @param {string} key 
    */
   parseCallback(key: string) {
-
-    const context = this.context;
-    let checkMethodFilters = key.split(CHECK_SAPARATOR).map((it: string) => it.trim()).filter(Boolean);
-
-    var prefix: string = checkMethodFilters.shift() as string;
-    var callbackName = prefix.split(CALLBACK_SAPARATOR)[1];    
-
-    var originalCallback = context[key].bind(context);
-
-    this.bindingCallback(callbackName, checkMethodFilters, originalCallback);
   }
 }

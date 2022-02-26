@@ -1,6 +1,6 @@
 import { IMultiCallback } from "../types";
 import { BaseHandler } from "./BaseHandler";
-import { IKeyValue } from '../../@types/types/index.d';
+import { IKeyValue } from '../types/index';
 export default class CallbackHandler extends BaseHandler {
     private _callbacks;
     private _bindings;
@@ -19,16 +19,7 @@ export default class CallbackHandler extends BaseHandler {
      * @param {string} eventName  이벤트 이름
      * @param {array} checkMethodFilters 매직 필터 목록
      */
-    getDefaultCallbackObject(callbackName: any, checkMethodFilters: any): {
-        callbackName: any;
-        captures: any[];
-        afterMethods: any[];
-        beforeMethods: any[];
-        delayMethods: any[];
-        debounceMethods: any[];
-        throttleMethods: any[];
-        checkMethodList: any;
-    };
+    getDefaultCallbackObject(callbackName: any, checkMethodFilters: any): void;
     addCallback(callbackObject: {
         callbackName?: any;
         captures?: any[];

@@ -248,6 +248,32 @@ class SecondElement extends UIElement {
 
 ```
 
+You can also pass props object. 
+
+
+```js
+
+class SecondElement extends UIElement {
+    components () {
+        return { MyElement }
+    }
+    template () {
+        return `
+            <div>
+                <object refClass='MyElement' ${variable({
+                    title: 'my element title',
+                    description: 'my element description'
+                })}></object>
+            </div>
+        `
+    }
+}
+
+
+```
+
+
+
 ### Using props 
 
 It can be used by referencing the value of props through `this.props`.

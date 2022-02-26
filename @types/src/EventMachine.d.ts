@@ -2,6 +2,7 @@ import { DomEventHandler } from "./handler/DomEventHandler";
 import { BindHandler } from "./handler/BindHandler";
 import { IDom, IEventMachine, IKeyValue } from "./types";
 import CallbackHandler from './handler/CallbackHandler';
+import { MagicMethodResult } from "./functions/MagicMethod";
 export declare class EventMachine implements IEventMachine {
     /**
      * local state
@@ -12,7 +13,7 @@ export declare class EventMachine implements IEventMachine {
     id: string;
     __tempVariables: Map<string, any>;
     handlers: (BindHandler | DomEventHandler | CallbackHandler)[];
-    _loadMethods: any;
+    _loadMethods: MagicMethodResult[] | undefined;
     __cachedMethodList: any;
     el: any;
     $el: any;
@@ -209,8 +210,8 @@ export declare class EventMachine implements IEventMachine {
      *
      * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다.
      */
-    collectProps(): string[];
-    filterProps(pattern: RegExp): string[];
+    collectProps(): MagicMethodResult[];
+    filterProps(methodKey: string): MagicMethodResult[];
     self(e: any): any;
     isAltKey(e: any): any;
     isCtrlKey(e: any): any;

@@ -26,12 +26,3 @@ export declare function isNumber(value: any): boolean;
 export declare function isZero(num: number): boolean;
 export declare function isNotZero(num: number): boolean;
 export declare function clone(obj: any): any;
-export declare function combineKeyArray(obj: IKeyValue): IKeyValue;
-export declare const html: (strings: TemplateStringsArray, ...args: any[]) => string;
-/**
- * 전체 문자열에서 특정 키워드 함수를 사용하는 패턴을 찾아 리턴해준다.
- *
- * @param {string[]} arr
- * @param {string} keyword
- */
-export declare const splitMethodByKeyword: (arr: any[], keyword: string) => any[][];

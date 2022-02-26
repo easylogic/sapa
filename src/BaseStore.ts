@@ -260,7 +260,6 @@ export class BaseStore {
   }
 
   trigger(event: IMultiCallback | string, ...args: any[]) {
-
     if (isFunction(event)) {
       (event as IMultiCallback)(...args);
     } else {

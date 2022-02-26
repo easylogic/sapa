@@ -21,17 +21,81 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
+const MAGIC_METHOD_REG = /^@magic\:([a-zA-Z][a-zA-Z0-9]*)[\W]{1}(.*)*$/g;
 const MAGIC_METHOD = "@magic:";
-const makeEventChecker = (value, split = CHECK_SAPARATOR) => {
+const SPLITTER = "|";
+const FUNC_REGEXP = /(([\$a-z_\-]+)\([^\(\)]*\)|([a-z_\-]+))/gi;
+const FUNC_START_CHARACTER = "(";
+const FUNC_END_CHARACTER = ")";
+class MagicMethod {
+  static make(str, ...args) {
+    return `${MAGIC_METHOD}${str} ${args.join(SPLITTER)}`;
+  }
+  static check(str) {
+    return str.match(MAGIC_METHOD_REG) !== null;
+  }
+  static parse(str) {
+    const matches = str.match(MAGIC_METHOD_REG);
+    if (!matches) {
+      return void 0;
+    }
+    const result = matches[0].split("@magic:")[1].split(SPLITTER).map((item) => item.trim());
+    let [initializer, ...pipes] = result;
+    const [method, ...args] = initializer.split(" ");
+    const pipeList = pipes.map((it) => {
+      return this.parsePipe(it);
+    }).filter((it) => it.value);
+    const pipeObjects = {
+      "function": [],
+      "keyword": [],
+      "value": []
+    };
+    pipeList.forEach((pipe) => {
+      if (pipe.type === "function") {
+        pipeObjects.function.push(pipe);
+      } else if (pipe.type === "keyword") {
+        pipeObjects.keyword.push(pipe);
+      } else {
+        pipeObjects.value.push(pipe);
+      }
+    });
+    return {
+      originalMethod: str,
+      method,
+      args,
+      pipes: pipeList,
+      keys: pipeObjects
+    };
+  }
+  static parsePipe(it) {
+    const result = it.match(FUNC_REGEXP);
+    if (!result) {
+      return {
+        type: "value",
+        value: it
+      };
+    }
+    const [value] = result;
+    if (value.includes(FUNC_START_CHARACTER)) {
+      const [func, rest] = value.split(FUNC_START_CHARACTER);
+      const [args] = rest.split(FUNC_END_CHARACTER);
+      return {
+        type: "function",
+        value,
+        func,
+        args: args.split(",").map((it2) => it2.trim()).filter(Boolean)
+      };
+    }
+    return {
+      type: "keyword",
+      value: result[0]
+    };
+  }
+}
+const makeEventChecker = (value, split = SPLITTER) => {
   return ` ${split} ${value}`;
 };
-const CHECK_DOM_EVENT_PATTERN = /domevent (.*)/gi;
-const CHECK_CALLBACK_PATTERN = /callback (.*)/gi;
-const CHECK_LOAD_PATTERN = /load (.*)/gi;
-const CHECK_BIND_PATTERN = /bind (.*)/gi;
-const CHECK_SUBSCRIBE_PATTERN = /subscribe (.*)/gi;
 const MULTI_PREFIX = "ME@";
-const SPLITTER = "|";
 const PIPE = (...args) => {
   return args.join(SPLITTER);
 };
@@ -41,33 +105,28 @@ const EVENT = (...args) => {
 const COMMAND = EVENT;
 const ON = EVENT;
 const NAME_SAPARATOR = ":";
-const CHECK_SAPARATOR = "|";
-const DOM_EVENT_SAPARATOR = `${MAGIC_METHOD}domevent `;
-const CALLBACK_SAPARATOR = `${MAGIC_METHOD}callback `;
-const LOAD_SAPARATOR = `${MAGIC_METHOD}load `;
-const BIND_SAPARATOR = `${MAGIC_METHOD}bind `;
-const SUBSCRIBE_SAPARATOR = `${MAGIC_METHOD}subscribe `;
 const SAPARATOR = " ";
 const refManager = {};
 const DOM_EVENT_MAKE = (...keys) => {
   var key = keys.join(NAME_SAPARATOR);
   return (...args) => {
-    return DOM_EVENT_SAPARATOR + [key, ...args].join(SAPARATOR);
+    const [selector, ...result] = args;
+    return MagicMethod.make("domevent", [key, selector].join(" "), ...result);
   };
 };
 const SUBSCRIBE_EVENT_MAKE = (...args) => {
-  return SUBSCRIBE_SAPARATOR + args.join(CHECK_SAPARATOR);
+  return MagicMethod.make("subscribe", ...args);
 };
 const CALLBACK_EVENT_MAKE = (...args) => {
-  return CALLBACK_SAPARATOR + args.join(CHECK_SAPARATOR);
+  return MagicMethod.make("callback", ...args);
 };
-const CHECKER = (value, split = CHECK_SAPARATOR) => {
+const CHECKER = (value, split = SPLITTER) => {
   return makeEventChecker(value, split);
 };
-const AFTER = (value, split = CHECK_SAPARATOR) => {
+const AFTER = (value, split = SPLITTER) => {
   return makeEventChecker(`after(${value})`, split);
 };
-const BEFORE = (value, split = CHECK_SAPARATOR) => {
+const BEFORE = (value, split = SPLITTER) => {
   return makeEventChecker(`before(${value})`, split);
 };
 const IF = CHECKER;
@@ -178,7 +237,7 @@ const TRANSITIONRUN = DOM_EVENT_MAKE("transitionrun");
 const TRANSITIONCANCEL = DOM_EVENT_MAKE("transitioncancel");
 const DOUBLETAB = CUSTOM("doubletab");
 const LOAD = (value = "$el") => {
-  return LOAD_SAPARATOR + value;
+  return MagicMethod.make("load", value);
 };
 const getRef = (id) => {
   return refManager[id] || "";
@@ -192,7 +251,7 @@ const BIND_CHECK_DEFAULT_FUNCTION = () => {
   return true;
 };
 const BIND = (value = "$el") => {
-  return BIND_SAPARATOR + value;
+  return MagicMethod.make("bind", value);
 };
 function normalizeWheelEvent(e) {
   let dx = e.deltaX;
@@ -320,14 +379,6 @@ function isFunction(value) {
 function isNumber(value) {
   return typeof value == "number";
 }
-const splitMethodByKeyword = (arr, keyword) => {
-  const filterKeys = arr.filter((code) => code.indexOf(`${keyword}(`) > -1);
-  const filterMaps = filterKeys.map((code) => {
-    const [target, param] = code.split(`${keyword}(`)[1].split(")")[0].trim().split(" ");
-    return { target, param };
-  });
-  return [filterKeys, filterMaps];
-};
 const UUID_REG = /[xy]/g;
 function uuid() {
   var dt = new Date().getTime();
@@ -1327,9 +1378,9 @@ class DomEventHandler extends BaseHandler {
       return;
     }
     if (!this._domEvents) {
-      this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN);
+      this._domEvents = this.context.filterProps("domevent");
     }
-    this._domEvents.forEach((key) => this.parseDomEvent(key));
+    this._domEvents.forEach((it) => this.parseDomEvent(it));
   }
   destroy() {
     if (this.context.notEventRedefine)
@@ -1375,34 +1426,34 @@ class DomEventHandler extends BaseHandler {
   hasDelegate(e, eventObject) {
     return this.matchPath(e.target || e.srcElement, eventObject.delegate);
   }
-  makeCallback(eventObject, callback) {
+  makeCallback(eventObject, magicMethod, callback) {
     if (eventObject.delegate) {
-      return this.makeDelegateCallback(eventObject, callback);
+      return this.makeDelegateCallback(eventObject, magicMethod, callback);
     } else {
-      return this.makeDefaultCallback(eventObject, callback);
+      return this.makeDefaultCallback(eventObject, magicMethod, callback);
     }
   }
-  makeDefaultCallback(eventObject, callback) {
+  makeDefaultCallback(eventObject, magicMethod, callback) {
     return (e) => {
-      var returnValue = this.runEventCallback(e, eventObject, callback);
+      var returnValue = this.runEventCallback(e, eventObject, magicMethod, callback);
       if (isNotUndefined(returnValue)) {
         return returnValue;
       }
     };
   }
-  makeDelegateCallback(eventObject, callback) {
+  makeDelegateCallback(eventObject, magicMethod, callback) {
     return (e) => {
       const delegateTarget = this.hasDelegate(e, eventObject);
       if (delegateTarget) {
         e.$dt = Dom.create(delegateTarget);
-        var returnValue = this.runEventCallback(e, eventObject, callback);
+        var returnValue = this.runEventCallback(e, eventObject, magicMethod, callback);
         if (isNotUndefined(returnValue)) {
           return returnValue;
         }
       }
     };
   }
-  runEventCallback(e, eventObject, callback) {
+  runEventCallback(e, eventObject, magicMethod, callback) {
     const context = this.context;
     e.xy = Event.posXY(e);
     if (eventObject.beforeMethods.length) {
@@ -1459,43 +1510,67 @@ class DomEventHandler extends BaseHandler {
   getCustomEventName(eventName) {
     return customEventNames[eventName] ? eventName : "";
   }
-  getDefaultEventObject(eventName, checkMethodFilters) {
-    const context = this.context;
-    let arr = checkMethodFilters;
-    const checkMethodList = arr.filter((code) => !!context[code]);
-    const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
-    const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
-    const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
-    const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");
-    const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
-    const [captures] = splitMethodByKeyword(arr, "capture");
-    const filteredList = [
-      ...checkMethodList,
-      ...afters,
-      ...befores,
-      ...delays,
-      ...debounces,
-      ...throttles,
-      ...captures
-    ];
-    var codes = arr.filter((code) => filteredList.indexOf(code) === -1).map((code) => code.toLowerCase());
-    return {
+  getDefaultEventObject(eventName, dom, delegate, magicMethod, callback) {
+    const obj = {
       eventName: this.getRealEventName(eventName),
       customEventName: this.getCustomEventName(eventName),
-      codes,
-      captures,
-      afterMethods,
-      beforeMethods,
-      delayMethods,
-      debounceMethods,
-      throttleMethods,
-      checkMethodList
+      callback
     };
+    const [_, __, ...delegates] = magicMethod.args;
+    obj.dom = this.getDefaultDomElement(dom);
+    obj.delegate = delegates.join(SAPARATOR);
+    obj.beforeMethods = [];
+    obj.afterMethods = [];
+    obj.codes = [];
+    obj.checkMethodList = [];
+    magicMethod.pipes.forEach((pipe) => {
+      var _a, _b, _c, _d, _e, _f;
+      if (pipe.type === "function") {
+        switch (pipe.func) {
+          case "debounce":
+            var debounceTime = +(((_a = pipe.args) == null ? void 0 : _a[0]) || 0);
+            obj.callback = debounce(callback, debounceTime);
+            break;
+          case "throttle":
+            var throttleTime = +(((_b = pipe.args) == null ? void 0 : _b[0]) || 0);
+            obj.callback = throttle(callback, throttleTime);
+            break;
+          case "before":
+            obj.beforeMethods.push({
+              target: `${(_c = pipe.args) == null ? void 0 : _c[0]}`,
+              param: (_d = pipe.args) == null ? void 0 : _d[1]
+            });
+            break;
+          case "after":
+            obj.afterMethods.push({
+              target: `${(_e = pipe.args) == null ? void 0 : _e[0]}`,
+              param: (_f = pipe.args) == null ? void 0 : _f[1]
+            });
+            break;
+        }
+      } else if (pipe.type === "keyword") {
+        obj.codes.push(`${pipe.value}`.toLowerCase());
+        const method = `${pipe.value}`;
+        if (this.context[method]) {
+          obj.checkMethodList.push(method);
+        }
+      }
+    });
+    return obj;
   }
-  addDomEvent(eventObject, callback) {
-    eventObject.callback = this.makeCallback(eventObject, callback);
+  addDomEvent(eventObject, magicMethod, callback) {
+    eventObject.callback = this.makeCallback(eventObject, magicMethod, callback);
     this.addBinding(eventObject);
-    var options = !!eventObject.captures.length;
+    var options = false;
+    magicMethod.pipes.forEach((pipe) => {
+      if (pipe.type === "keyword") {
+        switch (pipe.value) {
+          case "capture":
+            options = true;
+            break;
+        }
+      }
+    });
     if (scrollBlockingEvents[eventObject.eventName]) {
       options = {
         passive: true,
@@ -1506,12 +1581,19 @@ class DomEventHandler extends BaseHandler {
       Event.addDomEvent(eventObject == null ? void 0 : eventObject.dom, eventObject.eventName, eventObject.callback, options);
     }
   }
-  makeCustomEventCallback(eventObject, callback) {
+  makeCustomEventCallback(eventObject, magicMethod, callback) {
     if (eventObject.customEventName === "doubletab") {
       var delay = 300;
-      if (eventObject.delayMethods.length) {
-        delay = +eventObject.delayMethods[0].target;
-      }
+      magicMethod.pipes.forEach((pipe) => {
+        var _a;
+        if (pipe.type === "function") {
+          switch (pipe.func) {
+            case "delay":
+              delay = +(((_a = pipe.args) == null ? void 0 : _a[0]) || 0);
+              break;
+          }
+        }
+      });
       return (...args) => {
         if (!this.doubleTab) {
           this.doubleTab = {
@@ -1519,7 +1601,7 @@ class DomEventHandler extends BaseHandler {
           };
         } else {
           if (performance.now() - this.doubleTab.time < delay) {
-            callback(...args);
+            callback == null ? void 0 : callback(...args);
           }
           this.doubleTab = null;
         }
@@ -1527,19 +1609,10 @@ class DomEventHandler extends BaseHandler {
     }
     return callback;
   }
-  bindingDomEvent([eventName, dom, ...delegate], checkMethodFilters, callback) {
-    let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
-    eventObject.dom = this.getDefaultDomElement(dom);
-    eventObject.delegate = delegate.join(SAPARATOR);
-    if (eventObject.debounceMethods.length) {
-      var debounceTime = +eventObject.debounceMethods[0].target;
-      callback = debounce(callback, debounceTime);
-    } else if (eventObject.throttleMethods.length) {
-      var throttleTime = +eventObject.throttleMethods[0].target;
-      callback = throttle(callback, throttleTime);
-    }
-    callback = this.makeCustomEventCallback(eventObject, callback);
-    this.addDomEvent(eventObject, callback);
+  bindingDomEvent([eventName, dom, ...delegate], magicMethod, callback) {
+    let eventObject = this.getDefaultEventObject(eventName, dom, delegate, magicMethod, callback);
+    eventObject.callback = this.makeCustomEventCallback(eventObject, magicMethod, eventObject.callback);
+    this.addDomEvent(eventObject, magicMethod, eventObject.callback);
   }
   getEventNames(eventName) {
     let results = [];
@@ -1549,18 +1622,15 @@ class DomEventHandler extends BaseHandler {
     });
     return results;
   }
-  parseDomEvent(key) {
+  parseDomEvent(it) {
     const context = this.context;
-    let checkMethodFilters = key.split(CHECK_SAPARATOR).map((it) => it.trim()).filter(Boolean);
-    var prefix = checkMethodFilters.shift();
-    var eventSelectorAndBehave = prefix == null ? void 0 : prefix.split(DOM_EVENT_SAPARATOR)[1];
-    var arr = eventSelectorAndBehave == null ? void 0 : eventSelectorAndBehave.split(SAPARATOR);
+    var arr = it.args;
     if (arr) {
       var eventNames = this.getEventNames(arr[0]);
-      var callback = context[key].bind(context);
+      var callback = context[it.originalMethod].bind(context);
       for (let i = 0, len = eventNames.length; i < len; i++) {
         arr[0] = eventNames[i];
-        this.bindingDomEvent(arr, checkMethodFilters, callback);
+        this.bindingDomEvent(arr, it, callback);
       }
     }
   }
@@ -1643,26 +1713,28 @@ class BindHandler extends BaseHandler {
   bindData(...args) {
     var _a;
     if (!this._bindMethods) {
-      this._bindMethods = this.context.filterProps(CHECK_BIND_PATTERN);
+      this._bindMethods = this.context.filterProps("bind");
     }
-    const bindList = (_a = this._bindMethods) == null ? void 0 : _a.filter((originalCallbackName) => {
+    const bindList = (_a = this._bindMethods) == null ? void 0 : _a.filter((it) => {
       if (!args.length)
         return true;
-      var [callbackName, id] = originalCallbackName.split(CHECK_SAPARATOR);
-      var [_, $bind] = callbackName.split(" ");
-      return args.indexOf($bind) > -1;
+      return args.indexOf(it.args[0]) > -1;
     });
-    bindList == null ? void 0 : bindList.forEach(async (callbackName) => {
-      const bindMethod = this.context[callbackName];
-      var [callbackName, id] = callbackName.split(CHECK_SAPARATOR);
-      const refObject = this.getRef(id);
+    bindList == null ? void 0 : bindList.forEach(async (it) => {
+      const bindMethod = this.context[it.originalMethod];
+      let refObject = null;
+      it.pipes.forEach((pipe) => {
+        if (pipe.type === "keyword") {
+          refObject = this.getRef(`${pipe.value}`);
+        }
+      });
       let refCallback = BIND_CHECK_DEFAULT_FUNCTION;
       if (typeof refObject === "string" && refObject !== "") {
         refCallback = BIND_CHECK_FUNCTION(refObject);
       } else if (typeof refObject === "function") {
         refCallback = refObject;
       }
-      const elName = callbackName.split(BIND_SAPARATOR)[1];
+      const elName = it.args[0];
       let $element = this.context.refs[elName];
       const isBindCheck = typeof refCallback === "function" && refCallback.call(this.context);
       if ($element && isBindCheck) {
@@ -1691,7 +1763,7 @@ class CallbackHandler extends BaseHandler {
   initialize() {
     this.destroy();
     if (!this._callbacks) {
-      this._callbacks = this.context.filterProps(CHECK_CALLBACK_PATTERN);
+      this._callbacks = this.context.filterProps("callback");
     }
     this._callbacks.forEach((key) => this.parseCallback(key));
   }
@@ -1735,32 +1807,7 @@ class CallbackHandler extends BaseHandler {
   getDefaultCallbackObject(callbackName, checkMethodFilters) {
     const context = this.context;
     let arr = checkMethodFilters;
-    const checkMethodList = arr.filter((code) => !!context[code]);
-    const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
-    const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
-    const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
-    const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");
-    const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
-    const [captures] = splitMethodByKeyword(arr, "capture");
-    [
-      ...checkMethodList,
-      ...afters,
-      ...befores,
-      ...delays,
-      ...debounces,
-      ...throttles,
-      ...captures
-    ];
-    return {
-      callbackName,
-      captures,
-      afterMethods,
-      beforeMethods,
-      delayMethods,
-      debounceMethods,
-      throttleMethods,
-      checkMethodList
-    };
+    arr.filter((code) => !!context[code]);
   }
   addCallback(callbackObject, callback) {
     callbackObject.callback = this.makeCallback(callbackObject, callback);
@@ -1768,23 +1815,8 @@ class CallbackHandler extends BaseHandler {
     callbackObject.callback();
   }
   bindingCallback(callbackName, checkMethodFilters, originalCallback) {
-    let callbackObject = this.getDefaultCallbackObject(callbackName, checkMethodFilters);
-    if (callbackObject.debounceMethods.length) {
-      var debounceTime = +callbackObject.debounceMethods[0].target;
-      originalCallback = debounce(originalCallback, debounceTime);
-    } else if (callbackObject.throttleMethods.length) {
-      var throttleTime = +callbackObject.throttleMethods[0].target;
-      originalCallback = throttle(originalCallback, throttleTime);
-    }
-    this.addCallback(callbackObject, originalCallback);
   }
   parseCallback(key) {
-    const context = this.context;
-    let checkMethodFilters = key.split(CHECK_SAPARATOR).map((it) => it.trim()).filter(Boolean);
-    var prefix = checkMethodFilters.shift();
-    var callbackName = prefix.split(CALLBACK_SAPARATOR)[1];
-    var originalCallback = context[key].bind(context);
-    this.bindingCallback(callbackName, checkMethodFilters, originalCallback);
   }
 }
 const REFERENCE_PROPERTY = "ref";
@@ -2071,22 +2103,15 @@ class EventMachine {
   }
   async load(...args) {
     if (!this._loadMethods) {
-      this._loadMethods = this.filterProps(CHECK_LOAD_PATTERN);
+      this._loadMethods = this.filterProps("load");
     }
-    const localLoadMethods = this._loadMethods.filter((callbackName) => {
-      const elName = callbackName.split(LOAD_SAPARATOR)[1].split(CHECK_SAPARATOR).map((it) => it.trim())[0];
-      if (!args.length)
-        return true;
-      return args.indexOf(elName) > -1;
-    });
-    await localLoadMethods.forEach(async (callbackName) => {
-      let methodName = callbackName.split(LOAD_SAPARATOR)[1];
-      var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map((it) => it.trim());
-      checker = checker.map((it) => it.trim());
-      const isDomDiff = Boolean(checker.filter((it) => DOMDIFF.includes(it)).length);
+    const filtedLoadMethodList = this._loadMethods.filter((it) => args.length === 0 ? true : it.args[0] === args[0]);
+    await filtedLoadMethodList.forEach(async (it) => {
+      const [elName, ...args2] = it.args;
+      const isDomDiff = !!it.keys["domdiff"];
       const refTarget = this.refs[elName];
       if (refTarget) {
-        var newTemplate = await this[callbackName].call(this, ...args);
+        var newTemplate = await this[it.originalMethod].call(this, ...args2);
         if (Array.isArray(newTemplate)) {
           newTemplate = newTemplate.join("");
         }
@@ -2135,15 +2160,15 @@ class EventMachine {
   }
   collectProps() {
     if (!this.__cachedMethodList) {
-      this.__cachedMethodList = collectProps(this, (name) => {
-        return name.indexOf(MAGIC_METHOD) === 0;
+      this.__cachedMethodList = collectProps(this, (name) => MagicMethod.check(name)).map((it) => {
+        return MagicMethod.parse(it);
       });
     }
     return this.__cachedMethodList;
   }
-  filterProps(pattern) {
-    return this.collectProps().filter((key) => {
-      return key.match(pattern);
+  filterProps(methodKey) {
+    return this.collectProps().filter((it) => {
+      return it.method === methodKey;
     });
   }
   self(e) {
@@ -2190,11 +2215,13 @@ class UIElement extends EventMachine {
     super(opt, props);
     __publicField(this, "__storeInstance");
     __publicField(this, "attributes");
+    __publicField(this, "notEventRedefine");
     if (props == null ? void 0 : props.store) {
       this.__storeInstance = props.store;
     } else {
       this.__storeInstance = new BaseStore();
     }
+    this.notEventRedefine = true;
     this.created();
     this.initialize();
     this.initializeStoreEvent();
@@ -2211,14 +2238,6 @@ class UIElement extends EventMachine {
     var startIndex = e.indexOf(separator);
     return e.substr(startIndex < 0 ? 0 : startIndex + separator.length);
   }
-  splitMethod(arr, keyword, defaultValue = 0) {
-    var [methods, params] = splitMethodByKeyword(arr, keyword);
-    return [
-      methods.length ? +params[0].target : defaultValue,
-      methods,
-      params
-    ];
-  }
   createLocalCallback(event, callback) {
     var newCallback = callback.bind(this);
     newCallback.displayName = `${this.sourceName}.${event}`;
@@ -2226,38 +2245,57 @@ class UIElement extends EventMachine {
     return newCallback;
   }
   initializeStoreEvent() {
-    this.filterProps(CHECK_SUBSCRIBE_PATTERN).forEach((key) => {
-      const events = this.getRealEventName(key, SUBSCRIBE_SAPARATOR);
-      const [method, ...methodLine] = events.split(CHECK_SAPARATOR);
-      const checkMethodList = methodLine.map((it) => it.trim()).filter((code) => this[code]).map((target) => ({ target }));
-      const [debounceSecond, debounceMethods] = this.splitMethod(methodLine, "debounce");
-      const [throttleSecond, throttleMethods] = this.splitMethod(methodLine, "throttle");
-      const [allTrigger, allTriggerMethods] = this.splitMethod(methodLine, "allTrigger");
-      const [selfTrigger, selfTriggerMethods] = this.splitMethod(methodLine, "selfTrigger");
-      const [frameTrigger, frameTriggerMethods] = this.splitMethod(methodLine, "frame");
-      const [paramsVariable, paramsVariableMethods, params] = this.splitMethod(methodLine, "params");
-      let debounce2 = +debounceSecond > 0 ? debounceSecond : 0;
-      let throttle2 = +throttleSecond > 0 ? throttleSecond : 0;
-      let isAllTrigger = Boolean(allTriggerMethods.length);
-      let isSelfTrigger = Boolean(selfTriggerMethods.length);
-      let isFrameTrigger = Boolean(frameTriggerMethods.length);
-      if (paramsVariableMethods.length) {
-        const settings = getVariable(paramsVariable);
-        if (isNotUndefined(settings.debounce))
-          debounce2 = settings.debounce;
-        if (isNotUndefined(settings.throttle))
-          throttle2 = settings.throttle;
-        if (isNotUndefined(settings.frame))
-          isFrameTrigger = settings.frame;
-      }
-      const originalCallback = this[key];
-      events.split(CHECK_SAPARATOR).filter((it) => {
-        return checkMethodList.findIndex((a) => a.target === it) === -1 && debounceMethods.indexOf(it) === -1 && allTriggerMethods.indexOf(it) === -1 && selfTriggerMethods.indexOf(it) === -1 && throttleMethods.indexOf(it) === -1 && paramsVariableMethods.indexOf(it) === -1;
-      }).map((it) => it.trim()).filter(Boolean).forEach((e) => {
-        if (isFunction(this[key])) {
-          var callback = this.createLocalCallback(e, originalCallback);
-          this.$store.on(e, callback, this, debounce2, throttle2, isAllTrigger, isSelfTrigger, checkMethodList, isFrameTrigger);
+    this.filterProps("subscribe").forEach((it) => {
+      const events = it.args.join(" ");
+      const checkMethodList = [];
+      const eventList = [];
+      let debounce2 = 0;
+      let throttle2 = 0;
+      let isAllTrigger = false;
+      let isSelfTrigger = false;
+      let isFrameTrigger = false;
+      it.pipes.forEach((pipe) => {
+        var _a, _b, _c;
+        if (pipe.type === "function") {
+          switch (pipe.func) {
+            case "debounce":
+              debounce2 = +(((_a = pipe.args) == null ? void 0 : _a[0]) || 0);
+              break;
+            case "throttle":
+              throttle2 = +(((_b = pipe.args) == null ? void 0 : _b[0]) || 0);
+              break;
+            case "allTrigger":
+              isAllTrigger = true;
+              break;
+            case "selfTrigger":
+              isSelfTrigger = true;
+              break;
+            case "frame":
+              isFrameTrigger = true;
+              break;
+            case "params":
+              const settings = getVariable((_c = pipe.args) == null ? void 0 : _c[0]);
+              if (isNotUndefined(settings.debounce))
+                debounce2 = settings.debounce;
+              if (isNotUndefined(settings.throttle))
+                throttle2 = settings.throttle;
+              if (isNotUndefined(settings.frame))
+                isFrameTrigger = settings.frame;
+              break;
+          }
+        } else if (pipe.type === "keyword") {
+          const method = `${pipe.value}`;
+          if (this[method]) {
+            checkMethodList.push(method);
+          } else {
+            eventList.push(method);
+          }
         }
+      });
+      const originalCallback = this[it.originalMethod];
+      [...eventList, events].filter(Boolean).forEach((e) => {
+        var callback = this.createLocalCallback(e, originalCallback);
+        this.$store.on(e, callback, this, debounce2, throttle2, isAllTrigger, isSelfTrigger, checkMethodList, isFrameTrigger);
       });
     });
   }
@@ -2314,4 +2352,4 @@ const start = (ElementClass, opt = {}) => {
   app.render($container);
   return app;
 };
-export { AFTER, ALL_TRIGGER, ALT, ANIMATIONEND, ANIMATIONITERATION, ANIMATIONSTART, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, BACKSPACE, BEFORE, BIND, BIND_CHECK_DEFAULT_FUNCTION, BIND_CHECK_FUNCTION, BIND_SAPARATOR, BLUR, BRACKET_LEFT, BRACKET_RIGHT, BaseStore, CALLBACK, CALLBACK_SAPARATOR, CAPTURE, CHANGE, CHANGEINPUT, CHECKER, CHECK_BIND_PATTERN, CHECK_CALLBACK_PATTERN, CHECK_DOM_EVENT_PATTERN, CHECK_LOAD_PATTERN, CHECK_SAPARATOR, CHECK_SUBSCRIBE_PATTERN, CLICK, COMMAND, CONFIG, CONTEXTMENU, CONTROL, CUSTOM, D1000, DEBOUNCE, DELAY, DELETE, DOMDIFF, DOM_EVENT_SAPARATOR, DOUBLECLICK, DOUBLETAB, DRAG, DRAGEND, DRAGENTER, DRAGEXIT, DRAGLEAVE, DRAGOUT, DRAGOVER, DRAGSTART, DROP, Dom, ENTER, EQUAL, ESCAPE, EVENT, FIT, FOCUS, FOCUSIN, FOCUSOUT, FRAME, IF, INPUT, KEY, KEYDOWN, KEYPRESS, KEYUP, LEFT_BUTTON, LOAD, LOAD_SAPARATOR, MAGIC_METHOD, META, MINUS, MOUSE, MOUSEDOWN, MOUSEENTER, MOUSELEAVE, MOUSEMOVE, MOUSEOUT, MOUSEOVER, MOUSEUP, NAME_SAPARATOR, ON, PARAMS, PASSIVE, PASTE, PEN, PIPE, POINTEREND, POINTERENTER, POINTERMOVE, POINTEROUT, POINTEROVER, POINTERSTART, PREVENT, RAF, RESIZE, RIGHT_BUTTON, SAPARATOR, SCROLL, SELF, SELF_TRIGGER, SHIFT, SPACE, STOP, SUBMIT, SUBSCRIBE, SUBSCRIBE_ALL, SUBSCRIBE_SAPARATOR, SUBSCRIBE_SELF, THROTTLE, TOUCH, TOUCHEND, TOUCHMOVE, TOUCHSTART, TRANSITIONCANCEL, TRANSITIONEND, TRANSITIONRUN, TRANSITIONSTART, UIElement, VARIABLE_SAPARATOR, WHEEL, getRef, getVariable, hasVariable, initializeGroupVariables, makeEventChecker, normalizeWheelEvent, recoverVariable, registAlias, registElement, retriveAlias, retriveElement, spreadVariable, start, variable };
+export { AFTER, ALL_TRIGGER, ALT, ANIMATIONEND, ANIMATIONITERATION, ANIMATIONSTART, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, BACKSPACE, BEFORE, BIND, BIND_CHECK_DEFAULT_FUNCTION, BIND_CHECK_FUNCTION, BLUR, BRACKET_LEFT, BRACKET_RIGHT, BaseStore, CALLBACK, CAPTURE, CHANGE, CHANGEINPUT, CHECKER, CLICK, COMMAND, CONFIG, CONTEXTMENU, CONTROL, CUSTOM, D1000, DEBOUNCE, DELAY, DELETE, DOMDIFF, DOUBLECLICK, DOUBLETAB, DRAG, DRAGEND, DRAGENTER, DRAGEXIT, DRAGLEAVE, DRAGOUT, DRAGOVER, DRAGSTART, DROP, Dom, ENTER, EQUAL, ESCAPE, EVENT, FIT, FOCUS, FOCUSIN, FOCUSOUT, FRAME, IF, INPUT, KEY, KEYDOWN, KEYPRESS, KEYUP, LEFT_BUTTON, LOAD, META, MINUS, MOUSE, MOUSEDOWN, MOUSEENTER, MOUSELEAVE, MOUSEMOVE, MOUSEOUT, MOUSEOVER, MOUSEUP, NAME_SAPARATOR, ON, PARAMS, PASSIVE, PASTE, PEN, PIPE, POINTEREND, POINTERENTER, POINTERMOVE, POINTEROUT, POINTEROVER, POINTERSTART, PREVENT, RAF, RESIZE, RIGHT_BUTTON, SAPARATOR, SCROLL, SELF, SELF_TRIGGER, SHIFT, SPACE, STOP, SUBMIT, SUBSCRIBE, SUBSCRIBE_ALL, SUBSCRIBE_SELF, THROTTLE, TOUCH, TOUCHEND, TOUCHMOVE, TOUCHSTART, TRANSITIONCANCEL, TRANSITIONEND, TRANSITIONRUN, TRANSITIONSTART, UIElement, VARIABLE_SAPARATOR, WHEEL, getRef, getVariable, hasVariable, initializeGroupVariables, makeEventChecker, normalizeWheelEvent, recoverVariable, registAlias, registElement, retriveAlias, retriveElement, spreadVariable, start, variable };

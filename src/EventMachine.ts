@@ -1,13 +1,4 @@
 import {
-  CHECK_SAPARATOR,
-  CHECK_LOAD_PATTERN,
-  LOAD_SAPARATOR,
-  DOMDIFF,
-  getRef,
-  MAGIC_METHOD,
-} from "./Event";
-
-import {
   isFunction,
   keyEach,
   collectProps,
@@ -17,10 +8,11 @@ import {
 import {DomEventHandler} from "./handler/DomEventHandler";
 import {BindHandler} from "./handler/BindHandler";
 import { retriveElement, spreadVariable, getVariable, hasVariable } from "./functions/registElement";
-import { uuid, uuidShort } from "./functions/uuid";
+import { uuid } from "./functions/uuid";
 import { Dom } from "./functions/Dom";
 import { IBaseHandler, IDom, IEventMachine, IKeyValue } from "./types";
 import CallbackHandler from './handler/CallbackHandler';
+import MagicMethod, { MagicMethodResult } from "./functions/MagicMethod";
 
 
 const REFERENCE_PROPERTY = "ref";
@@ -28,7 +20,6 @@ const TEMP_DIV = Dom.create("div");
 const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
 const REF_CLASS = 'refclass';
 const REF_CLASS_PROPERTY = `[${REF_CLASS}]`
-const VARIABLE_SAPARATOR = "__ref__variable:";
 
 
 export class EventMachine implements IEventMachine {
@@ -43,7 +34,7 @@ export class EventMachine implements IEventMachine {
   id: string;
   __tempVariables: Map<string, any>;
   handlers: (BindHandler | DomEventHandler | CallbackHandler)[];
-  _loadMethods: any;
+  _loadMethods: MagicMethodResult[] | undefined;
   __cachedMethodList: any;
   el: any;
   $el: any;
@@ -533,31 +524,21 @@ export class EventMachine implements IEventMachine {
 
   async load(...args: string[]) {
     if (!this._loadMethods) {
-      this._loadMethods = this.filterProps(CHECK_LOAD_PATTERN);
+      this._loadMethods = this.filterProps('load');
     }
 
+    const filtedLoadMethodList = this._loadMethods.filter(it => args.length === 0 ? true : it.args[0] === args[0])
+
     // loop 가 비동기라 await 로 대기를 시켜줘야 나머지 html 업데이트에 대한 순서를 맞출 수 있다. 
-    const localLoadMethods = this._loadMethods.filter((callbackName: string) => {
-        const elName = callbackName.split(LOAD_SAPARATOR)[1]
-                                  .split(CHECK_SAPARATOR)
-                                  .map((it: string) => it.trim())[0];
-        if (!args.length) return true; 
-        return args.indexOf(elName) > -1
-      })
+    await filtedLoadMethodList.forEach(async (it: MagicMethodResult) => {
 
+      const [elName, ...args] = it.args;
 
-
-    await localLoadMethods.forEach(async (callbackName: string) => {
-      let methodName = callbackName.split(LOAD_SAPARATOR)[1];
-      var [elName, ...checker] = methodName.split(CHECK_SAPARATOR).map((it: string) => it.trim())
-
-      checker = checker.map((it: string) => it.trim())
-      
-      const isDomDiff = Boolean(checker.filter((it: string) => DOMDIFF.includes(it)).length);
+      const isDomDiff = !!it.keys['domdiff'];
       const refTarget = this.refs[elName];
 
       if (refTarget) {        
-        var newTemplate = await this[callbackName].call(this, ...args);
+        var newTemplate = await this[it.originalMethod].call(this, ...args);
 
         if (Array.isArray(newTemplate)) {
           newTemplate = newTemplate.join('');
@@ -637,20 +618,20 @@ export class EventMachine implements IEventMachine {
    * 
    * @returns {string[]} 나의 상위 모든 메소드를 수집해서 리턴한다. 
    */
-  collectProps(): string[] {
+  collectProps(): MagicMethodResult[] {
 
     if (!this.__cachedMethodList){
-      this.__cachedMethodList = collectProps(this, (name: string | string[]) => {
-        return name.indexOf(MAGIC_METHOD) === 0; 
+      this.__cachedMethodList = collectProps(this, (name: string) => MagicMethod.check(name)).map(it => {
+        return MagicMethod.parse(it);
       });
     }
 
     return this.__cachedMethodList;
   }
 
-  filterProps(pattern: RegExp) {
-    return this.collectProps().filter((key: string) => {
-      return key.match(pattern);
+  filterProps(methodKey: string): MagicMethodResult[] {
+    return this.collectProps().filter(it => {
+      return it.method === methodKey;
     });
   }
 

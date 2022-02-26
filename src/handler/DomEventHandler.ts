@@ -1,9 +1,11 @@
 
-import Event, { CHECK_SAPARATOR, DOM_EVENT_SAPARATOR, SAPARATOR, NAME_SAPARATOR, CHECK_DOM_EVENT_PATTERN } from "../Event";
+import Event, {SAPARATOR, NAME_SAPARATOR } from "../Event";
 import { Dom } from "../functions/Dom";
-import { debounce, throttle, isNotUndefined, isFunction, splitMethodByKeyword } from "../functions/func";
-import { DomElement, IDom, IDomEventObject, IDomEventObjectOption, IMultiCallback } from "../types";
+import { debounce, throttle, isNotUndefined, isFunction } from "../functions/func";
+import { DomElement, IDomEventObject, IDomEventObjectOption, IMultiCallback } from "../types";
 import { BaseHandler } from "./BaseHandler";
+import { MagicMethodResult } from '../functions/MagicMethod';
+import { IKeyValue } from '../../@types/src/types/index.d';
 
 
 const scrollBlockingEvents = {
@@ -26,7 +28,7 @@ const customEventNames = {
 }
 
 export class DomEventHandler extends BaseHandler {
-    _domEvents: any;
+    _domEvents: MagicMethodResult[] | undefined;
     _bindings?: IDomEventObject[];
     doubleTab: any;
 
@@ -40,10 +42,10 @@ export class DomEventHandler extends BaseHandler {
         }
 
         if (!this._domEvents) {
-          this._domEvents = this.context.filterProps(CHECK_DOM_EVENT_PATTERN)
+          this._domEvents = this.context.filterProps('domevent')
         }
 
-        this._domEvents.forEach((key: string) => this.parseDomEvent(key));
+        this._domEvents.forEach((it) => this.parseDomEvent(it));
     }
 
     destroy() {
@@ -100,24 +102,24 @@ export class DomEventHandler extends BaseHandler {
         return this.matchPath(e.target || e.srcElement, eventObject.delegate as string);
     }
       
-    makeCallback (eventObject: IDomEventObject, callback: Function) {
+    makeCallback (eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback: Function) {
       if (eventObject.delegate) {
-        return this.makeDelegateCallback(eventObject, callback);
+        return this.makeDelegateCallback(eventObject, magicMethod, callback);
       } else {
-        return this.makeDefaultCallback(eventObject, callback);
+        return this.makeDefaultCallback(eventObject, magicMethod, callback);
       }
     }
       
-    makeDefaultCallback (eventObject: IDomEventObject, callback: Function) {
+    makeDefaultCallback (eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback: Function) {
         return (e: any) => {
-          var returnValue = this.runEventCallback(e, eventObject, callback);
+          var returnValue = this.runEventCallback(e, eventObject, magicMethod, callback);
           if (isNotUndefined(returnValue)) {
             return returnValue;
           }
         };
     }
       
-    makeDelegateCallback (eventObject: IDomEventObject, callback: Function) {
+    makeDelegateCallback (eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback: Function) {
         return (e: any) => {
           const delegateTarget = this.hasDelegate(e, eventObject);
       
@@ -125,7 +127,7 @@ export class DomEventHandler extends BaseHandler {
             // delegate target 이 있는 경우만 callback 실행
             e.$dt = Dom.create(delegateTarget as DomElement);      
       
-            var returnValue = this.runEventCallback(e, eventObject, callback);
+            var returnValue = this.runEventCallback(e, eventObject, magicMethod, callback);
             if (isNotUndefined(returnValue)) {
               return returnValue;
             }
@@ -133,7 +135,7 @@ export class DomEventHandler extends BaseHandler {
         };
     }
       
-    runEventCallback (e: any, eventObject: IDomEventObject, callback: Function) {
+    runEventCallback (e: any, eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback: Function) {
         const context = this.context;
         e.xy = Event.posXY(e);
       
@@ -142,9 +144,9 @@ export class DomEventHandler extends BaseHandler {
             return context[before.target].call(context, e, before.param);
           });
         }
-      
+
         if (this.checkEventType(e, eventObject)) {
-          var returnValue = callback(e, e.$dt, e.xy); 
+          var returnValue = callback(e, e.$dt, e.xy);
       
           if (returnValue !== false && eventObject.afterMethods.length) {
             eventObject.afterMethods.forEach(after => {
@@ -168,6 +170,9 @@ export class DomEventHandler extends BaseHandler {
       
         // 체크 메소드들은 모든 메소드를 다 적용해야한다.
         var isAllCheck = true;
+
+        
+
         if (eventObject.checkMethodList.length) {
           isAllCheck = eventObject.checkMethodList.every(field => {
             var fieldValue = context[field];    
@@ -215,56 +220,80 @@ export class DomEventHandler extends BaseHandler {
      * 
      * doubletab -> touchend 로 바뀜 
      */
-    getDefaultEventObject (eventName: string, checkMethodFilters: string[]): IDomEventObject {
-        const context = this.context;
-        let arr = checkMethodFilters;
+    getDefaultEventObject (eventName: string, dom: Element|string, delegate: string[], magicMethod: MagicMethodResult, callback: IMultiCallback): IDomEventObject {
+
+      const obj: IKeyValue = {
+        eventName: this.getRealEventName(eventName),
+        customEventName: this.getCustomEventName(eventName),
+        callback
+      }
+
+      const [_, __, ...delegates] = magicMethod.args;
       
-        // context 에 속한 변수나 메소드 리스트 체크
-        const checkMethodList = arr.filter(code => !!context[code]);
-      
-        // 이벤트 정의 시점에 적용 되어야 하는 것들은 모두 method() 화 해서 정의한다.
-        const [afters, afterMethods] = splitMethodByKeyword(arr, "after");
-        const [befores, beforeMethods] = splitMethodByKeyword(arr, "before");
-        const [debounces, debounceMethods] = splitMethodByKeyword(arr, "debounce");
-        const [delays, delayMethods] = splitMethodByKeyword(arr, "delay");        
-        const [throttles, throttleMethods] = splitMethodByKeyword(arr, "throttle");
-        const [captures] = splitMethodByKeyword(arr, "capture");
-      
-        // 위의 5개 필터 이외에 있는 코드들은 keycode 로 인식한다.
-        const filteredList = [
-          ...checkMethodList,
-          ...afters,
-          ...befores,
-          ...delays,
-          ...debounces,
-          ...throttles,
-          ...captures
-        ];
-      
-        var codes = arr
-          .filter(code => filteredList.indexOf(code) === -1)
-          .map(code => code.toLowerCase());
-      
-        return {
-          eventName: this.getRealEventName(eventName),
-          customEventName: this.getCustomEventName(eventName), 
-          codes,
-          captures,
-          afterMethods,
-          beforeMethods,
-          delayMethods,
-          debounceMethods,
-          throttleMethods,
-          checkMethodList
-        };
+      obj.dom = this.getDefaultDomElement(dom);
+      obj.delegate = delegates.join(SAPARATOR);
+      obj.beforeMethods = [];
+      obj.afterMethods = [];
+      obj.codes = [];
+      obj.checkMethodList = [];
+
+      magicMethod.pipes.forEach(pipe => {
+        if (pipe.type === 'function') {
+
+          switch(pipe.func) {
+          case 'debounce': 
+            var debounceTime = +(pipe.args?.[0] || 0);
+            obj.callback = debounce(callback, debounceTime);              
+            break;
+          case 'throttle':
+            var throttleTime = +(pipe.args?.[0] || 0);
+            obj.callback = throttle(callback, throttleTime);
+            break;
+          case 'before':
+            obj.beforeMethods.push({
+              target: `${pipe.args?.[0]}`,
+              param: pipe.args?.[1]
+            });
+            break;
+          case 'after':
+            obj.afterMethods.push({
+              target: `${pipe.args?.[0]}`,
+              param: pipe.args?.[1]
+            });
+            break;
+          }
+
+        } else if (pipe.type === 'keyword') {
+            obj.codes.push(`${pipe.value}`.toLowerCase());
+
+            const method = `${pipe.value}`;
+
+            if (this.context[method]) {
+              obj.checkMethodList.push(method);
+            }
+        }
+
+      })
+
+      return obj as IDomEventObject;
     }
       
       
-    addDomEvent (eventObject: IDomEventObject, callback: Function) {
-        eventObject.callback = this.makeCallback(eventObject, callback);
+    addDomEvent (eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback: Function) {
+        eventObject.callback = this.makeCallback(eventObject, magicMethod, callback);
         this.addBinding(eventObject);
       
-        var options: boolean|IDomEventObjectOption = !!eventObject.captures.length
+        var options: boolean|IDomEventObjectOption = false;
+
+        magicMethod.pipes.forEach(pipe => {
+          if (pipe.type === 'keyword') {
+            switch(pipe.value) {
+            case 'capture':
+              options = true;
+              break;
+            }
+          }
+        });
       
         if (scrollBlockingEvents[eventObject.eventName]) {
           options = {
@@ -285,14 +314,22 @@ export class DomEventHandler extends BaseHandler {
 
     }
 
-    makeCustomEventCallback (eventObject: IDomEventObject, callback: Function): IMultiCallback {
+    makeCustomEventCallback (eventObject: IDomEventObject, magicMethod: MagicMethodResult, callback?: EventListenerOrEventListenerObject): IMultiCallback {
 
       if (eventObject.customEventName === 'doubletab') {
         var delay = 300;
-        
-        if (eventObject.delayMethods.length) {
-          delay = +eventObject.delayMethods[0].target;
-        }
+
+
+        magicMethod.pipes.forEach(pipe => {
+          if (pipe.type === 'function') {
+            switch(pipe.func) {
+            case 'delay': 
+              delay = +(pipe.args?.[0] || 0);
+              break;
+            }
+          }
+        })
+
         return (...args: any[]) => {
 
           if (!this.doubleTab) {
@@ -301,7 +338,7 @@ export class DomEventHandler extends BaseHandler {
             }
           } else {
             if (performance.now() - this.doubleTab.time < delay) {
-              callback(...args);
+              (callback as Function)?.(...args);
             }
 
             this.doubleTab = null;
@@ -313,25 +350,13 @@ export class DomEventHandler extends BaseHandler {
       return callback as IMultiCallback; 
     }
       
-    bindingDomEvent ( [eventName, dom, ...delegate]: string[], checkMethodFilters: string[], callback: IMultiCallback ) {
-        let eventObject = this.getDefaultEventObject(eventName, checkMethodFilters);
-      
-        eventObject.dom = this.getDefaultDomElement(dom);
-        eventObject.delegate = delegate.join(SAPARATOR);
-
-        
-        if (eventObject.debounceMethods.length) {
-          var debounceTime = +eventObject.debounceMethods[0].target;
-          callback = debounce(callback, debounceTime);
-        } else if (eventObject.throttleMethods.length) {
-          var throttleTime = +eventObject.throttleMethods[0].target;
-          callback = throttle(callback, throttleTime);
-        }
+    bindingDomEvent ( [eventName, dom, ...delegate]: string[], magicMethod: MagicMethodResult, callback: IMultiCallback ) {
+        let eventObject = this.getDefaultEventObject(eventName, dom, delegate, magicMethod, callback);
 
         // custom event callback 만들기 
-        callback = this.makeCustomEventCallback(eventObject, callback)
+        eventObject.callback = this.makeCustomEventCallback(eventObject, magicMethod, eventObject.callback)
       
-        this.addDomEvent(eventObject, callback);
+        this.addDomEvent(eventObject, magicMethod, eventObject.callback);
     };
       
     getEventNames (eventName: string) {
@@ -351,23 +376,18 @@ export class DomEventHandler extends BaseHandler {
      * 
      * @param {string} key 
      */
-    parseDomEvent (key: string) {
+    parseDomEvent (it: MagicMethodResult) {
         const context = this.context;
-        let checkMethodFilters = key.split(CHECK_SAPARATOR).map(it => it.trim()).filter(Boolean);
-        
-        var prefix = checkMethodFilters.shift()
-        var eventSelectorAndBehave = prefix?.split(DOM_EVENT_SAPARATOR)[1];
-        
-        var arr = eventSelectorAndBehave?.split(SAPARATOR);
+        var arr = it.args;
 
         if (arr) {
           var eventNames = this.getEventNames(arr[0]);
 
-          var callback = context[key].bind(context);
+          var callback = context[it.originalMethod].bind(context);
   
           for(let i = 0, len = eventNames.length; i< len; i++) {
             arr[0] = eventNames[i];
-            this.bindingDomEvent(arr, checkMethodFilters, callback);
+            this.bindingDomEvent(arr, it, callback);
           }
         }
         
