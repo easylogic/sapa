@@ -2,6 +2,9 @@ import { MagicMethodResult } from '../functions/MagicMethod';
 export interface IKeyValue {
     [key: string]: any;
 }
+export declare type ITypedKeyValue<V> = IKeyValue & {
+    [key: string]: V;
+};
 export interface IMultiCallback {
     (...args: any[]): void;
 }
@@ -41,6 +44,17 @@ export interface IDom {
 }
 export declare type HTMLInstance = HTMLElement | SVGElement | DocumentFragment | ShadowRoot;
 export declare type DomElement = HTMLInstance | string;
+export interface LoadVariableValue {
+    key: string;
+    ref: string;
+    callback: Function;
+    domdiff?: boolean;
+}
+export interface BindVariableValue {
+    key: string;
+    ref: string;
+    callback: Function;
+}
 export interface IEventMachine {
     [x: string]: any;
     $store: any;
@@ -49,6 +63,8 @@ export interface IEventMachine {
     $root: any;
     filterProps(methodKey: string): MagicMethodResult[];
     refs: any;
+    refLoadVariables: ITypedKeyValue<LoadVariableValue>;
+    refBindVariables: ITypedKeyValue<BindVariableValue>;
     getRef(id: string): IEventMachine;
     state: IKeyValue;
     prevState: IKeyValue;

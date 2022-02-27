@@ -7,19 +7,22 @@ import {
 
 import {DomEventHandler} from "./handler/DomEventHandler";
 import {BindHandler} from "./handler/BindHandler";
-import { retriveElement, spreadVariable, getVariable, hasVariable } from "./functions/registElement";
+import { retriveElement, spreadVariable, getVariable, hasVariable, recoverVariable } from "./functions/registElement";
 import { uuid } from "./functions/uuid";
 import { Dom } from "./functions/Dom";
-import { IBaseHandler, IDom, IEventMachine, IKeyValue } from "./types";
+import { IBaseHandler, IDom, IEventMachine, IKeyValue, ITypedKeyValue, LoadVariableValue, BindVariableValue } from "./types";
 import CallbackHandler from './handler/CallbackHandler';
 import MagicMethod, { MagicMethodResult } from "./functions/MagicMethod";
 
 
 const REFERENCE_PROPERTY = "ref";
+const BIND_PROPERTY = "bind";
+const LOAD_PROPERTY = "load";
 const TEMP_DIV = Dom.create("div");
 const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
 const REF_CLASS = 'refclass';
 const REF_CLASS_PROPERTY = `[${REF_CLASS}]`
+
 
 
 export class EventMachine implements IEventMachine {
@@ -39,7 +42,7 @@ export class EventMachine implements IEventMachine {
   el: any;
   $el: any;
   $root: any;
-  refs: any;
+  refs: IKeyValue;
   opt!: IKeyValue;
   parent!: IEventMachine;
   props!: IKeyValue;
@@ -47,11 +50,15 @@ export class EventMachine implements IEventMachine {
   sourceName!: string;
   childComponents!: IKeyValue;
   private _localTimestamp: number;
+  refLoadVariables: ITypedKeyValue<LoadVariableValue>;
+  refBindVariables: ITypedKeyValue<BindVariableValue>;
 
   constructor(opt: Object | IEventMachine, props: IKeyValue) {
     this.state = {};
     this.prevState = {};
     this.refs = {};
+    this.refLoadVariables = {};
+    this.refBindVariables = {};
     this.children = {};
     this._localTimestamp = 0;    
     // this._bindings = [];
@@ -246,11 +253,13 @@ export class EventMachine implements IEventMachine {
     for(var i = 0, len = list.length; i < len; i++) {
       const $el = list[i];
 
+      // root 가 ref 속성을 가지고 있으면  refs 에 저장한다.
       var ref = $el.attr(REFERENCE_PROPERTY)
       if (ref) {
         this.refs[ref] = $el;
       }
 
+      // 하위에 ref 속성을 가지고 있는 것들을 찾아서 refs 에 저장한다.
       var refs = $el.$$(QUERY_PROPERTY);
       var temp = {} 
 
@@ -264,7 +273,21 @@ export class EventMachine implements IEventMachine {
           temp[name] = true; 
         }
 
-        this.refs[name] = $dom;             
+        this.refs[name] = $dom;      
+        
+        // load 변수와 bind 변수를 저장한다. 
+        const loadVariable = $dom.attr(LOAD_PROPERTY);
+        const loadVariableRealFunction = getVariable(loadVariable);
+        const bindVariable = $dom.attr(BIND_PROPERTY);
+        const bindVariableRealFunction = getVariable(bindVariable);
+
+        if (loadVariable && isFunction(loadVariableRealFunction)) {
+          this.refLoadVariables[name] = { key: loadVariable, ref: name,  callback: loadVariableRealFunction } as LoadVariableValue;
+        }
+
+        if (bindVariable && isFunction(bindVariableRealFunction)) {
+          this.refBindVariables[name] = { key: bindVariable, ref: name, callback: bindVariableRealFunction } as BindVariableValue;
+        }
       }
     }
 
@@ -522,22 +545,55 @@ export class EventMachine implements IEventMachine {
     this.parseComponent();
   }
 
+  async loadLocalValue (refName?: string) {
+
+    let target = this.refLoadVariables;
+
+    if (refName) {
+      target = {
+        [refName]: this.refLoadVariables[refName]
+      }
+    }
+
+    Object.keys(target).forEach(async (key) => {
+      const loadObj = this.refLoadVariables[key];
+      const isDomDiff = loadObj.domdiff;
+      var newTemplate = await (loadObj.callback).call(this);
+
+      if (Array.isArray(newTemplate)) {
+        newTemplate = newTemplate.join('');
+      }
+
+      // create fragment 
+      const fragment = this.parseTemplate(newTemplate, true);
+      if (isDomDiff) {
+        this.refs[loadObj.ref].htmlDiff(fragment);
+      } else {
+        this.refs[loadObj.ref].html(fragment);
+      }
+    });
+  }
+
   async load(...args: string[]) {
     if (!this._loadMethods) {
       this._loadMethods = this.filterProps('load');
     }
 
+    // local 로 등록된 load 를 모두 실행한다. 
+    await this.loadLocalValue(...args);
+
+    // method 형태로 등록된 load 를 모두 실행한다. 
     const filtedLoadMethodList = this._loadMethods.filter(it => args.length === 0 ? true : it.args[0] === args[0])
 
     // loop 가 비동기라 await 로 대기를 시켜줘야 나머지 html 업데이트에 대한 순서를 맞출 수 있다. 
-    await filtedLoadMethodList.forEach(async (it: MagicMethodResult) => {
+    filtedLoadMethodList.forEach(async (it: MagicMethodResult) => {
 
       const [elName, ...args] = it.args;
 
       const isDomDiff = !!it.keys['domdiff'];
       const refTarget = this.refs[elName];
 
-      if (refTarget) {        
+      if (refTarget) {
         var newTemplate = await this[it.originalMethod].call(this, ...args);
 
         if (Array.isArray(newTemplate)) {
@@ -610,6 +666,17 @@ export class EventMachine implements IEventMachine {
     this.$el = null; 
     this.refs = {} 
     this.children = {} 
+
+    Object.values(this.refLoadVariables).forEach(ref => {
+      recoverVariable(ref.key, true);
+    })
+
+    Object.values(this.refBindVariables).forEach(ref => {
+      recoverVariable(ref.key, true);
+    })
+
+    this.refLoadVariables = {} 
+    this.refBindVariables = {}
   }
 
   /**

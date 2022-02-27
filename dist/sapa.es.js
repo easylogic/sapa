@@ -1710,11 +1710,35 @@ class BindHandler extends BaseHandler {
   load(...args) {
     this.bindData(...args);
   }
+  async bindLocalValue(refName) {
+    let target = this.context.refBindVariables;
+    if (refName) {
+      target = {
+        [refName]: this.context.refBindVariables[refName]
+      };
+    }
+    Object.values(target).forEach(async (it) => {
+      const refCallback = it.callback;
+      let $element = this.context.refs[it.ref];
+      if ($element) {
+        const results = await refCallback.call(this.context);
+        if (!results)
+          return;
+        const keys = Object.keys(results);
+        for (var elementKeyIndex = 0, len = keys.length; elementKeyIndex < len; elementKeyIndex++) {
+          const key = keys[elementKeyIndex];
+          const value = results[key];
+          applyElementAttribute($element, key, value);
+        }
+      }
+    });
+  }
   bindData(...args) {
     var _a;
     if (!this._bindMethods) {
       this._bindMethods = this.context.filterProps("bind");
     }
+    this.bindLocalValue(...args);
     const bindList = (_a = this._bindMethods) == null ? void 0 : _a.filter((it) => {
       if (!args.length)
         return true;
@@ -1820,6 +1844,8 @@ class CallbackHandler extends BaseHandler {
   }
 }
 const REFERENCE_PROPERTY = "ref";
+const BIND_PROPERTY = "bind";
+const LOAD_PROPERTY = "load";
 const TEMP_DIV = Dom.create("div");
 const QUERY_PROPERTY = `[${REFERENCE_PROPERTY}]`;
 const REF_CLASS = "refclass";
@@ -1845,10 +1871,14 @@ class EventMachine {
     __publicField(this, "sourceName");
     __publicField(this, "childComponents");
     __publicField(this, "_localTimestamp");
+    __publicField(this, "refLoadVariables");
+    __publicField(this, "refBindVariables");
     __publicField(this, "_$store");
     this.state = {};
     this.prevState = {};
     this.refs = {};
+    this.refLoadVariables = {};
+    this.refBindVariables = {};
     this.children = {};
     this._localTimestamp = 0;
     this.id = uuid();
@@ -1958,6 +1988,16 @@ class EventMachine {
           temp[name] = true;
         }
         this.refs[name] = $dom;
+        const loadVariable = $dom.attr(LOAD_PROPERTY);
+        const loadVariableRealFunction = getVariable(loadVariable);
+        const bindVariable = $dom.attr(BIND_PROPERTY);
+        const bindVariableRealFunction = getVariable(bindVariable);
+        if (loadVariable && isFunction(loadVariableRealFunction)) {
+          this.refLoadVariables[name] = { key: loadVariable, ref: name, callback: loadVariableRealFunction };
+        }
+        if (bindVariable && isFunction(bindVariableRealFunction)) {
+          this.refBindVariables[name] = { key: bindVariable, ref: name, callback: bindVariableRealFunction };
+        }
       }
     }
     if (!isLoad && list.length) {
@@ -2101,12 +2141,35 @@ class EventMachine {
     this.bindData();
     this.parseComponent();
   }
+  async loadLocalValue(refName) {
+    let target = this.refLoadVariables;
+    if (refName) {
+      target = {
+        [refName]: this.refLoadVariables[refName]
+      };
+    }
+    Object.keys(target).forEach(async (key) => {
+      const loadObj = this.refLoadVariables[key];
+      const isDomDiff = loadObj.domdiff;
+      var newTemplate = await loadObj.callback.call(this);
+      if (Array.isArray(newTemplate)) {
+        newTemplate = newTemplate.join("");
+      }
+      const fragment = this.parseTemplate(newTemplate, true);
+      if (isDomDiff) {
+        this.refs[loadObj.ref].htmlDiff(fragment);
+      } else {
+        this.refs[loadObj.ref].html(fragment);
+      }
+    });
+  }
   async load(...args) {
     if (!this._loadMethods) {
       this._loadMethods = this.filterProps("load");
     }
+    await this.loadLocalValue(...args);
     const filtedLoadMethodList = this._loadMethods.filter((it) => args.length === 0 ? true : it.args[0] === args[0]);
-    await filtedLoadMethodList.forEach(async (it) => {
+    filtedLoadMethodList.forEach(async (it) => {
       const [elName, ...args2] = it.args;
       const isDomDiff = !!it.keys["domdiff"];
       const refTarget = this.refs[elName];
@@ -2157,6 +2220,14 @@ class EventMachine {
     this.$el = null;
     this.refs = {};
     this.children = {};
+    Object.values(this.refLoadVariables).forEach((ref) => {
+      recoverVariable(ref.key, true);
+    });
+    Object.values(this.refBindVariables).forEach((ref) => {
+      recoverVariable(ref.key, true);
+    });
+    this.refLoadVariables = {};
+    this.refBindVariables = {};
   }
   collectProps() {
     if (!this.__cachedMethodList) {

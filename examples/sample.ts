@@ -6,6 +6,7 @@ import { Todo } from './todo';
 
 import './webcomponent';
 import { createComponent } from '../src/functions/jsx';
+import { variable } from '../src';
 
 
 
@@ -32,28 +33,22 @@ class Test extends UIElement {
         <div>
             <div class='test-view'>
                 <h1>Sample List</h1>
-                <div class='list' ref='$list'></div>
+                <div class='list' ref='$list' load=${variable(() => {
+                    return AppList.map((item, index) => {
+                        return /*html*/`
+                        <div class='item'>
+                            <h1>${item.title}</h1>
+                            ${createComponent(item.refClass, {ref: `$${item.refClass}${index}`})}
+                        </div>
+                        `
+                    })
+                })}></div>
 
                 <h1>Sample Web Component</h1>
                 <sample-web-component key="color" value="yellow" />
             </div>
         </div>
         `
-    }
-
-    renderList() {
-        return AppList.map(item => {
-            return /*html*/`
-            <div class='item'>
-                <h1>${item.title}</h1>
-                ${createComponent(item.refClass)}
-            </div>
-            `
-        })
-    }
-
-    [LOAD('$list')]() {
-        return this.renderList();
     }
 }
 

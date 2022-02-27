@@ -1,6 +1,6 @@
 import { DomEventHandler } from "./handler/DomEventHandler";
 import { BindHandler } from "./handler/BindHandler";
-import { IDom, IEventMachine, IKeyValue } from "./types";
+import { IDom, IEventMachine, IKeyValue, ITypedKeyValue, LoadVariableValue, BindVariableValue } from "./types";
 import CallbackHandler from './handler/CallbackHandler';
 import { MagicMethodResult } from "./functions/MagicMethod";
 export declare class EventMachine implements IEventMachine {
@@ -18,7 +18,7 @@ export declare class EventMachine implements IEventMachine {
     el: any;
     $el: any;
     $root: any;
-    refs: any;
+    refs: IKeyValue;
     opt: IKeyValue;
     parent: IEventMachine;
     props: IKeyValue;
@@ -26,6 +26,8 @@ export declare class EventMachine implements IEventMachine {
     sourceName: string;
     childComponents: IKeyValue;
     private _localTimestamp;
+    refLoadVariables: ITypedKeyValue<LoadVariableValue>;
+    refBindVariables: ITypedKeyValue<BindVariableValue>;
     constructor(opt: Object | IEventMachine, props: IKeyValue);
     private _$store;
     get $store(): any;
@@ -185,6 +187,7 @@ export declare class EventMachine implements IEventMachine {
      */
     refresh(): void;
     _afterLoad(): void;
+    loadLocalValue(refName?: string): Promise<void>;
     load(...args: string[]): Promise<void>;
     runHandlers(func?: string, ...args: any[]): void;
     bindData(...args: string[]): void;

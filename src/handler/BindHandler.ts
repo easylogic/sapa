@@ -2,7 +2,7 @@
 import { isNumber, isObject } from "../functions/func";
 import { BIND_CHECK_FUNCTION, BIND_CHECK_DEFAULT_FUNCTION } from "../Event";
 import { BaseHandler } from "./BaseHandler";
-import { IBindHandlerData, IDom, IKeyValue } from "../types";
+import { IBindHandlerData, IDom, IKeyValue, BindVariableValue } from "../types";
 import { MagicMethodResult } from '../functions/MagicMethod';
 
 const convertToPx = (key: string, value: any) => {
@@ -108,12 +108,62 @@ export class BindHandler extends BaseHandler {
     this.bindData(...args);
   }
 
+  /**
+   * 
+   * dom element 에 지정된 bind 를 바로 실행하는 방법 
+   * 
+   * ```js
+   * <div ref="$list" bind="${variable(() => { 
+   *    style: {
+   *      'background-color': 'red',
+   *      'color': 'white'
+   *    }
+   * })}" />
+   * ```
+   * 
+   * @param {string} refName 
+   */
+  async bindLocalValue (refName?: string) {
+
+    let target = this.context.refBindVariables;
+
+    if (refName) {
+      target = {
+        [refName]: this.context.refBindVariables[refName]
+      }
+    }
+
+    Object.values(target).forEach(async (it: BindVariableValue) => {
+      const refCallback = it.callback;
+      let $element = this.context.refs[it.ref];
+
+      // isBindCheck 는 binding 하기 전에 변화된 지점을 찾아서 업데이트를 제한한다.
+      if ($element) {
+        const results = (await refCallback.call(this.context)) as IBindHandlerData;
+
+        if (!results) return;
+
+        const keys = Object.keys(results);
+        for (var elementKeyIndex = 0, len = keys.length; elementKeyIndex < len; elementKeyIndex++) {
+          const key = keys[elementKeyIndex];
+          const value = results[key];
+
+          applyElementAttribute($element, key, value);
+        }
+      }
+    });
+  }
+
   // 어떻게 실행하는게 좋을까? 
   // this.runHandle('bind', ...);
   bindData(...args: string[]) {
     if (!this._bindMethods) {
       this._bindMethods = this.context.filterProps('bind');
     }
+
+    // local 로 등록된 bind 를 모두 실행한다. 
+    this.bindLocalValue(...args);
+
     /**
      * BIND 를 해보자.
      * 이시점에 하는게 맞는지는 모르겠지만 일단은 해보자.

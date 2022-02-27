@@ -381,6 +381,25 @@ refresh( ) {
 }
 ```
 
+#### local load 
+
+The load function can also specify directly within the template.
+
+```js
+template () {
+    return `
+        <div>
+            <div ref='$list' load=${variable(() => { 
+                const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                return arr.map(value => `<div class='item'>${value}</div>`)
+            })}></div>
+        </div>
+    `
+}
+
+```
+
+
 #### support async function 
 
 ```js
@@ -438,6 +457,23 @@ The final output after `BIND` is as follows.
 
 ```html
 <div ref='$list' data-value='0' style='overflow:hidden'></div>
+```
+
+#### local bind 
+
+The bind function can also specify directly within the template.
+
+```js
+template () {
+    return `
+        <div>
+            <div ref='$list' bind=${variable(() => { 
+                color: 'white'
+            })}></div>
+        </div>
+    `
+}
+
 ```
 
 ## Run separately
